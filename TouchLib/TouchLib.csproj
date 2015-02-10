@@ -85,6 +85,8 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SRC\Detector.cs" />
+    <Compile Include="SRC\GestureData.cs" />
+    <Compile Include="SRC\ManifestController.cs" />
     <Compile Include="SRC\Sender.cs" />
     <Compile Include="SRC\Serialization\Serializer.cs" />
     <Compile Include="SRC\UUID\UDIDGen.cs" />

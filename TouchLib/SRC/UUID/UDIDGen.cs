@@ -38,11 +38,19 @@ namespace TouchLib.UUID
 
         public String UUIDV4
         {
-            // temporary TODO: Implement
-            get 
-            {
-                return mSessionID.ToString(); 
-            }
+            get { return mSessionID.ToString();  }
+        }
+
+        public String ViewID = "";
+        public UInt16 ViewIDLenght
+        {
+            get { return (UInt16)ViewID.Length; }
+        }
+
+        public String ElementID = "";
+        public UInt16 ElementIDLenght
+        {
+            get { return (UInt16)ElementID.Length; }
         }
     }
 }

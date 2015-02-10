@@ -49,6 +49,7 @@ namespace Testing
             TestRectangle.ManipulationCompleted +=
                 new EventHandler<ManipulationCompletedEventArgs>(Rectangle_ManipulationCompleted);
 
+
             //workerThread.Join();
            // LayoutRoot.ManipulationCompleted += new EventHandler<ManipulationCompletedEventArgs>(LayoutRoot_ManipulationCompleted);
         }
@@ -66,6 +67,7 @@ namespace Testing
                 resize.ScaleX *= e.DeltaManipulation.Scale.X;
                 resize.ScaleY *= e.DeltaManipulation.Scale.Y;
             }
+            Uri k = this.NavigationService.CurrentSource;
         }
 
         void Rectangle_ManipulationStarted(object sender, ManipulationStartedEventArgs e)
