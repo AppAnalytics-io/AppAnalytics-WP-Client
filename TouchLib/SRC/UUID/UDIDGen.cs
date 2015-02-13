@@ -36,21 +36,20 @@ namespace TouchLib.UUID
             get { return mInstance ?? (mInstance = new UDIDGen()); }
         }
 
-        public String UUIDV4
+        public byte[] SessionID
         {
-            get { return mSessionID.ToString();  }
+            get 
+            {
+                return mSessionID.ToByteArray();
+            }
         }
 
-        public String ViewID = "";
-        public UInt16 ViewIDLenght
+        public byte[] UDID
         {
-            get { return (UInt16)ViewID.Length; }
-        }
-
-        public String ElementID = "";
-        public UInt16 ElementIDLenght
-        {
-            get { return (UInt16)ElementID.Length; }
+            get
+            {
+                return mGUID.ToByteArray();
+            }
         }
     }
 }

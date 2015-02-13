@@ -8,15 +8,37 @@ namespace TouchLib
 {
     internal class GestureData
     {
-        private UInt64 mIndex = 0;
-        public byte[] Index
+        private static UInt64 mGlobalIndex = 0;
+        private UInt64 mActionOrder = 0;
+
+        public void setIndex()
         {
-            get { return BitConverter.GetBytes(mIndex); }
+            mActionOrder = mGlobalIndex;
+            mGlobalIndex++;
+        }
+
+        public byte[] ActionOrder
+        {
+            get { return BitConverter.GetBytes(mActionOrder); }
         }
 
         public byte ActionID = 0;
+        //private string
 
-        private UInt64 mTime = 0;
+        private double mTime = 0;
+
+        public static double convertToUnixTimestamp(DateTime date)
+        {
+            DateTime origin = new DateTime(1970, 1, 1, 0, 0, 0, 0);
+            TimeSpan diff = date.ToUniversalTime() - origin;
+            return Math.Floor(diff.TotalSeconds);
+        }
+
+        public void setCurrentTime()
+        {
+            mTime = convertToUnixTimestamp(DateTime.Now);
+        }
+
         public byte[] ActionTime
         {
             get { return BitConverter.GetBytes(mTime); }
@@ -29,9 +51,28 @@ namespace TouchLib
         
         private double mPosY = 0;
         public byte[] PosY
-        { get { return BitConverter.GetBytes(mPosY); } }
+        { 
+            get { return BitConverter.GetBytes(mPosY); }
+        }
+        public void setPosY(double Y) { mPosY = Y; }
+
 
         public byte[] Param1
         { get { return BitConverter.GetBytes(0); } }
+
+        // View ID
+
+        public byte[] ViewID = null;
+
+        public UInt16 ViewIDLenght
+        {
+            get { return (UInt16)(ViewID.Length * sizeof(char)); }
+        }
+
+        public byte[] ElementID = null;
+        public UInt16 ElementIDLenght
+        {
+            get { return (UInt16)(ElementID.Length * sizeof(char)); }
+        }
     }
 }

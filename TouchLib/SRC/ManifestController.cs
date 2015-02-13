@@ -3,30 +3,95 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 
 
 namespace TouchLib
 {
+    enum GestureID
+    { 
+         SingleTapWith1Finger=1  ,
+         DoubleTapWith1Finger=2  ,
+         TripleTapWith1Finger=3  ,
+         SingleTapWith2Finger=4  ,
+         DoubleTapWith2Finger=5  ,
+         TripleTapWith2Finger=6  ,
+         SingleTapWith3Finger=7  ,
+         DoubleTapWith3Finger=8  ,
+         TripleTapWith3Finger=9  ,
+         SingleTapWith4Finger=10  ,
+         DoubleTapWith4Finger=11  ,
+         TripleTapWith4Finger=12  ,
+         HoldWith1Finger=13  ,
+         HoldWith2Finger=14  ,
+         HoldWith3Finger=15  ,
+         HoldWith4Finger=16  ,
+         PinchWith2Finger=17  ,
+         ZoomWith2Finger=18  ,
+         RotateWith2Finger=19  ,
+         SwipeRightWith1Finger=20  ,
+         SwipeLeftWith1Finger=21  ,
+         SwipeDownWith1Finger=22  ,
+         SwipeUpWith1Finger=23  ,
+         FlickRightWith1Finger=24  ,
+         FlickLeftWith1Finger=25  ,
+         FlickDownWith1Finger=26  ,
+         FlickUpWith1Finger=27  ,
+         SwipeRightWith2Finger=28  ,
+         SwipeLeftWith2Finger=29  ,
+         SwipeDownWith2Finger=30  ,
+         SwipeUpWith2Finger=31  ,
+         FlickRightWith2Finger=32  ,
+         FlickLeftWith2Finger=33  ,
+         FlickDownWith2Finger=34  ,
+         FlickUpWith2Finger=35  ,
+         SwipeRightWith3Finger=36  ,
+         SwipeLeftWith3Finger=37  ,
+         SwipeDownWith3Finger=38  ,
+         SwipeUpWith3Finger=39  ,
+         FlickRightWith3Finger=40  ,
+         FlickLeftWith3Finger=41  ,
+         FlickDownWith3Finger=42  ,
+         FlickUpWith3Finger=43  ,
+         SwipeRightWith4Finger=44  ,
+         SwipeLeftWith4Finger=45  ,
+         SwipeDownWith4Finger=46  ,
+         SwipeUpWith4Finger=47  ,
+         FlickLeftWith4Finger=48  ,
+         FlickRightWith4Finger=49  ,
+         FlickDownWith4Finger=50  ,
+         FlickUpWith4Finger=51  ,
+         Shake=52 ,
+         Navigation=53
+    }
+
     class ManifestController
     {
         private byte kDataPackageFileVersion = 1;
         private byte kSessionManifestFileVersion   = 1;
-        private byte kAppAnalyticsApiVersion = 1;
+
+        private MemoryStream mStream;
+
+        public ManifestController()
+        {
+            mStream = new MemoryStream();
+        }
 
         // [0-1]=DataPackageFileSignature:word; //'H'+'A'
         // [2]=DataPackageFileVersion:byte;
         // [3-38]= SessionId:UUIDV4; //UUID to keep every session unique.
-        public String buildHeader()
+        private void writeArray(byte[] aBlock)
         {
-//             byte[] bytes = { (byte)'H', (byte)'A', kDataPackageFileVersion };
-//             // - header -
-//             byte[] sessionID = new byte[38-3];
-//             sessionID = 
-            StringBuilder byteStr = new StringBuilder("HA" + kDataPackageFileVersion.ToString());
+            mStream.Write(aBlock, 0, aBlock.Length);
+        }
 
-            byteStr.Append(Detector.getSessionID());
+        public void buildHeader()
+        {
+            mStream.WriteByte( (byte)'H');
+            mStream.WriteByte( (byte)'A');
+            mStream.WriteByte(kDataPackageFileVersion );
 
-            return byteStr.ToString();
+            mStream.Write(Detector.getSessionID(), 0, Detector.getSessionID().Length);
         }
 
         // [0]=PackageBeginMarker:byte; //ASCII#60 '<'
@@ -41,13 +106,21 @@ namespace TouchLib
         // [...]=ElementIdLength:UInt16; //total length of ElementId value.
         // [...]=ElementId:string; //the ID of a user interface element related to the gesture action.
         // [Length-1]=PackageEndMarker:byte; //ASCII#62 '>'
-        public String buildDataPackage(GestureData data)
+        public void buildDataPackage(GestureData aData)
         {
-            StringBuilder byteStr = new StringBuilder("<");
+            mStream.WriteByte( (byte)'<');
 
-            // - package -
+            writeArray(aData.ActionOrder);
+            mStream.WriteByte(aData.ActionID);
+            writeArray(aData.PosX);
+            writeArray(aData.PosY);
+            writeArray(aData.Param1);
+            writeArray( BitConverter.GetBytes(aData.ViewIDLenght) );
+            writeArray(aData.ViewID);
+            writeArray( BitConverter.GetBytes(aData.ElementIDLenght) );
+            writeArray(aData.ElementID);
 
-            return byteStr.Append(">").ToString();
+            mStream.WriteByte( (byte)'>');
         }
 
         // [0]=PackageBeginMarker:byte; //ASCII#60 '<'
@@ -64,23 +137,22 @@ namespace TouchLib
         // [151-166]=OSVersion:Version; //the Major, Minor, Build and Revision version numbers of client OS as Unsigned Integers.
         // [167-169]=SystemLocale:String; //the three-letter identifier for the region of the client.
         // [170]=PackageEndMarker:byte; //ASCII#62 '>'
-        public String buildSessionManifest()
+        public void buildSessionManifest()
         {
-            StringBuilder byteStr = new StringBuilder("<");
+            mStream.WriteByte(kSessionManifestFileVersion);
+            writeArray(Detector.getSessionID());
+            writeArray(Detector.getSessionStartDate());
+            writeArray(Detector.getSessionEndDate());
+            writeArray(Detector.getUDID());
+            writeArray(Detector.getResolutionX());
+            writeArray(Detector.getResolutionY());
+            mStream.WriteByte(Detector.ApiVersion);
+            writeArray(Detector.ApiKey);
+            writeArray(Detector.AppVersion);
+            writeArray(Detector.OSVersion);
+            writeArray(Detector.SystemLocale);
 
-            byteStr.Append(kSessionManifestFileVersion);
-            byteStr.Append(Detector.getSessionID());
-            byteStr.Append(Detector.getSessionStartDate());
-            byteStr.Append(Detector.getSessionEndDate());
-            byteStr.Append(Detector.getUDID());
-            byteStr.Append(Detector.getResolutionX());
-            byteStr.Append(Detector.getResolutionY());
-            byteStr.Append(Detector.ApiVersion);
-            byteStr.Append(Detector.AppVersion);
-            byteStr.Append(Detector.OSVersion);
-            byteStr.Append(Detector.SystemLocale);
-
-            return byteStr.Append(">").ToString();
+            mStream.WriteByte((byte)'>');
         }
     }
 }

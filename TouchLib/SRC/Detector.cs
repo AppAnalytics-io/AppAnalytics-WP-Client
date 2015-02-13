@@ -10,56 +10,112 @@ using Microsoft.Phone.Controls;
 using Microsoft.Xna.Framework.Input.Touch;
 using System.Diagnostics;
 using System.Globalization;
-
+using Windows.Graphics.Display;
+using System.Collections; 
 
 
 namespace TouchLib
 {
     public static class Detector
     {
-        //private section /////////////////////////////////////////////////
-        private static bool mKeepWorking = true;
+        static Windows.UI.Input.GestureRecognizer p1 = new Windows.UI.Input.GestureRecognizer();
+        //gestures to-send queue 
 
+        // Concurent.ConcurrentQueue<GestureData> mToSend = new ConcurrentQueue<GestureData>();
+        private static Queue<GestureData> mToSend = new Queue<GestureData>();
+        
+        //private section /////////////////////////////////////////////////
         private static UUID.UDIDGen mIDGen = UUID.UDIDGen.Instance;
+
+        private static bool mKeepWorking = true;
+        private static bool mNavigationOccured = false;
 
         private static Thread mWorker = null;
         private static Sender mSender = new Sender();
+        private static double mSessionStartTime = 0;
 
-        public static string getResolutionX()
+        private static string mPreviousUri = "";
+
+        private static byte[] mApiKey = null;
+        public  static byte[] ApiKey
         {
-            return "";
+            get { return mApiKey; }
         }
-        public static string getResolutionY()
+
+        public static byte[] getResolutionX()
         {
-            return "";
+            var content = Application.Current.Host.Content;
+            double scale = (double)content.ScaleFactor / 100;
+
+            //double h = (int)Math.Ceiling(content.ActualHeight * scale);
+            double w = (int)Math.Ceiling(content.ActualWidth * scale);
+            
+            return BitConverter.GetBytes( w );
+        }
+
+        public static byte[] getResolutionY()
+        {
+            var content = Application.Current.Host.Content;
+            double scale = (double)content.ScaleFactor / 100;
+
+            double h = (int)Math.Ceiling(content.ActualHeight * scale);
+            //double w = (int)Math.Ceiling(content.ActualWidth * scale);
+
+            return BitConverter.GetBytes(h);
         }
         public static byte ApiVersion = 1;
 
         //public section //////////////////////////////////////////////////
-        static public String getSessionID()
+        static public byte[] getSessionID()
         {
-            return mIDGen.UUIDV4;
+            return mIDGen.SessionID;
         }
 
-        static public String getCurent()
+        static private void getCurent()
         { 
             var currentPage = ((PhoneApplicationFrame)Application.Current.RootVisual).Content as PhoneApplicationPage;
 
             var uri = currentPage.NavigationService.CurrentSource;
 
-            return uri.ToString();
+            string nUri = uri.ToString();
+            if (nUri != mPreviousUri)
+            {
+                lock (mPreviousUri)
+                {
+                    mNavigationOccured = true;
+                }
+            }
         }
 
-        static public void init()
+        static public void init(string aApiKey)
         {
+            Recognizer.Instance.Init();
+
+            mApiKey = getBytes(aApiKey);
+            if (mApiKey.Length != 32)
+            {
+                Debug.WriteLine("API key length is not equal 32");
+                mApiKey = new byte[32];
+                mApiKey.Initialize();
+            }
+
+            //mPreviousUri = getCurent();
+
             if (null == mWorker)
             {
-                TouchPanel.EnabledGestures = GestureType.VerticalDrag | GestureType.HorizontalDrag | GestureType.Flick
-                    | GestureType.Pinch | GestureType.Hold | GestureType.Tap | GestureType.DoubleTap;
+//                 TouchPanel.EnabledGestures = GestureType.VerticalDrag | GestureType.HorizontalDrag | GestureType.Flick
+//                     | GestureType.PinchComplete | GestureType.Pinch
+//                     | GestureType.Hold | GestureType.Tap | GestureType.DoubleTap;
 
                 mWorker = new Thread(updateLoop);
                 mWorker.IsBackground = true;
                 mWorker.Start();
+
+                var date = DateTime.Now;
+
+                DateTime origin = new DateTime(1970, 1, 1, 0, 0, 0, 0);
+                TimeSpan diff = date.ToUniversalTime() - origin;
+                mSessionStartTime = Math.Floor(diff.TotalSeconds);
             }
         }
 
@@ -68,84 +124,143 @@ namespace TouchLib
             mKeepWorking = false;
         }
 
+        static private string whereGestureHapend()
+        {
+            return "";
+        }
+
+        static private void pushReport(GestureData aData)
+        {
+            lock (mToSend)
+            {
+                mToSend.Enqueue (aData);
+            }
+        }
+
+        static DateTime mPrevTime = DateTime.Now;
+
+        public static void  handleTaps(double deltaT)
+        {
+            double tstDif = Recognizer.getNow() - Recognizer.Instance.PrevTapOccured;
+            // TODO: fix hardcode
+            if ((tstDif > 0.2f) && (Recognizer.Instance.TapsInRow > 0))
+            {
+                Debug.WriteLine(Recognizer.Instance.TapsInRow + " <taps with " + Recognizer.Instance.PrevFingers);
+                Recognizer.Instance.TapsInRow = 0;
+            }
+        }
+
         static private void updateLoop()
         {
-            bool horizontalDragStarted = false;
-            bool verticalDragStarted = false;
-
             while (mKeepWorking)
             {
-                var gestres = TouchPanel.GetState();
-                while (TouchPanel.IsGestureAvailable)
+                var date = DateTime.Now;
+
+                TimeSpan diff = date.ToUniversalTime() - mPrevTime;
+                double sec = Math.Floor(diff.TotalSeconds);
+                mPrevTime = date;
+
+                handleTaps(sec);
+
+                if (mNavigationOccured)
                 {
-                    GestureSample gs = TouchPanel.ReadGesture();
-                    //TouchPanel.GetState().
-                    switch (gs.GestureType)
+                    lock (mPreviousUri)
                     {
-                        case GestureType.VerticalDrag:
-                            verticalDragStarted = true;
-                            Debug.WriteLine("   +vertical drag catched\n");
-                            break;
-
-                        case GestureType.Flick:
-                            Debug.WriteLine("   +flick catched\n");
-                            break;
-
-                        case GestureType.Tap:
-                            Debug.WriteLine("   +tap cathced\n");
-                            
-                            break;
-
-                        case GestureType.PinchComplete:
-                            Debug.WriteLine("   +pinch catched\n");
-                            
-                            break;
-
-                        case GestureType.HorizontalDrag:
-                            horizontalDragStarted = true;
-                            Debug.WriteLine("   +horizontal drag catched\n");
-
-                            break;
-
-                        case GestureType.Hold:
-                            Debug.WriteLine("   +hold catched\n");
-
-                            break;
-
-                        case GestureType.DragComplete:
-                            if(horizontalDragStarted)
-                            {
-                                Debug.WriteLine("<- horiz. ended\n");
-                            }
-                            if(verticalDragStarted)
-                            {
-                                Debug.WriteLine("<- vert. ended\n");
-                            }
-                            horizontalDragStarted = false;
-                            verticalDragStarted = false;
-                            Debug.WriteLine("   +hold catched\n");
-
-                            break;
+                        mNavigationOccured = false;
+                        //create and gesture report
                     }
                 }
-            } //end of while
-   
+
+                var gestres = TouchPanel.GetState();
+                #region processing
+                //                 while (TouchPanel.IsGestureAvailable)
+                //                 { 
+                //                     Deployment.Current.Dispatcher.BeginInvoke(() => getCurent()); 
+                // 
+                //                     GestureSample gs = TouchPanel.ReadGesture();
+                //                     //TouchPanel.GetState().
+                //                     switch (gs.GestureType)
+                //                     {
+                //                         case GestureType.VerticalDrag:
+                //                             verticalDragStarted = true;
+                //                             
+                //                             Debug.WriteLine("   +vertical drag catched\n");
+                // 
+                //                             break;
+                // 
+                //                         case GestureType.Flick:
+                //                             Debug.WriteLine("   +flick catched\n");
+                //                             var da = Math.Abs(gs.Delta.X) + Math.Abs(gs.Delta.Y);
+                //                             var dn = Math.Abs(gs.Delta2.X) + Math.Abs(gs.Delta2.Y);
+                // 
+                //                             if (da > 0 && dn > 0 )
+                //                             {
+                //                                 Debug.WriteLine("   +flick2x catched\n");
+                //                             }
+                // 
+                //                             break;
+                // 
+                //                         case GestureType.Tap:
+                //                             Debug.WriteLine("   +tap cathced\n");
+                //                                                         
+                //                             break;
+                // 
+                //                         case GestureType.PinchComplete:
+                //                             Debug.WriteLine("   +pinch catched\n");
+                //                             
+                //                             break;
+                // 
+                //                         case GestureType.HorizontalDrag:
+                //                             horizontalDragStarted = true;
+                //                             Debug.WriteLine("   +horizontal drag catched\n");
+                // 
+                //                             break;
+                // 
+                //                         case GestureType.Hold:
+                //                             Debug.WriteLine("   +hold catched\n");
+                // 
+                //                             break;
+                // 
+                //                         case GestureType.DragComplete:
+                //                             if(horizontalDragStarted)
+                //                             {
+                //                                 Debug.WriteLine("<- horiz. ended\n");
+                //                             }
+                //                             if(verticalDragStarted)
+                //                             {
+                //                                 Debug.WriteLine("<- vert. ended\n");
+                //                             }
+                //                             horizontalDragStarted = false;
+                //                             verticalDragStarted = false;
+                //                             Debug.WriteLine("   +hold catched\n");
+                // 
+                //                             break;
+                //                     }
+                //                 } of while
+                #endregion
+            }
         }// end of update loop
 
 
-        internal static ulong getSessionStartDate()
+        internal static byte[] getSessionStartDate()
         {
-            throw new NotImplementedException();
+            return BitConverter.GetBytes(mSessionStartTime);
         }
 
-        public static bool getSessionEndDate()
+        internal static byte[] getSessionEndDate()
         {
-            throw new Exception("The method or operation is not implemented.");
+            var date = DateTime.Now;
+
+            DateTime origin = new DateTime(1970, 1, 1, 0, 0, 0, 0);
+            TimeSpan diff = date.ToUniversalTime() - origin;
+            double sec = Math.Floor(diff.TotalSeconds);
+
+            return BitConverter.GetBytes(sec);
         }
 
-        public static bool getUDID()
+        internal static byte[] getUDID()
         {
-            throw new Exception("The method or operation is not implemented.");
+            return mIDGen.UDID;
         }
 
         private static string getAppVersion()
@@ -171,16 +286,18 @@ namespace TouchLib
 
         }
 
-        public static string AppVersion 
+        public static byte[] AppVersion 
         {
             get 
             {
                 byte[] bts = new byte[16];
+                bts.Initialize();
+
                 string[] v4 = getAppVersion().Split('.');
 
                 if (v4.Length != 4) 
                 {
-                    return "00000000" + "00000000"; //16*0
+                    return bts; //16*0
                 }
 
                 int i = 0;
@@ -192,7 +309,7 @@ namespace TouchLib
                     ++i;
                 }
 
-                return getString(bts);
+                return bts;
             }
         }
 
@@ -215,35 +332,38 @@ namespace TouchLib
             return BitConverter.GetBytes(val);
         }
 
-        public static string OSVersion 
+        public static byte[] OSVersion 
         {
             get 
             {
                 StringBuilder sb = new StringBuilder();
                 var vs = Environment.OSVersion.Version;
 
-                sb.Append( getString(toBytes(vs.Major)) )
-                  .Append( getString(toBytes(vs.Minor)) )
-                  .Append( getString(toBytes(vs.Build)) )
-                  .Append( getString(toBytes(vs.Revision)) );
+                byte[] buffer = new byte[16];
+                System.Buffer.BlockCopy(toBytes(vs.Major), 0, buffer, 0, toBytes(vs.Major).Length);
+                System.Buffer.BlockCopy(toBytes(vs.Minor), 0, buffer, 4, toBytes(vs.Minor).Length);
+                System.Buffer.BlockCopy(toBytes(vs.Build), 0, buffer, 8, toBytes(vs.Build).Length);
+                System.Buffer.BlockCopy(toBytes(vs.Revision), 0, buffer, 12, toBytes(vs.Revision).Length);
 
-                if (sb.Length != 16)
-                {
-                    return "00000000" + "00000000"; //16*0
-                }
+//                 sb.Append(getString(toBytes(vs.Major)))
+//                   .Append(getString(toBytes(vs.Minor)))
+//                   .Append(getString(toBytes(vs.Build)))
+//                   .Append(getString(toBytes(vs.Revision)));
 
-                return sb.ToString();  
+                return buffer;  
             }
         }
 
-        public static string SystemLocale 
+        public static byte[] SystemLocale 
         {
             get 
             {
                 CultureInfo cult = Thread.CurrentThread.CurrentCulture;
                 RegionInfo rf = new RegionInfo(cult.TwoLetterISOLanguageName);
 
-                return  rf.TwoLetterISORegionName + " " ;
+                string lt3 = Converter.convertToThreeLetterCode( rf.TwoLetterISORegionName );
+
+                return new byte[3] { (byte)lt3[0], (byte)lt3[1], (byte)lt3[2] };
             }
         }
     }
