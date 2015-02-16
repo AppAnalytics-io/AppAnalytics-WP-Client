@@ -139,6 +139,8 @@ namespace TouchLib
             if ((tstDif > Recognizer.Instance.TimeForTap) && (Recognizer.Instance.TapsInRow > 0))
             {
                 Debug.WriteLine(Recognizer.Instance.TapsInRow + " < taps with > " + Recognizer.Instance.LastTapFingers);
+
+                Recognizer.Instance.createTapGesture(Recognizer.Instance.TapsInRow, Recognizer.Instance.LastTapFingers);
                 Recognizer.Instance.TapsInRow = 0;
             }
         }
@@ -162,7 +164,7 @@ namespace TouchLib
                     lock (_lockObject)
                     {
                         mNavigationOccured = false;
-                        //create and gesture report
+                        //create gesture report
                     }
                 }
 
@@ -234,7 +236,7 @@ namespace TouchLib
                 ////                 } of while
                 #endregion
             }
-        }// end of update loop
+        }
 
         internal static byte[] getSessionStartDate()
         {

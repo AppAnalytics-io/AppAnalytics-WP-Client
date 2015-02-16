@@ -114,7 +114,6 @@ namespace TouchLib
 
         private static readonly object _lockObject = new object();
         private static Recognizer mInstance;
-        private PhoneApplicationPage mPage = null;
 
         // public section //////////////////////////////
         public static Recognizer Instance
@@ -124,19 +123,17 @@ namespace TouchLib
         }
         protected Recognizer() 
         {
-            //Touch.FrameReported += new TouchFrameEventHandler(touchFrameReported);
+            Touch.FrameReported += new TouchFrameEventHandler(touchFrameReported);
         }
 
         public byte Init()
         {
-            timeStamp = convertToUnixTimestamp(DateTime.Now);
-            // TODO : CHECK IF IT IS STILL THE SAME FOR DIFF PAGES !! !! !!
-            mPage = ((PhoneApplicationFrame)Application.Current.RootVisual).Content as PhoneApplicationPage;
+            timeStamp = convertToUnixTimestamp(DateTime.Now); 
 
             return 0;
         }
 
-        public void createTapGesture (UInt16 aCountOfTaps, UInt16 aNumberOfFingers)
+        public void createTapGesture (int aCountOfTaps, int aNumberOfFingers)
         {
             GestureID id = GestureID.SingleTapWith1Finger;
 
@@ -168,6 +165,102 @@ namespace TouchLib
             createGesture(id);
         }
 
+        private void createSwipeGesture( int aNumberOfFingers, Dir aDir)
+        {
+            GestureID id = GestureID.SwipeDownWith1Finger;
+
+            if (1 == aNumberOfFingers)
+            {
+                if (Dir.Right == aDir) id = GestureID.SwipeRightWith1Finger;
+                if (Dir.Left == aDir) id = GestureID.SwipeLeftWith1Finger;
+                if (Dir.Down == aDir) id = GestureID.SwipeDownWith1Finger;
+                if (Dir.Up == aDir) id = GestureID.SwipeUpWith1Finger;
+            }
+            else if (2 == aNumberOfFingers)
+            {
+                if (Dir.Right == aDir) id = GestureID.SwipeRightWith2Finger;
+                if (Dir.Left == aDir) id = GestureID.SwipeLeftWith2Finger;
+                if (Dir.Down == aDir) id = GestureID.SwipeDownWith2Finger;
+                if (Dir.Up == aDir) id = GestureID.SwipeUpWith2Finger;
+            }
+            else if (3 == aNumberOfFingers)
+            {
+                if (Dir.Right == aDir) id = GestureID.SwipeRightWith3Finger;
+                if (Dir.Left == aDir) id = GestureID.SwipeLeftWith3Finger;
+                if (Dir.Down == aDir) id = GestureID.SwipeDownWith3Finger;
+                if (Dir.Up == aDir) id = GestureID.SwipeUpWith3Finger;
+            }
+            else if (4 == aNumberOfFingers)
+            {
+                if (Dir.Right == aDir) id = GestureID.SwipeRightWith4Finger;
+                if (Dir.Left == aDir) id = GestureID.SwipeLeftWith4Finger;
+                if (Dir.Down == aDir) id = GestureID.SwipeDownWith4Finger;
+                if (Dir.Up == aDir) id = GestureID.SwipeUpWith4Finger;
+            }
+
+            createGesture(id);
+        }
+
+        private void createHoldGesture(int aNumberOfFingers)
+        {
+            GestureID id = GestureID.HoldWith1Finger;
+
+            if (1 == aNumberOfFingers)
+            {
+                id = GestureID.HoldWith1Finger;
+            }
+            else if (2 == aNumberOfFingers)
+            {
+                id = GestureID.HoldWith2Finger;
+            }
+            else if (3 == aNumberOfFingers)
+            {
+                id = GestureID.HoldWith3Finger;
+            }
+            else if (4 == aNumberOfFingers)
+            {
+                id = GestureID.HoldWith4Finger;
+            }
+
+            createGesture(id);
+        }
+
+        private void createFlickGesture(int aNumberOfFingers, Dir aDir)
+        {
+            GestureID id = GestureID.SwipeDownWith1Finger;
+
+            if (1 == aNumberOfFingers)
+            {
+                if (Dir.Right == aDir)  id = GestureID.FlickRightWith1Finger;
+                if (Dir.Left == aDir)   id = GestureID.FlickLeftWith1Finger;
+                if (Dir.Down == aDir)   id = GestureID.FlickDownWith1Finger;
+                if (Dir.Up == aDir)     id = GestureID.FlickUpWith1Finger;
+            }
+            else if (2 == aNumberOfFingers)
+            {
+                if (Dir.Right == aDir)  id = GestureID.FlickRightWith2Finger;
+                if (Dir.Left == aDir)   id = GestureID.FlickLeftWith2Finger;
+                if (Dir.Down == aDir)   id = GestureID.FlickDownWith2Finger;
+                if (Dir.Up == aDir)     id = GestureID.FlickUpWith2Finger;
+            }
+            else if (3 == aNumberOfFingers)
+            {
+                if (Dir.Right == aDir)  id = GestureID.FlickRightWith3Finger;
+                if (Dir.Left == aDir)   id = GestureID.FlickLeftWith3Finger;
+                if (Dir.Down == aDir)   id = GestureID.FlickDownWith3Finger;
+                if (Dir.Up == aDir)     id = GestureID.FlickUpWith3Finger;
+            }
+            else if (4 == aNumberOfFingers)
+            {
+                if (Dir.Right == aDir)  id = GestureID.FlickRightWith4Finger;
+                if (Dir.Left == aDir)   id = GestureID.FlickLeftWith4Finger;
+                if (Dir.Down == aDir)   id = GestureID.FlickDownWith4Finger;
+                if (Dir.Up == aDir)     id = GestureID.FlickUpWith4Finger;
+            }
+
+            createGesture(id);
+        }
+
         public void createGesture(GestureID aID)
         {
             string elUri = "";
@@ -175,6 +268,7 @@ namespace TouchLib
             System.Windows.Point p = new System.Windows.Point(LastPosX, LastPosY);
 
             GestureData gd = GestureData.create(aID, p, elUri, pageUri);
+
             Detector.pushReport(gd);
         }
 
@@ -192,9 +286,9 @@ namespace TouchLib
         {
             var currentPage = ((PhoneApplicationFrame)Application.Current.RootVisual).Content as PhoneApplicationPage;
            // PhoneApplicationFrame g; g.con
-
+           // currentPage.Content
             //var uri = currentPage.
-
+            //currentPage.Children;
             string nUri = "";
 
             return nUri;
@@ -359,19 +453,18 @@ namespace TouchLib
             return vec;
         }
 
-        Dir prevDir = Dir.None;
+        Dir     prevDir = Dir.None;
 
         // about taps
-        double prevTapOccured = 0;
-        int tapsInRow = 0;
+        double  prevTapOccured = 0;
+        int     tapsInRow = 0;
 
-        double timeStamp = 0;
-        int prevFingers = 0;
+        double  timeStamp = 0;
+        int     prevFingers = 0;
 
-        //Queue<GData> stateSeq = new Queue<GData>();
-        GData prevGesture = new GData();
+        GData   prevGesture = new GData();
 
-        double insensitivity = 0;
+        double  insensitivity = 0;
 
         private static double resolutionX()
         {
@@ -427,28 +520,34 @@ namespace TouchLib
             if (d == prevDir)
                 return;
 
+            int numb = tpc.Count > 4 ? 4 : tpc.Count;
+            mPositionX = tpc[0].Position.X;
+            mPositionY = tpc[0].Position.Y;
+
             if (d == Dir.Left)
             {
                 Debug.WriteLine("<--");
+                createFlickGesture(numb, d);
                 prevGesture.state = GState.MovingLeft;
             }
             else if (d == Dir.Right)
             {
                 Debug.WriteLine("-->");
+                createFlickGesture(numb, d);
                 prevGesture.state = GState.MovingRight;
             }
             else if (d == Dir.Up)
             {
                 Debug.WriteLine("//\\up");
+                createFlickGesture(numb, d);
                 prevGesture.state = GState.MovingUp;
             }
             else if (d == Dir.Down)
             {
                 Debug.WriteLine("\\//down");
+                createFlickGesture(numb, d);
                 prevGesture.state = GState.MovingDown; 
             }
-            mPositionX = tpc[0].Position.X;
-            mPositionY = tpc[0].Position.Y;
         }
 
         double startTap = 0;
@@ -477,6 +576,7 @@ namespace TouchLib
                 if (TapsInRow >= 2)
                 {
                     Debug.WriteLine("[triple tap with ]" + PrevFingers + "fingers");
+                    createTapGesture(3, PrevFingers);
                     TapsInRow = 0;
                     prevGesture.state = GState.None;
 
@@ -520,18 +620,22 @@ namespace TouchLib
                 if (Dir.Down == dir)
                 {
                     Debug.WriteLine("[SWIPE] down with " + PrevFingers);
+                    createSwipeGesture(PrevFingers, dir);
                 }
                 else if (Dir.Left == dir)
                 {
                     Debug.WriteLine("[SWIPE] left with " + PrevFingers);
+                    createSwipeGesture(PrevFingers, dir);
                 }
                 else if (Dir.Right == dir)
                 {
                     Debug.WriteLine("[SWIPE] right with " + PrevFingers);
+                    createSwipeGesture(PrevFingers, dir);
                 }
                 else if (Dir.Up == dir)
                 {
                     Debug.WriteLine("[SWIPE] up with " + PrevFingers);
+                    createSwipeGesture(PrevFingers, dir);
                 }
             }
             else //if (length > (HoldThreshold/2) )
@@ -573,6 +677,7 @@ namespace TouchLib
                 }
 
                 Debug.WriteLine("[HOLD_1] " + tpc.Count);
+                createHoldGesture(tpc.Count > 4 ? 4 : tpc.Count);
                 prevGesture.state = GState.Hold;
 
                 return true;
@@ -829,6 +934,7 @@ namespace TouchLib
             {
                 Debug.WriteLine("enlarge");
                 // push
+                createGesture(GestureID.ZoomWith2Finger);
                 prevGesture.state = GState.Enlarge; // also known as zoom
                 flag = true;
             }
@@ -836,6 +942,7 @@ namespace TouchLib
             {
                 Debug.WriteLine("shrink"); // also known as pinch
                 // push
+                createGesture(GestureID.PinchWith2Finger);
                 prevGesture.state = GState.Shrink;
                 flag = true;
             }
@@ -877,6 +984,7 @@ namespace TouchLib
                 if ((GState.RotateC != prevGesture.state) && (GState.RotateAC != prevGesture.state))
                 {
                     Debug.WriteLine("rotation");
+                    createGesture(GestureID.RotateWith2Finger);
                     prevGesture.state = GState.RotateAC;
                 }
 
