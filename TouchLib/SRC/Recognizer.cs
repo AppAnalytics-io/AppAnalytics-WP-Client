@@ -8,6 +8,8 @@ using Microsoft.Phone.Controls;
 using System.Windows.Input;
 using System.Diagnostics;
 
+//using System.
+
 using Microsoft.Xna.Framework;
 
 namespace TouchLib
@@ -20,11 +22,6 @@ namespace TouchLib
             MovingDown,
             MovingLeft,
             MovingRight,
-
-            FastMovingUp,
-            FastMovingDown,
-            FastMovingLeft,
-            FastMovingRight,
 
             Enlarge,
             Shrink,
@@ -52,16 +49,13 @@ namespace TouchLib
         class GData
         {
             public GState state;
-            public  int fingers;
             public GData()
             {
-                state = GState.None;
-                fingers = 1;
+                state = GState.None; 
             }
-            public GData(int count, GState aState)
+            public GData(GState aState)
             {
-                state = aState;
-                fingers = count;
+                state = aState; 
             }
         }
 
@@ -119,31 +113,58 @@ namespace TouchLib
         }
 
         private static Recognizer mInstance;
+        private PhoneApplicationPage mPage = null;
+
         // public section //////////////////////////////
         public static Recognizer Instance
         {
+            // singleton
             get { return mInstance ?? (mInstance = new Recognizer()); }
         }
         protected Recognizer() 
         {
-            Touch.FrameReported += new TouchFrameEventHandler(touchFrameReported);
+            //Touch.FrameReported += new TouchFrameEventHandler(touchFrameReported);
         }
 
         public byte Init()
         {
             timeStamp = convertToUnixTimestamp(DateTime.Now);
+            mPage = ((PhoneApplicationFrame)Application.Current.RootVisual).Content as PhoneApplicationPage;
+
             return 0;
         }
         // TODO: code conv. 
-        const double rotationThreshold = 5.0f;
-        const double zoomThreshold = 0.04;
-        const double holdThreshold = 0.03;
+        const double rotationThreshold = 1.5f;
+        const double zoomThreshold = 0.00;
+        const double holdThreshold = 0.01;
 
         const double swipeThreshold = 0.07;
 
-        const double insensitivityConst = 0.2;
-        const double timeForTap = 0.1f;
+        const double insensitivityConst = 0.08;
+        const double timeForTap = 0.22f;
 
+        int lastTapFingers = 0;
+        public int LastTapFingers
+        {
+            get
+            {
+                int a = 0;
+                lock (prevGesture)
+                {
+                    a = lastTapFingers;
+                }
+                return a;
+            }
+            set
+            {
+                lock (prevGesture)
+                {
+                    lastTapFingers = value;
+                }
+            }
+        }
+
+        public double TimeForTap { get { return timeForTap; } }
         double HoldThreshold
         {
             get
@@ -160,12 +181,13 @@ namespace TouchLib
                 return x * swipeThreshold;
             }
         }
+
         double ZoomThreshold
         {
             get
             {
-                var x = Math.Min(resolutionX(), resolutionY());
-                return x * zoomThreshold;
+                //var x = Math.Min(resolutionX(), resolutionY());
+                return zoomThreshold;
             }
         }
 
@@ -190,6 +212,7 @@ namespace TouchLib
         }
 
         // about flicks
+
         double preDistance = 0;
         double preAngle = 0;
 
@@ -198,9 +221,34 @@ namespace TouchLib
         double[] preFlickX = new double[4] { 0, 0, 0, 0 };
         double[] preFlickY = new double[4] { 0, 0, 0, 0 };
 
-        double getAverageFrameLen(TouchPointCollection tpc)
+        double touchStarted = 0;
+        double mPositionX = 0;
+        double mPositionY = 0; // where the gesture begun
+
+        public double LastPosX
         {
-            if ( (PrevFingers * tpc.Count) == 0)
+            get
+            {
+                lock (prevGesture)
+                {
+                    return mPositionX;
+                }
+            }
+        }
+        public double LastPosY
+        {
+            get
+            {
+                lock (prevGesture)
+                {
+                    return mPositionY;
+                }
+            }
+        }
+
+        double getAverageOffsets(TouchPointCollection tpc)
+        {
+            if ((PrevFingers * tpc.Count) == 0)
             {
                 return 0;
             }
@@ -211,14 +259,37 @@ namespace TouchLib
             {
                 double x = tpc[i].Position.X;
                 double y = tpc[i].Position.Y;
-                double length = Math.Pow((x - preFlickX[i]), 2) +
-                    Math.Pow((y - preFlickY[i]), 2);
+                double length = Math.Sqrt(Math.Pow((x - preFlickX[i]), 2) +
+                    Math.Pow((y - preFlickY[i]), 2) );
 
                 f += length;
             }
             int numb = (Math.Min(PrevFingers, tpc.Count));
 
             return f / numb;
+        }
+
+        Vector2 getMoveVector(TouchPointCollection tpc)
+        {
+            var vec = new Vector2(0);
+            if ((PrevFingers * tpc.Count) == 0)
+            {
+                return vec;
+            }
+            PrevFingers = PrevFingers > 4 ? 4 : PrevFingers;
+            for (int i = 0; (i < PrevFingers) && (i < tpc.Count); ++i)
+            {
+                float x = (float) tpc[i].Position.X;
+                float y = (float)tpc[i].Position.Y;
+
+                float x1 = (float)preMoveX[i];
+                float y1 = (float)preMoveX[i];
+
+                vec += new Vector2(x, y) - new Vector2(x1, y1);
+            }
+            int numb = (Math.Min(PrevFingers, tpc.Count));
+
+            return vec;
         }
 
         Dir prevDir = Dir.None;
@@ -256,7 +327,7 @@ namespace TouchLib
 
             return h;
         }
-
+        // MAIN CALLBACK //////////////////////////////////////////////////////////////////////////////////////////
         void touchFrameReported(object sender, TouchFrameEventArgs e)
         {
             // insens. processing
@@ -265,6 +336,7 @@ namespace TouchLib
             if (insensitivity > 0)
             {
                 insensitivity -= curTime - timeStamp;
+                timeStamp = curTime;
                 return;
             }
 
@@ -272,19 +344,21 @@ namespace TouchLib
             TouchPointCollection tpc = e.GetTouchPoints(content);
             int fingers = tpc.Count;
 
-            handleTaps(tpc);
+            handleMovement(tpc);
+            updateStoredValues(tpc);
             PrevFingers = fingers;
         }
+        // ------------- //////////////////////////////////////////////////////////////////////////////////////////
 
         Vector2 createVec(double x, double y)
         {
             return new Vector2((float)x, (float)y);
         }
 
-        void handleChangingDirection(Dir d)
+        void handleChangingDirection(Dir d, TouchPointCollection tpc)
         {
             if (d == prevDir)
-               return;
+                return;
 
             if (d == Dir.Left)
             {
@@ -304,153 +378,188 @@ namespace TouchLib
             else if (d == Dir.Down)
             {
                 Debug.WriteLine("\\//down");
-                prevGesture.state = GState.MovingDown;
+                prevGesture.state = GState.MovingDown; 
             }
+            mPositionX = tpc[0].Position.X;
+            mPositionY = tpc[0].Position.Y;
         }
 
         double startTap = 0;
-        bool handleTaps(TouchPointCollection tpc)
+
+        bool doesTapHappend(TouchPointCollection tpc)
+        {
+            //Debug.("Tap - up");
+            var len = getAverageOffsets(tpc);
+            if (len > (HoldThreshold * 0.4) )
+            {
+                if (TapsInRow > 0)
+                {
+                    lock (prevGesture)
+                    {
+                        //LastTapFingers = 0;
+                        prevTapOccured = 0;
+                    }
+                }
+
+                return false;
+            }
+
+            double dbg = Math.Abs(getNow() - startTap);
+            if (dbg < TimeForTap)
+            {
+                if (TapsInRow >= 2)
+                {
+                    Debug.WriteLine("[triple tap with ]" + PrevFingers + "fingers");
+                    TapsInRow = 0;
+                    prevGesture.state = GState.None;
+
+                    return true;
+                }
+                else
+                {
+                    lastTapFingers = tpc.Count > 4 ? 4 : tpc.Count; 
+
+                    prevTapOccured = getNow();
+                    TapsInRow = TapsInRow + 1;
+                    Debug.WriteLine("                            tapsInRow=" + TapsInRow);
+                    prevGesture.state = GState.None;
+
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        bool onFingerUp(TouchPointCollection tpc)
         {
             TouchPoint flickPoint = tpc[0];
-            // do it in detector
-//             double tstDif = getNow() - prevTapOccured;
-//             if ((tstDif > timeForTap) && (TapsInRow > 0))
-//             {
-//                 Debug.WriteLine(TapsInRow + " [taps]");
-//                 prevTapOccured = 0;
-//                 TapsInRow = 0;
-//             }
-            ////////////////////
+            if ( doesTapHappend(tpc) )
+            {
+                return true;
+            }
+            double nowflickX = flickPoint.Position.X;
+            double nowflickY = flickPoint.Position.Y;
+
+            double length = Math.Pow((nowflickX - preMoveX[0]), 2) 
+                            +  Math.Pow((nowflickY - preMoveY[0]), 2);
+
+            Vector2 vec = createVec(preMoveX[0] - flickPoint.Position.X,
+                preMoveY[0] - flickPoint.Position.Y);
+
+            var dir = getDirection(vec);
+
+            if (length > SwipeThreshold && isMovingState(prevGesture.state))
+            {
+                if (Dir.Down == dir)
+                {
+                    Debug.WriteLine("[SWIPE] down with " + PrevFingers);
+                }
+                else if (Dir.Left == dir)
+                {
+                    Debug.WriteLine("[SWIPE] left with " + PrevFingers);
+                }
+                else if (Dir.Right == dir)
+                {
+                    Debug.WriteLine("[SWIPE] right with " + PrevFingers);
+                }
+                else if (Dir.Up == dir)
+                {
+                    Debug.WriteLine("[SWIPE] up with " + PrevFingers);
+                }
+            }
+            else //if (length > (HoldThreshold/2) )
+            {
+                //send move event
+            }
+
+            prevGesture.state = GState.None;
+            return false;
+        }
+
+        bool onFirstFingerMove(TouchPointCollection tpc)
+        {
+            TouchPoint flickPoint = tpc[0];
+            double changes = getAverageOffsets(tpc);
+
+            preFlickX.CopyTo(preMoveX, 0);
+            preFlickY.CopyTo(preMoveY, 0);
+            for (int i = 0; i < Math.Min(tpc.Count, 4); ++i)
+            {
+                preFlickX[i] = tpc[i].Position.X;
+                preFlickY[i] = tpc[i].Position.Y;
+            }
+
+            double nowflickX = flickPoint.Position.X;
+            double nowflickY = flickPoint.Position.Y;
+
+            // get average moving
+            if (changes < HoldThreshold && prevGesture.state != GState.Hold && !isRotateState(prevGesture.state) &&
+                !isZoomState(prevGesture.state) && PrevFingers == tpc.Count)
+            {
+                if (isMovingState(prevGesture.state))
+                {
+                    return true;
+                }
+                if ( (getNow() - touchStarted) < (TimeForTap * 1.3) )
+                { 
+                    return false;
+                }
+
+                Debug.WriteLine("[HOLD_1] " + tpc.Count);
+                prevGesture.state = GState.Hold;
+
+                return true;
+            }
+            else if (changes < HoldThreshold &&  PrevFingers != tpc.Count && tpc.Count <= 4)
+            {
+                Debug.WriteLine("[None] " + tpc.Count);
+                prevGesture.state = GState.None;
+
+                return true;
+            }
+            else if (changes > (HoldThreshold * 0.7) && PrevFingers == tpc.Count)
+            {
+                var move = getMoveVector(tpc); 
+                var rv = new Vector2((float)resolutionX(), (float)resolutionY());
+                var normalized = (move.Length() / rv.Length()) * 100;
+
+                GState domState = chooseDominating(tpc, normalized); // rotate or scale or move point
+
+                if (isRotateState(domState))
+                {
+                    handleRotate(tpc);
+                }
+                else if (isZoomState(domState))
+                {
+                    handleZoom(tpc);
+                }
+                else if (isMovingState(domState))
+                {
+                    Vector2 vec = createVec(preMoveX[0] - flickPoint.Position.X,
+                        preMoveY[0] - flickPoint.Position.Y);
+
+                    handleChangingDirection(getDirection(vec));
+                    prevDir = getDirection(vec);
+                }
+            }
+
+            return false;
+        }
+
+        bool handleMovement(TouchPointCollection tpc)
+        {
+            TouchPoint flickPoint = tpc[0];
+            bool isAnyFingerUp = false;
+
+            foreach (var t in tpc) { isAnyFingerUp = isAnyFingerUp || (t.Action == TouchAction.Up); }
 
             if (flickPoint.Action == TouchAction.Up)
             {
-                //Debug.("Tap - up");
-                double dbg = Math.Abs(getNow() - startTap);
-                if ( dbg < timeForTap)
-                {
-                    if ( (PrevFingers != tpc.Count) && (TapsInRow > 0) )
-                    {
-                        Debug.WriteLine(TapsInRow + "[ tap with ]" + PrevFingers + "fingers");
-                        TapsInRow = 0;
-                        return false;
-                    }
-
-                    if (TapsInRow >= 2)
-                    {
-                        Debug.WriteLine("[triple tap with ]" + PrevFingers + "fingers"  );
-                        TapsInRow = 0;
-                        return true;
-                    }
-                    else
-                    {
-                        prevTapOccured = getNow();
-                        TapsInRow = TapsInRow + 1;
-                        Debug.WriteLine("                            tapsInRow=" + TapsInRow);
-                        return true;
-                    }
-                }
-//                 else
-//                 {
-//                     if (TapsInRow > 0)
-//                     {
-//                         Debug.WriteLine(TapsInRow + " [taps <> with]" + PrevFingers + "fingers");
-//                         // emite !
-//                     }
-//                     TapsInRow = 0;
-//                 }
-
-                double nowflickX = flickPoint.Position.X;
-                double nowflickY = flickPoint.Position.Y;
-                double length = Math.Pow((nowflickX - preMoveX[0]), 2) +
-                    Math.Pow((nowflickY - preMoveY[0]), 2);
-
-                Vector2 vec = createVec(preMoveX[0] - flickPoint.Position.X,
-                    preMoveY[0] - flickPoint.Position.Y);
-
-                var dir = getDirection(vec);
-
-                if (length > SwipeThreshold)
-                {
-                    if (Dir.Down == dir)
-                    {
-                        Debug.WriteLine("[SWIPE] down");
-                    }
-                    else if (Dir.Left == dir)
-                    {
-                        Debug.WriteLine("[SWIPE] left");
-                    }
-                    else if (Dir.Right == dir)
-                    {
-                        Debug.WriteLine("[SWIPE] right");
-                    }
-                    else if (Dir.Up == dir)
-                    {
-                        Debug.WriteLine("[SWIPE] up");
-                    }
-                }
-                else if (length > HoldThreshold)
-                {
-                    if (Dir.Down == dir )
-                    {
-                        Debug.WriteLine("<<[flick] down");
-                    }
-                    else if (Dir.Left == dir)
-                    {
-                        Debug.WriteLine("<<[flick] left");
-                    }
-                    else if (Dir.Right == dir)
-                    {
-                        Debug.WriteLine("<<[flick] right");
-                    }
-                    else if (Dir.Up == dir)
-                    {
-                        Debug.WriteLine("<<[flick] up");
-                    }
-                }
-                prevGesture.state = GState.None;
+                return onFingerUp(tpc);
             }
             else if (flickPoint.Action == TouchAction.Move)
             {
-                double changes = getAverageFrameLen(tpc);
-
-                preFlickX.CopyTo(preMoveX, 0);
-                preFlickY.CopyTo(preMoveY, 0);
-                for (int i = 0; i < Math.Min(tpc.Count, 4); ++i )
-                {
-                    preFlickX[i] = tpc[i].Position.X;
-                    preFlickY[i] = tpc[i].Position.Y;
-                }
-
-                double nowflickX = flickPoint.Position.X;
-                double nowflickY = flickPoint.Position.Y;
-
-                // get average moving
-                if (changes < HoldThreshold && prevGesture.state != GState.Hold)
-                {
-                    Debug.WriteLine("[HOLD] " + tpc.Count);
-                    prevGesture = new GData(tpc.Count, GState.Hold);
-
-                    return true;
-                }
-                else if (changes < HoldThreshold && PrevFingers != tpc.Count)
-                {
-                    Debug.WriteLine("[HOLD] " + tpc.Count);
-                    prevGesture = new GData(tpc.Count, GState.Hold);
-
-                    return true;
-                }
-                else if (changes > (HoldThreshold*0.7))
-                {
-
-                    if ( !checkForZoom(tpc) && !checkForRotate(tpc))
-                    {
-                        Vector2 vec = createVec(preMoveX[0] - flickPoint.Position.X,
-                            preMoveY[0] - flickPoint.Position.Y);
-
-                        handleChangingDirection(getDirection(vec));
-                        prevDir = getDirection(vec);
-                    }
-                }
+                return onFirstFingerMove(tpc);
             }
             else if (flickPoint.Action == TouchAction.Down)
             {
@@ -459,15 +568,181 @@ namespace TouchLib
                     preFlickX[i] = tpc[i].Position.X;
                     preFlickY[i] = tpc[i].Position.Y;
                 }
-                Debug.WriteLine("finger - down");
+                //Debug.WriteLine("finger - down");
                 startTap = getNow();
                 prevDir = Dir.None;
+
+                mPositionX = flickPoint.Position.X;
+                mPositionY = flickPoint.Position.Y;
+                
+                touchStarted = getNow();
             }
 
             return false;
         }
 
-        bool checkForZoom(TouchPointCollection tpc)
+        void updateStoredValues(TouchPointCollection tpc)
+        {
+            if (tpc.Count > 1)
+            {
+                TouchPoint point1 = tpc[0];
+                TouchPoint point2 = tpc[1];
+
+                double X1 = point1.Position.X;
+                double X2 = point2.Position.X;
+                double Y1 = point1.Position.Y;
+                double Y2 = point2.Position.Y;
+
+                if ((X2 - X1) == 0)
+                {
+                    preAngle = 90;
+                }
+                else
+                {
+                    preAngle = Math.Atan((Y2 - Y1) / (X2 - X1));
+                }
+
+                preDistance = Math.Sqrt( Math.Pow((X1 - X2), 2) + Math.Pow((Y1 - Y2), 2));
+            }
+        }
+
+        GState chooseDominating(TouchPointCollection tpc, double avarageMove)
+        {
+            if ( isRotateState(prevGesture.state))
+            {
+                return prevGesture.state;
+            }
+            else if (isZoomState(prevGesture.state))
+            {
+                return prevGesture.state;
+            }
+            GState st = GState.None;
+            // check for rotate, movement or scale 
+            var rm = checkForRotation(tpc);
+            var zm = checkForZoom(tpc);
+            
+            if ( (zm > rm) && (zm > avarageMove) )
+            {
+                st = GState.Shrink;
+            }
+            else if ((rm > zm) && (rm > avarageMove))
+            {
+                st = GState.RotateC;
+            }
+            else
+            {
+                st = GState.MovingDown;
+            }
+
+            return st; 
+        }
+
+        bool isMovingState(GState aState)
+        {
+            return (aState == GState.MovingUp) || (aState == GState.MovingDown)
+                || (aState == GState.MovingLeft) || (aState == GState.MovingRight);
+        }
+
+        bool isRotateState(GState aState)
+        {
+            return (aState == GState.RotateC) || (aState == GState.RotateAC);
+        }
+
+        bool isZoomState(GState aState)
+        {
+            return (aState == GState.Shrink) || (aState == GState.Enlarge);
+        }
+
+        const UInt16 kZoomMetricCf = 1;
+        const UInt16 kRotateMetricCf = 1;
+
+        double checkForZoom(TouchPointCollection tpc)
+        {
+            double metric = 0;
+            if (tpc.Count != 2)
+            {
+                return 0; // we can't zoom with just one finger
+            }
+            else
+            {
+                TouchPoint point1 = tpc[0];
+                TouchPoint point2 = tpc[1];
+
+                double X1 = point1.Position.X;
+                double X2 = point2.Position.X;
+                double Y1 = point1.Position.Y;
+                double Y2 = point2.Position.Y;
+
+                // Detect two fingers enlargement and shrink.
+                var distance = Math.Sqrt( Math.Pow((X1 - X2), 2) + Math.Pow((Y1 - Y2), 2) );
+                var distDif = distance - preDistance ;
+                distDif = Math.Abs(distDif);
+                if (distDif > 0)
+                {
+                    var vec = new Vector2( (float) resolutionX(), (float) resolutionY() );
+                    distDif = (distDif / vec.Length() ) * 100; // percent
+
+                    metric = kZoomMetricCf * distDif;
+                }
+                //preDistance = distance;
+            }
+
+            return metric;
+        }
+
+        double checkForRotation(TouchPointCollection tpc)
+        {
+            double metric = 0;
+            if (tpc.Count != 2)
+            {
+                return 0; 
+            }
+            else
+            {
+                TouchPoint point1 = tpc[0];
+                TouchPoint point2 = tpc[1];
+
+                double X1 = point1.Position.X;
+                double X2 = point2.Position.X;
+                double Y1 = point1.Position.Y;
+                double Y2 = point2.Position.Y;
+                // Detect rotation.
+
+                double nowAngle = 0;
+                if ((X2 - X1) == 0)
+                {
+                    nowAngle = 90;
+                }
+                else
+                {
+                    nowAngle = Math.Atan((Y2 - Y1) / (X2 - X1));
+                }
+
+                double diff = 0;
+                if ( Math.Sign(nowAngle) == Math.Sign(preAngle) )
+                {
+                    diff = Math.Abs(nowAngle - preAngle);
+                }
+                else
+                {
+                    double na = nowAngle, pa = preAngle;
+
+                    if (preAngle < 0) pa = (Math.PI * 2) + pa;
+                    if (nowAngle < 0) na = (Math.PI * 2) + na;
+
+                    diff = Math.Abs(na - pa);
+                }
+
+                if (diff > Math.PI)
+                    diff = diff - Math.PI;
+                //preAngle = nowAngle;
+                metric =  ( diff / (Math.PI*2) )* 100 * kRotateMetricCf; // 100 -> percent
+            }
+
+            return metric;
+        }
+
+        bool handleZoom(TouchPointCollection tpc)
         {
             if (tpc.Count < 2) return false;
 
@@ -482,17 +757,17 @@ namespace TouchLib
             double Y2 = point2.Position.Y;
 
             // Detect two fingers enlargement and shrink.
-            var distance = Math.Pow((X1 - X2), 2) + Math.Pow((Y1 - Y2), 2);
-            if ( (distance > (preDistance + ZoomThreshold)) && (GState.Enlarge != prevGesture.state) )
+            var distance = Math.Sqrt( Math.Pow((X1 - X2), 2) + Math.Pow((Y1 - Y2), 2) );
+            if ( (distance > (preDistance)) && (GState.Enlarge != prevGesture.state) )
             {
                 Debug.WriteLine("enlarge");
                 // push
-                prevGesture.state = GState.Enlarge;
+                prevGesture.state = GState.Enlarge; // also known as zoom
                 flag = true;
             }
-            else if ( (distance < (preDistance + ZoomThreshold)) && (GState.Shrink != prevGesture.state))
+            else if ( (distance < (preDistance)) && (GState.Shrink != prevGesture.state))
             {
-                Debug.WriteLine("shrink");
+                Debug.WriteLine("shrink"); // also known as pinch
                 // push
                 prevGesture.state = GState.Shrink;
                 flag = true;
@@ -502,7 +777,7 @@ namespace TouchLib
             return flag;
         }
 
-        bool checkForRotate(TouchPointCollection tpc)
+        bool handleRotate(TouchPointCollection tpc)
         {
             if (tpc.Count >= 2)
             {
@@ -525,24 +800,33 @@ namespace TouchLib
                     nowAngle = Math.Atan((Y2 - Y1) / (X2 - X1));
                 }
 
-                if (Math.Abs( Math.Abs(preAngle) - Math.Abs(nowAngle) ) < rotationThreshold)
+//                 if (Math.Abs( Math.Abs(preAngle) - Math.Abs(nowAngle) ) < rotationThreshold)
+//                 {
+//                     Debug.WriteLine("...");
+//                     preAngle = nowAngle;
+//                     return false;
+//                 }
+//                 else
+                if ((GState.RotateC != prevGesture.state) && (GState.RotateAC != prevGesture.state))
                 {
-                    Debug.WriteLine(" <<<<threshold>>>>");
-                    preAngle = nowAngle;
-                    return false;
-                }
-                else if ((nowAngle > preAngle) && (GState.RotateC != prevGesture.state))
-                {
-                    Debug.WriteLine("clock wise rotation");
-                    prevGesture.state = GState.RotateC;
-                    return true;
-                }
-                else if (GState.RotateAC != prevGesture.state)
-                {
-                    Debug.WriteLine("counter clock wise rotation");
+                    Debug.WriteLine("rotation");
                     prevGesture.state = GState.RotateAC;
-                    return true;
                 }
+
+//                 if ((nowAngle > preAngle) && (GState.RotateC != prevGesture.state))
+//                 {
+//                     Debug.WriteLine("clock wise rotation");
+//                     prevGesture.state = GState.RotateC;
+//                     preAngle = nowAngle;
+//                     return true;
+//                 }
+//                 else if (GState.RotateAC != prevGesture.state)
+//                 {
+//                     Debug.WriteLine("counter clock wise rotation");
+//                     prevGesture.state = GState.RotateAC;
+//                     preAngle = nowAngle;
+//                     return true;
+//                 }
             }
             return false;
         }
@@ -567,5 +851,6 @@ namespace TouchLib
                 }
             }
         }
+
     }
 }

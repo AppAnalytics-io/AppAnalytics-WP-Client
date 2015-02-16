@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Windows;
+
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,6 +17,23 @@ namespace TouchLib
         {
             mActionOrder = mGlobalIndex;
             mGlobalIndex++;
+        }
+
+        static public GestureData create(GestureID aID,  Point aLocation, string aElement, string aPage)
+        {
+            GestureData newOne = new GestureData();
+            newOne.ActionID = (byte)aID;
+
+            newOne.ViewID = Detector.getBytes(aPage);
+            newOne.ElementID = Detector.getBytes(aElement);
+
+            newOne.mPosX = aLocation.X;
+            newOne.mPosY = aLocation.Y;
+
+            newOne.setCurrentTime();
+            newOne.setIndex();
+
+            return newOne;
         }
 
         public byte[] ActionOrder
@@ -58,7 +77,7 @@ namespace TouchLib
 
 
         public byte[] Param1
-        { get { return BitConverter.GetBytes(0); } }
+        { get { return BitConverter.GetBytes( (UInt32)0); } }
 
         // View ID
 

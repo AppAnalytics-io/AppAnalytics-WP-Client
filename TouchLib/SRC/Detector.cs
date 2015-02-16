@@ -18,7 +18,8 @@ namespace TouchLib
 {
     public static class Detector
     {
-        static Windows.UI.Input.GestureRecognizer p1 = new Windows.UI.Input.GestureRecognizer();
+        //static Windows.UI.Input.GestureRecognizer p1 = new Windows.UI.Input.GestureRecognizer();
+        static readonly object _lockObject = new object();
         //gestures to-send queue 
 
         // Concurent.ConcurrentQueue<GestureData> mToSend = new ConcurrentQueue<GestureData>();
@@ -37,6 +38,7 @@ namespace TouchLib
         private static string mPreviousUri = "";
 
         private static byte[] mApiKey = null;
+
         public  static byte[] ApiKey
         {
             get { return mApiKey; }
@@ -61,7 +63,7 @@ namespace TouchLib
             double h = (int)Math.Ceiling(content.ActualHeight * scale);
             //double w = (int)Math.Ceiling(content.ActualWidth * scale);
 
-            return BitConverter.GetBytes(h);
+            return BitConverter.GetBytes( h );
         }
         public static byte ApiVersion = 1;
 
@@ -80,9 +82,10 @@ namespace TouchLib
             string nUri = uri.ToString();
             if (nUri != mPreviousUri)
             {
-                lock (mPreviousUri)
+                lock (_lockObject)
                 {
                     mNavigationOccured = true;
+                    mPreviousUri = nUri;
                 }
             }
         }
@@ -99,13 +102,8 @@ namespace TouchLib
                 mApiKey.Initialize();
             }
 
-            //mPreviousUri = getCurent();
-
             if (null == mWorker)
             {
-//                 TouchPanel.EnabledGestures = GestureType.VerticalDrag | GestureType.HorizontalDrag | GestureType.Flick
-//                     | GestureType.PinchComplete | GestureType.Pinch
-//                     | GestureType.Hold | GestureType.Tap | GestureType.DoubleTap;
 
                 mWorker = new Thread(updateLoop);
                 mWorker.IsBackground = true;
@@ -124,14 +122,9 @@ namespace TouchLib
             mKeepWorking = false;
         }
 
-        static private string whereGestureHapend()
+        static public void pushReport(GestureData aData)
         {
-            return "";
-        }
-
-        static private void pushReport(GestureData aData)
-        {
-            lock (mToSend)
+            lock (_lockObject)
             {
                 mToSend.Enqueue (aData);
             }
@@ -142,10 +135,10 @@ namespace TouchLib
         public static void  handleTaps(double deltaT)
         {
             double tstDif = Recognizer.getNow() - Recognizer.Instance.PrevTapOccured;
-            // TODO: fix hardcode
-            if ((tstDif > 0.2f) && (Recognizer.Instance.TapsInRow > 0))
+            
+            if ((tstDif > Recognizer.Instance.TimeForTap) && (Recognizer.Instance.TapsInRow > 0))
             {
-                Debug.WriteLine(Recognizer.Instance.TapsInRow + " <taps with " + Recognizer.Instance.PrevFingers);
+                Debug.WriteLine(Recognizer.Instance.TapsInRow + " < taps with > " + Recognizer.Instance.LastTapFingers);
                 Recognizer.Instance.TapsInRow = 0;
             }
         }
@@ -161,10 +154,12 @@ namespace TouchLib
                 mPrevTime = date;
 
                 handleTaps(sec);
+                // test it more
+                Deployment.Current.Dispatcher.BeginInvoke(() => getCurent());
 
                 if (mNavigationOccured)
                 {
-                    lock (mPreviousUri)
+                    lock (_lockObject)
                     {
                         mNavigationOccured = false;
                         //create and gesture report
@@ -173,74 +168,73 @@ namespace TouchLib
 
                 var gestres = TouchPanel.GetState();
                 #region processing
-                //                 while (TouchPanel.IsGestureAvailable)
-                //                 { 
-                //                     Deployment.Current.Dispatcher.BeginInvoke(() => getCurent()); 
-                // 
-                //                     GestureSample gs = TouchPanel.ReadGesture();
-                //                     //TouchPanel.GetState().
-                //                     switch (gs.GestureType)
-                //                     {
-                //                         case GestureType.VerticalDrag:
-                //                             verticalDragStarted = true;
-                //                             
-                //                             Debug.WriteLine("   +vertical drag catched\n");
-                // 
-                //                             break;
-                // 
-                //                         case GestureType.Flick:
-                //                             Debug.WriteLine("   +flick catched\n");
-                //                             var da = Math.Abs(gs.Delta.X) + Math.Abs(gs.Delta.Y);
-                //                             var dn = Math.Abs(gs.Delta2.X) + Math.Abs(gs.Delta2.Y);
-                // 
-                //                             if (da > 0 && dn > 0 )
-                //                             {
-                //                                 Debug.WriteLine("   +flick2x catched\n");
-                //                             }
-                // 
-                //                             break;
-                // 
-                //                         case GestureType.Tap:
-                //                             Debug.WriteLine("   +tap cathced\n");
-                //                                                         
-                //                             break;
-                // 
-                //                         case GestureType.PinchComplete:
-                //                             Debug.WriteLine("   +pinch catched\n");
-                //                             
-                //                             break;
-                // 
-                //                         case GestureType.HorizontalDrag:
-                //                             horizontalDragStarted = true;
-                //                             Debug.WriteLine("   +horizontal drag catched\n");
-                // 
-                //                             break;
-                // 
-                //                         case GestureType.Hold:
-                //                             Debug.WriteLine("   +hold catched\n");
-                // 
-                //                             break;
-                // 
-                //                         case GestureType.DragComplete:
-                //                             if(horizontalDragStarted)
-                //                             {
-                //                                 Debug.WriteLine("<- horiz. ended\n");
-                //                             }
-                //                             if(verticalDragStarted)
-                //                             {
-                //                                 Debug.WriteLine("<- vert. ended\n");
-                //                             }
-                //                             horizontalDragStarted = false;
-                //                             verticalDragStarted = false;
-                //                             Debug.WriteLine("   +hold catched\n");
-                // 
-                //                             break;
-                //                     }
-                //                 } of while
+                ////                 while (TouchPanel.IsGestureAvailable)
+                ////                 { 
+                ////                     Deployment.Current.Dispatcher.BeginInvoke(() => getCurent()); 
+                //// 
+                ////                     GestureSample gs = TouchPanel.ReadGesture();
+                ////                     //TouchPanel.GetState().
+                ////                     switch (gs.GestureType)
+                ////                     {
+                ////                         case GestureType.VerticalDrag:
+                ////                             verticalDragStarted = true;
+                ////                             
+                ////                             Debug.WriteLine("   +vertical drag catched\n");
+                //// 
+                ////                             break;
+                //// 
+                ////                         case GestureType.Flick:
+                ////                             Debug.WriteLine("   +flick catched\n");
+                ////                             var da = Math.Abs(gs.Delta.X) + Math.Abs(gs.Delta.Y);
+                ////                             var dn = Math.Abs(gs.Delta2.X) + Math.Abs(gs.Delta2.Y);
+                //// 
+                ////                             if (da > 0 && dn > 0 )
+                ////                             {
+                ////                                 Debug.WriteLine("   +flick2x catched\n");
+                ////                             }
+                //// 
+                ////                             break;
+                //// 
+                ////                         case GestureType.Tap:
+                ////                             Debug.WriteLine("   +tap cathced\n");
+                ////                                                         
+                ////                             break;
+                //// 
+                ////                         case GestureType.PinchComplete:
+                ////                             Debug.WriteLine("   +pinch catched\n");
+                ////                             
+                ////                             break;
+                //// 
+                ////                         case GestureType.HorizontalDrag:
+                ////                             horizontalDragStarted = true;
+                ////                             Debug.WriteLine("   +horizontal drag catched\n");
+                //// 
+                ////                             break;
+                //// 
+                ////                         case GestureType.Hold:
+                ////                             Debug.WriteLine("   +hold catched\n");
+                //// 
+                ////                             break;
+                //// 
+                ////                         case GestureType.DragComplete:
+                ////                             if(horizontalDragStarted)
+                ////                             {
+                ////                                 Debug.WriteLine("<- horiz. ended\n");
+                ////                             }
+                ////                             if(verticalDragStarted)
+                ////                             {
+                ////                                 Debug.WriteLine("<- vert. ended\n");
+                ////                             }
+                ////                             horizontalDragStarted = false;
+                ////                             verticalDragStarted = false;
+                ////                             Debug.WriteLine("   +hold catched\n");
+                //// 
+                ////                             break;
+                ////                     }
+                ////                 } of while
                 #endregion
             }
         }// end of update loop
-
 
         internal static byte[] getSessionStartDate()
         {
@@ -283,7 +277,6 @@ namespace TouchLib
                     return "";
                 }
             }
-
         }
 
         public static byte[] AppVersion 
@@ -313,18 +306,17 @@ namespace TouchLib
             }
         }
 
-        private static byte[] getBytes(string str)
+        // converting char for 2bytes approach to 1byte
+        public static byte[] getBytes(string str)
         {
-            byte[] bytes = new byte[str.Length * sizeof(char)];
-            System.Buffer.BlockCopy(str.ToCharArray(), 0, bytes, 0, bytes.Length);
-            return bytes;
-        }
+            byte[] bytes = new byte[str.Length ];
 
-        private static string getString(byte[] bytes)
-        {
-            char[] chars = new char[bytes.Length / sizeof(char)];
-            System.Buffer.BlockCopy(bytes, 0, chars, 0, bytes.Length);
-            return new string(chars);
+            for (int i = 0; i < str.Length; ++i )
+            {
+                bytes[i] = (byte)str[i];
+            }
+
+            return bytes;
         }
 
         private static byte[] toBytes(int val)

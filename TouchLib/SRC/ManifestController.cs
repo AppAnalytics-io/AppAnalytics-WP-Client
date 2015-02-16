@@ -9,89 +9,93 @@ using System.IO;
 namespace TouchLib
 {
     enum GestureID
-    { 
-         SingleTapWith1Finger=1  ,
-         DoubleTapWith1Finger=2  ,
-         TripleTapWith1Finger=3  ,
-         SingleTapWith2Finger=4  ,
-         DoubleTapWith2Finger=5  ,
-         TripleTapWith2Finger=6  ,
-         SingleTapWith3Finger=7  ,
-         DoubleTapWith3Finger=8  ,
-         TripleTapWith3Finger=9  ,
-         SingleTapWith4Finger=10  ,
-         DoubleTapWith4Finger=11  ,
-         TripleTapWith4Finger=12  ,
-         HoldWith1Finger=13  ,
-         HoldWith2Finger=14  ,
-         HoldWith3Finger=15  ,
-         HoldWith4Finger=16  ,
-         PinchWith2Finger=17  ,
-         ZoomWith2Finger=18  ,
-         RotateWith2Finger=19  ,
-         SwipeRightWith1Finger=20  ,
-         SwipeLeftWith1Finger=21  ,
-         SwipeDownWith1Finger=22  ,
-         SwipeUpWith1Finger=23  ,
-         FlickRightWith1Finger=24  ,
-         FlickLeftWith1Finger=25  ,
-         FlickDownWith1Finger=26  ,
-         FlickUpWith1Finger=27  ,
-         SwipeRightWith2Finger=28  ,
-         SwipeLeftWith2Finger=29  ,
-         SwipeDownWith2Finger=30  ,
-         SwipeUpWith2Finger=31  ,
-         FlickRightWith2Finger=32  ,
-         FlickLeftWith2Finger=33  ,
-         FlickDownWith2Finger=34  ,
-         FlickUpWith2Finger=35  ,
-         SwipeRightWith3Finger=36  ,
-         SwipeLeftWith3Finger=37  ,
-         SwipeDownWith3Finger=38  ,
-         SwipeUpWith3Finger=39  ,
-         FlickRightWith3Finger=40  ,
-         FlickLeftWith3Finger=41  ,
-         FlickDownWith3Finger=42  ,
-         FlickUpWith3Finger=43  ,
-         SwipeRightWith4Finger=44  ,
-         SwipeLeftWith4Finger=45  ,
-         SwipeDownWith4Finger=46  ,
-         SwipeUpWith4Finger=47  ,
-         FlickLeftWith4Finger=48  ,
-         FlickRightWith4Finger=49  ,
-         FlickDownWith4Finger=50  ,
-         FlickUpWith4Finger=51  ,
-         Shake=52 ,
-         Navigation=53
+    {
+        SingleTapWith1Finger = 1,
+        DoubleTapWith1Finger = 2,
+        TripleTapWith1Finger = 3,
+        SingleTapWith2Finger = 4,
+        DoubleTapWith2Finger = 5,
+        TripleTapWith2Finger = 6,
+        SingleTapWith3Finger = 7,
+        DoubleTapWith3Finger = 8,
+        TripleTapWith3Finger = 9,
+        SingleTapWith4Finger = 10,
+        DoubleTapWith4Finger = 11,
+        TripleTapWith4Finger = 12,
+        HoldWith1Finger = 13,
+        HoldWith2Finger = 14,
+        HoldWith3Finger = 15,
+        HoldWith4Finger = 16,
+        PinchWith2Finger = 17,
+        ZoomWith2Finger = 18,
+        RotateWith2Finger = 19,
+        SwipeRightWith1Finger = 20,
+        SwipeLeftWith1Finger = 21,
+        SwipeDownWith1Finger = 22,
+        SwipeUpWith1Finger = 23,
+        FlickRightWith1Finger = 24,
+        FlickLeftWith1Finger = 25,
+        FlickDownWith1Finger = 26,
+        FlickUpWith1Finger = 27,
+        SwipeRightWith2Finger = 28,
+        SwipeLeftWith2Finger = 29,
+        SwipeDownWith2Finger = 30,
+        SwipeUpWith2Finger = 31,
+        FlickRightWith2Finger = 32,
+        FlickLeftWith2Finger = 33,
+        FlickDownWith2Finger = 34,
+        FlickUpWith2Finger = 35,
+        SwipeRightWith3Finger = 36,
+        SwipeLeftWith3Finger = 37,
+        SwipeDownWith3Finger = 38,
+        SwipeUpWith3Finger = 39,
+        FlickRightWith3Finger = 40,
+        FlickLeftWith3Finger = 41,
+        FlickDownWith3Finger = 42,
+        FlickUpWith3Finger = 43,
+        SwipeRightWith4Finger = 44,
+        SwipeLeftWith4Finger = 45,
+        SwipeDownWith4Finger = 46,
+        SwipeUpWith4Finger = 47,
+        FlickLeftWith4Finger = 48,
+        FlickRightWith4Finger = 49,
+        FlickDownWith4Finger = 50,
+        FlickUpWith4Finger = 51,
+        Shake = 52,
+        Navigation = 53
     }
 
     class ManifestController
     {
         private byte kDataPackageFileVersion = 1;
-        private byte kSessionManifestFileVersion   = 1;
+        private byte kSessionManifestFileVersion = 1;
 
-        private MemoryStream mStream;
+        private MemoryStream mPackage;
+        private MemoryStream mHead;
+        private MemoryStream mContent;
 
         public ManifestController()
         {
-            mStream = new MemoryStream();
+            mHead       = new MemoryStream();
+            mPackage    = new MemoryStream();
+            mContent    = new MemoryStream();
         }
 
         // [0-1]=DataPackageFileSignature:word; //'H'+'A'
         // [2]=DataPackageFileVersion:byte;
         // [3-38]= SessionId:UUIDV4; //UUID to keep every session unique.
-        private void writeArray(byte[] aBlock)
+        private void writeArray(MemoryStream aMS, byte[] aBlock)
         {
-            mStream.Write(aBlock, 0, aBlock.Length);
+            aMS.Write(aBlock, 0, aBlock.Length);
         }
 
         public void buildHeader()
         {
-            mStream.WriteByte( (byte)'H');
-            mStream.WriteByte( (byte)'A');
-            mStream.WriteByte(kDataPackageFileVersion );
+            mHead.WriteByte((byte)'H');
+            mHead.WriteByte((byte)'A');
+            mHead.WriteByte(kDataPackageFileVersion);
 
-            mStream.Write(Detector.getSessionID(), 0, Detector.getSessionID().Length);
+            mHead.Write(Detector.getSessionID(), 0, Detector.getSessionID().Length);
         }
 
         // [0]=PackageBeginMarker:byte; //ASCII#60 '<'
@@ -108,19 +112,19 @@ namespace TouchLib
         // [Length-1]=PackageEndMarker:byte; //ASCII#62 '>'
         public void buildDataPackage(GestureData aData)
         {
-            mStream.WriteByte( (byte)'<');
+            mPackage.WriteByte((byte)'<');
 
-            writeArray(aData.ActionOrder);
-            mStream.WriteByte(aData.ActionID);
-            writeArray(aData.PosX);
-            writeArray(aData.PosY);
-            writeArray(aData.Param1);
-            writeArray( BitConverter.GetBytes(aData.ViewIDLenght) );
-            writeArray(aData.ViewID);
-            writeArray( BitConverter.GetBytes(aData.ElementIDLenght) );
-            writeArray(aData.ElementID);
+            writeArray(mPackage, aData.ActionOrder);
+            mPackage.WriteByte(aData.ActionID);
+            writeArray(mPackage, aData.PosX);
+            writeArray(mPackage, aData.PosY);
+            writeArray(mPackage, aData.Param1);
+            writeArray(mPackage, BitConverter.GetBytes(aData.ViewIDLenght));
+            writeArray(mPackage, aData.ViewID);
+            writeArray(mPackage, BitConverter.GetBytes(aData.ElementIDLenght));
+            writeArray(mPackage, aData.ElementID);
 
-            mStream.WriteByte( (byte)'>');
+            mPackage.WriteByte((byte)'>');
         }
 
         // [0]=PackageBeginMarker:byte; //ASCII#60 '<'
@@ -139,20 +143,20 @@ namespace TouchLib
         // [170]=PackageEndMarker:byte; //ASCII#62 '>'
         public void buildSessionManifest()
         {
-            mStream.WriteByte(kSessionManifestFileVersion);
-            writeArray(Detector.getSessionID());
-            writeArray(Detector.getSessionStartDate());
-            writeArray(Detector.getSessionEndDate());
-            writeArray(Detector.getUDID());
-            writeArray(Detector.getResolutionX());
-            writeArray(Detector.getResolutionY());
-            mStream.WriteByte(Detector.ApiVersion);
-            writeArray(Detector.ApiKey);
-            writeArray(Detector.AppVersion);
-            writeArray(Detector.OSVersion);
-            writeArray(Detector.SystemLocale);
+            mContent.WriteByte(kSessionManifestFileVersion);
+            writeArray(mContent, Detector.getSessionID());
+            writeArray(mContent, Detector.getSessionStartDate());
+            writeArray(mContent, Detector.getSessionEndDate());
+            writeArray(mContent, Detector.getUDID());
+            writeArray(mContent, Detector.getResolutionX());
+            writeArray(mContent, Detector.getResolutionY());
+            mContent.WriteByte(Detector.ApiVersion);
+            writeArray(mContent, Detector.ApiKey);
+            writeArray(mContent, Detector.AppVersion);
+            writeArray(mContent, Detector.OSVersion);
+            writeArray(mContent, Detector.SystemLocale);
 
-            mStream.WriteByte((byte)'>');
+            mContent.WriteByte((byte)'>');
         }
     }
 }

@@ -12,7 +12,9 @@ using Testing.Resources;
 using System.Windows.Media;
 using System.Windows.Input;
 using Microsoft.Xna.Framework.Input.Touch;
+ 
 
+using TouchLib;
 
 namespace Testing
 {
@@ -49,7 +51,7 @@ namespace Testing
             TestRectangle.ManipulationCompleted +=
                 new EventHandler<ManipulationCompletedEventArgs>(Rectangle_ManipulationCompleted);
 
-
+            TouchLib.Detector.init("8QwD7Z4icUkAR5Ka8HgK2wEhvm7zOwzB");
             //workerThread.Join();
            // LayoutRoot.ManipulationCompleted += new EventHandler<ManipulationCompletedEventArgs>(LayoutRoot_ManipulationCompleted);
         }
