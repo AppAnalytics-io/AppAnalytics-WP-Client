@@ -73,6 +73,7 @@ namespace TouchLib
             return mIDGen.SessionID;
         }
 
+        static private bool mFirstLaunch = true;
         static private void getCurent()
         { 
             var currentPage = ((PhoneApplicationFrame)Application.Current.RootVisual).Content as PhoneApplicationPage;
@@ -80,13 +81,18 @@ namespace TouchLib
             var uri = currentPage.NavigationService.CurrentSource;
 
             string nUri = uri.ToString();
-            if (nUri != mPreviousUri)
+            if (nUri != mPreviousUri && !mFirstLaunch)
             {
                 lock (_lockObject)
                 {
                     mNavigationOccured = true;
                     mPreviousUri = nUri;
                 }
+            }
+            else
+            {
+                mFirstLaunch = false;
+                mPreviousUri = nUri;
             }
         }
 
@@ -144,6 +150,8 @@ namespace TouchLib
                 Recognizer.Instance.TapsInRow = 0;
             }
         }
+
+
 
         static private void updateLoop()
         {

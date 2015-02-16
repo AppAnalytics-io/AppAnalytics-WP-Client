@@ -85,8 +85,9 @@ namespace Testing
             TestRectangle.Fill = stationaryBrush;
         }
 
-        
-
-
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            NavigationService.Navigate(new Uri("/Second.xaml", UriKind.Relative));
+        }
     }
 }

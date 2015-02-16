@@ -4,3 +4,5 @@ C:\Users\Vlad\documents\visual studio 2013\Projects\TouchCatcher\TouchLib\Bin\De
 C:\Users\Vlad\documents\visual studio 2013\Projects\TouchCatcher\TouchLib\obj\Debug\TouchLib.dll
 C:\Users\Vlad\documents\visual studio 2013\Projects\TouchCatcher\TouchLib\obj\Debug\TouchLib.pdb
 C:\Users\Vlad\documents\visual studio 2013\Projects\TouchCatcher\TouchLib\obj\Debug\TouchLib.csprojResolveAssemblyReference.cache
+C:\Users\Vlad\documents\visual studio 2013\Projects\TouchCatcher\TouchLib\Bin\Debug\ShakeGestures.dll
+C:\Users\Vlad\documents\visual studio 2013\Projects\TouchCatcher\TouchLib\Bin\Debug\ShakeGestures.pdb

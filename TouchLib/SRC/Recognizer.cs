@@ -8,6 +8,7 @@ using Microsoft.Phone.Controls;
 using System.Windows.Input;
 using System.Diagnostics;
 
+using ShakeGestures;
 //using System.
 
 using Microsoft.Xna.Framework;
@@ -124,6 +125,16 @@ namespace TouchLib
         protected Recognizer() 
         {
             Touch.FrameReported += new TouchFrameEventHandler(touchFrameReported);
+            ShakeGesturesHelper.Instance.ShakeGesture +=
+                new EventHandler<ShakeGestureEventArgs>(instanceShakeGesture);
+            ShakeGesturesHelper.Instance.MinimumRequiredMovesForShake = 4;
+            ShakeGesturesHelper.Instance.Active = true;
+        }
+
+        void instanceShakeGesture(object sender, ShakeGestureEventArgs e)
+        {
+            Debug.WriteLine("shaking");
+            createGesture(GestureID.Shake);
         }
 
         public byte Init()
@@ -261,37 +272,37 @@ namespace TouchLib
             createGesture(id);
         }
 
+        string mBufferPageUri = "none";
+        string mBufferElementUri = "none";
+
         public void createGesture(GestureID aID)
         {
-            string elUri = "";
-            string pageUri = getCurrentPage();
+            Deployment.Current.Dispatcher.BeginInvoke(() => getCurrentPage());
+            Deployment.Current.Dispatcher.BeginInvoke(() => getElementUri());
             System.Windows.Point p = new System.Windows.Point(LastPosX, LastPosY);
 
-            GestureData gd = GestureData.create(aID, p, elUri, pageUri);
+            GestureData gd = GestureData.create(aID, p, mBufferElementUri, mBufferPageUri);
 
             Detector.pushReport(gd);
         }
 
-        private string getCurrentPage()
+        private void getCurrentPage()
         {
             var currentPage = ((PhoneApplicationFrame)Application.Current.RootVisual).Content as PhoneApplicationPage;
 
             var uri = currentPage.NavigationService.CurrentSource;
 
-            string nUri = uri.ToString();
-            return nUri;
+            mBufferPageUri = uri.ToString();
         }
 
-        private string getElementUri()
+        private void getElementUri()
         {
             var currentPage = ((PhoneApplicationFrame)Application.Current.RootVisual).Content as PhoneApplicationPage;
            // PhoneApplicationFrame g; g.con
            // currentPage.Content
             //var uri = currentPage.
             //currentPage.Children;
-            string nUri = "";
-
-            return nUri;
+            string mBufferElementUri = "";
         }
 
         // TODO: code conv. 
@@ -441,10 +452,10 @@ namespace TouchLib
             for (int i = 0; (i < PrevFingers) && (i < tpc.Count); ++i)
             {
                 float x = (float) tpc[i].Position.X;
-                float y = (float)tpc[i].Position.Y;
+                float y = (float) tpc[i].Position.Y;
 
-                float x1 = (float)preMoveX[i];
-                float y1 = (float)preMoveX[i];
+                float x1 = (float) preMoveX[i];
+                float y1 = (float) preMoveY[i];
 
                 vec += new Vector2(x, y) - new Vector2(x1, y1);
             }
@@ -526,26 +537,38 @@ namespace TouchLib
 
             if (d == Dir.Left)
             {
-                Debug.WriteLine("<--");
-                createFlickGesture(numb, d);
+                Debug.WriteLine("<-- " + PrevFingers);
+                if (isMovingState(prevGesture.state))
+                {
+                    createFlickGesture(PrevFingers, d); // submitting PREVIOUS movement
+                }
                 prevGesture.state = GState.MovingLeft;
             }
             else if (d == Dir.Right)
             {
-                Debug.WriteLine("-->");
-                createFlickGesture(numb, d);
+                Debug.WriteLine("--> " + PrevFingers);
+                if (isMovingState(prevGesture.state))
+                {
+                    createFlickGesture(PrevFingers, d); // submitting PREVIOUS movement
+                }
                 prevGesture.state = GState.MovingRight;
             }
             else if (d == Dir.Up)
             {
-                Debug.WriteLine("//\\up");
-                createFlickGesture(numb, d);
+                Debug.WriteLine("/\\ " + PrevFingers);
+                if (isMovingState(prevGesture.state))
+                {
+                    createFlickGesture(PrevFingers, d); // submitting PREVIOUS movement
+                }
                 prevGesture.state = GState.MovingUp;
             }
             else if (d == Dir.Down)
             {
-                Debug.WriteLine("\\//down");
-                createFlickGesture(numb, d);
+                Debug.WriteLine("\\/ " + PrevFingers);
+                if (isMovingState(prevGesture.state))
+                {
+                    createFlickGesture(PrevFingers, d); // submitting PREVIOUS movement
+                }
                 prevGesture.state = GState.MovingDown; 
             }
         }
@@ -638,8 +661,10 @@ namespace TouchLib
                     createSwipeGesture(PrevFingers, dir);
                 }
             }
-            else //if (length > (HoldThreshold/2) )
+            else if ( isMovingState(prevGesture.state))
             {
+                Debug.WriteLine("<movement completed>");
+                createFlickGesture(PrevFingers, prevDir); // submitting PREVIOUS movement
                 //send move event
             }
 
@@ -788,6 +813,7 @@ namespace TouchLib
             {
                 return prevGesture.state;
             }
+
             GState st = GState.None;
             // check for rotate, movement or scale 
             var rm = checkForRotation(tpc);
@@ -826,7 +852,7 @@ namespace TouchLib
         }
 
         const UInt16 kZoomMetricCf = 1;
-        const UInt16 kRotateMetricCf = 1;
+        const UInt16 kRotateMetricCf = 2;
 
         double checkForZoom(TouchPointCollection tpc)
         {
