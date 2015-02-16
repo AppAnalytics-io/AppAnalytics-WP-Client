@@ -50,8 +50,24 @@
             <Rectangle Name="TestRectangle"
     Height="100"
     Width="200"
-    Fill="Blue" Margin="38,116,218,361" />
+    Fill="Blue" Margin="10,10,246,467" />
             <Button Content="Button" HorizontalAlignment="Left" Margin="263,483,0,0" VerticalAlignment="Top" Height="84" Width="183" Background="#FF9B0A0A" Click="Button_Click"/>
+            <Canvas Name="canv_one"  HorizontalAlignment="Left" Height="150" Margin="96,321,0,0" VerticalAlignment="Top" Width="117">
+                <Canvas.Background>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="Black" Offset="0"/>
+                        <GradientStop Color="#FF604C4C" Offset="1"/>
+                    </LinearGradientBrush>
+                </Canvas.Background>
+            </Canvas>
+            <ContentControl Name="panel" Content="SomeTextHere" HorizontalAlignment="Left" Margin="273,150,0,0" VerticalAlignment="Top" Height="117" BorderBrush="{StaticResource PhoneInactiveBrush}">
+                <ContentControl.Background>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="Black" Offset="0"/>
+                        <GradientStop Color="#FFBA7E7E" Offset="1"/>
+                    </LinearGradientBrush>
+                </ContentControl.Background>
+            </ContentControl>
         </Grid>
 
         <!--Uncomment to see an alignment grid to help ensure your controls are

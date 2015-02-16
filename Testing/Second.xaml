@@ -28,6 +28,7 @@
 
         <!--ContentPanel - place additional content here-->
         <Grid x:Name="ContentPanel" Grid.Row="1" Margin="12,0,12,0">
+            <Button Content="Button" HorizontalAlignment="Left" Margin="37,106,0,0" VerticalAlignment="Top" Height="277" Width="390" BorderBrush="{StaticResource PhoneBorderBrush}" Foreground="#FFC12D2D" Background="#FF728378" Click="Button_Click"/>
 
         </Grid>
     </Grid>

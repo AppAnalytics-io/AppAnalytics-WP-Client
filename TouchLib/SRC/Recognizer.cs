@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Phone.Controls;
 using System.Windows.Input;
 using System.Diagnostics;
+using System.Windows.Media;
 
 using ShakeGestures;
 //using System.
@@ -302,7 +303,74 @@ namespace TouchLib
            // currentPage.Content
             //var uri = currentPage.
             //currentPage.Children;
-            string mBufferElementUri = "";
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(currentPage); i++)
+            {
+                DependencyObject child = VisualTreeHelper.GetChild(currentPage, i);
+                
+                if (child != null && child is System.Windows.Controls.Control)
+                {
+                    checkChild(child, currentPage);
+                }
+                if (VisualTreeHelper.GetChildrenCount(child) > 0)
+                {
+                    subChildSearch(child);
+                }
+            }
+        }
+        
+        private bool isInBBox (System.Windows.UIElement el, System.Windows.UIElement ancestor)
+        {
+            GeneralTransform objGeneralTransform = el.TransformToVisual(Application.Current.RootVisual as UIElement);
+            var origin = el.RenderTransformOrigin;
+            var rect = new Rect(origin, el.RenderSize);
+
+            System.Windows.Point point = objGeneralTransform.Transform(new System.Windows.Point(0, 0));
+            rect = objGeneralTransform.TransformBounds(rect);
+            
+            return (rect.Contains(new System.Windows.Point(LastPosX, LastPosY)));
+        }
+
+        private void checkChild(DependencyObject child, DependencyObject parent)
+        {
+            if ((child as UIElement) != null && !((child as UIElement).Visibility == Visibility.Visible))
+            {
+                return;
+            }
+            else if ((child as FrameworkElement) != null && !((child as FrameworkElement).Visibility == Visibility.Visible))
+            {
+                return;
+            }
+
+            if (child != null && child is System.Windows.Controls.Control)
+            {
+                var el = child as System.Windows.Controls.Control;
+                if (isInBBox(el, parent as UIElement))
+                {
+                    string mBufferElementUri = el.Name;
+                }
+            }
+            else if (child != null && child is System.Windows.FrameworkElement)
+            {
+                var el = child as System.Windows.FrameworkElement;
+                if (isInBBox(el, parent as UIElement))
+                {
+                    string mBufferElementUri = el.Name;
+                }
+            }
+        }
+
+        private void subChildSearch(DependencyObject parent)
+        {
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+            {
+                DependencyObject child = VisualTreeHelper.GetChild(parent, i);
+                checkChild(child, parent);
+
+                if (VisualTreeHelper.GetChildrenCount(child) > 0)
+                {
+                    subChildSearch(child);
+                }
+            }
         }
 
         // TODO: code conv. 
