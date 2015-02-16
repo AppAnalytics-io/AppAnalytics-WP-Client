@@ -90,7 +90,6 @@
     <Compile Include="SRC\ManifestController.cs" />
     <Compile Include="SRC\Recognizer.cs" />
     <Compile Include="SRC\Sender.cs" />
-    <Compile Include="SRC\Serialization\Serializer.cs" />
     <Compile Include="SRC\UUID\UDIDGen.cs" />
   </ItemGroup>
   <ItemGroup>

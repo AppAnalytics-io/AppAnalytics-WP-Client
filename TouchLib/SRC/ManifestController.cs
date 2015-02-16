@@ -8,7 +8,7 @@ using System.IO;
 
 namespace TouchLib
 {
-    enum GestureID
+    public enum GestureID
     {
         SingleTapWith1Finger = 1,
         DoubleTapWith1Finger = 2,

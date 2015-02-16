@@ -104,7 +104,7 @@ namespace TouchLib
             get
             {
                 double t = 0;
-                lock (prevGesture)
+                lock (_lockObject)
                 {
                     t = prevTapOccured;
                 }
@@ -112,6 +112,7 @@ namespace TouchLib
             }
         }
 
+        private static readonly object _lockObject = new object();
         private static Recognizer mInstance;
         private PhoneApplicationPage mPage = null;
 
@@ -129,10 +130,76 @@ namespace TouchLib
         public byte Init()
         {
             timeStamp = convertToUnixTimestamp(DateTime.Now);
+            // TODO : CHECK IF IT IS STILL THE SAME FOR DIFF PAGES !! !! !!
             mPage = ((PhoneApplicationFrame)Application.Current.RootVisual).Content as PhoneApplicationPage;
 
             return 0;
         }
+
+        public void createTapGesture (UInt16 aCountOfTaps, UInt16 aNumberOfFingers)
+        {
+            GestureID id = GestureID.SingleTapWith1Finger;
+
+            if (1 == aNumberOfFingers)
+            {
+                if (1 == aCountOfTaps) id = GestureID.SingleTapWith1Finger;
+                if (2 == aCountOfTaps) id = GestureID.DoubleTapWith1Finger;
+                if (3 == aCountOfTaps) id = GestureID.TripleTapWith1Finger;
+            }
+            else if (2 == aNumberOfFingers)
+            {
+                if (1 == aCountOfTaps) id = GestureID.SingleTapWith2Finger;
+                if (2 == aCountOfTaps) id = GestureID.DoubleTapWith2Finger;
+                if (3 == aCountOfTaps) id = GestureID.TripleTapWith2Finger;
+            }
+            else if (3 == aNumberOfFingers)
+            {
+                if (1 == aCountOfTaps) id = GestureID.SingleTapWith3Finger;
+                if (2 == aCountOfTaps) id = GestureID.DoubleTapWith3Finger;
+                if (3 == aCountOfTaps) id = GestureID.TripleTapWith3Finger;
+            }
+            else if (4 == aNumberOfFingers)
+            {
+                if (1 == aCountOfTaps) id = GestureID.SingleTapWith4Finger;
+                if (2 == aCountOfTaps) id = GestureID.DoubleTapWith4Finger;
+                if (3 == aCountOfTaps) id = GestureID.TripleTapWith4Finger;
+            }
+
+            createGesture(id);
+        }
+
+        public void createGesture(GestureID aID)
+        {
+            string elUri = "";
+            string pageUri = getCurrentPage();
+            System.Windows.Point p = new System.Windows.Point(LastPosX, LastPosY);
+
+            GestureData gd = GestureData.create(aID, p, elUri, pageUri);
+            Detector.pushReport(gd);
+        }
+
+        private string getCurrentPage()
+        {
+            var currentPage = ((PhoneApplicationFrame)Application.Current.RootVisual).Content as PhoneApplicationPage;
+
+            var uri = currentPage.NavigationService.CurrentSource;
+
+            string nUri = uri.ToString();
+            return nUri;
+        }
+
+        private string getElementUri()
+        {
+            var currentPage = ((PhoneApplicationFrame)Application.Current.RootVisual).Content as PhoneApplicationPage;
+           // PhoneApplicationFrame g; g.con
+
+            //var uri = currentPage.
+
+            string nUri = "";
+
+            return nUri;
+        }
+
         // TODO: code conv. 
         const double rotationThreshold = 1.5f;
         const double zoomThreshold = 0.00;
@@ -149,7 +216,7 @@ namespace TouchLib
             get
             {
                 int a = 0;
-                lock (prevGesture)
+                lock (_lockObject)
                 {
                     a = lastTapFingers;
                 }
@@ -157,7 +224,7 @@ namespace TouchLib
             }
             set
             {
-                lock (prevGesture)
+                lock (_lockObject)
                 {
                     lastTapFingers = value;
                 }
@@ -196,7 +263,7 @@ namespace TouchLib
             get
             {
                 int a = 0;
-                lock (prevGesture)
+                lock (_lockObject)
                 {
                     a = tapsInRow;
                 }
@@ -204,7 +271,7 @@ namespace TouchLib
             }
             set
             {
-                lock (prevGesture)
+                lock (_lockObject)
                 {
                     tapsInRow = value;
                 }
@@ -229,7 +296,7 @@ namespace TouchLib
         {
             get
             {
-                lock (prevGesture)
+                lock (_lockObject)
                 {
                     return mPositionX;
                 }
@@ -239,7 +306,7 @@ namespace TouchLib
         {
             get
             {
-                lock (prevGesture)
+                lock (_lockObject)
                 {
                     return mPositionY;
                 }
@@ -394,7 +461,7 @@ namespace TouchLib
             {
                 if (TapsInRow > 0)
                 {
-                    lock (prevGesture)
+                    lock (_lockObject)
                     {
                         //LastTapFingers = 0;
                         prevTapOccured = 0;
@@ -538,7 +605,7 @@ namespace TouchLib
                     Vector2 vec = createVec(preMoveX[0] - flickPoint.Position.X,
                         preMoveY[0] - flickPoint.Position.Y);
 
-                    handleChangingDirection(getDirection(vec));
+                    handleChangingDirection(getDirection(vec), tpc);
                     prevDir = getDirection(vec);
                 }
             }
@@ -837,7 +904,7 @@ namespace TouchLib
             get
             {
                 int a = 0;
-                lock (prevGesture)
+                lock (_lockObject)
                 {
                     a = prevFingers;
                 }
@@ -845,7 +912,7 @@ namespace TouchLib
             }
             set
             {
-                lock (prevGesture)
+                lock (_lockObject)
                 {
                     prevFingers = value;
                 }

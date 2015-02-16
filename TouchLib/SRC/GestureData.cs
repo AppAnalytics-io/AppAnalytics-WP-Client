@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace TouchLib
 {
-    internal class GestureData
+    public class GestureData
     {
         private static UInt64 mGlobalIndex = 0;
         private UInt64 mActionOrder = 0;
@@ -18,6 +18,8 @@ namespace TouchLib
             mActionOrder = mGlobalIndex;
             mGlobalIndex++;
         }
+
+        GestureData() { }
 
         static public GestureData create(GestureID aID,  Point aLocation, string aElement, string aPage)
         {
