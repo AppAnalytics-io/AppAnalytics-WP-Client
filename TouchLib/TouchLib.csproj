@@ -89,7 +89,8 @@
     <Compile Include="SRC\GestureData.cs" />
     <Compile Include="SRC\ManifestController.cs" />
     <Compile Include="SRC\Recognizer.cs" />
-    <Compile Include="SRC\Sender.cs" />
+    <Compile Include="SRC\web\MultipartUploader.cs" />
+    <Compile Include="SRC\web\Sender.cs" />
     <Compile Include="SRC\UUID\UDIDGen.cs" />
   </ItemGroup>
   <ItemGroup>

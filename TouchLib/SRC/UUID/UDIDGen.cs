@@ -12,6 +12,7 @@ namespace TouchLib.UUID
     internal class UDIDGen
     {
         private static UDIDGen mInstance;
+        private static readonly Encoding mEncoding = Encoding.UTF8;
 
         private Guid mGUID;
         private Guid mSessionID;
@@ -88,7 +89,7 @@ namespace TouchLib.UUID
         {
             get 
             {
-                return mSessionID.ToByteArray();
+                return mEncoding.GetBytes( mSessionID.ToString() );
             }
         }
 
@@ -96,7 +97,7 @@ namespace TouchLib.UUID
         {
             get
             {
-                return mGUID.ToByteArray();
+                return mEncoding.GetBytes( mGUID.ToString() );
             }
         }
     }

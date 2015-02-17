@@ -4,7 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using System.IO.IsolatedStorage;
+using System.Diagnostics;
 
+using System.Runtime.Serialization;
+using System.Xml;
 
 namespace TouchLib
 {
@@ -67,51 +71,118 @@ namespace TouchLib
 
     class ManifestController
     {
+        private static ManifestController mInstance;
+        public static ManifestController Instance
+        {
+            // singleton
+            get { return mInstance ?? (mInstance = new ManifestController()); }
+        }
+
+        protected ManifestController()
+        {
+            mContent = new MemoryStream();
+            mPackage = new MemoryStream();
+            //
+            IsolatedStorageFile iStorage = IsolatedStorageFile.GetUserStoreForApplication();
+            DataContractSerializer serializer = new DataContractSerializer(typeof(Dictionary<string, byte[]>));
+
+            try
+            {
+                lock (_readLock)
+                {
+                    if (iStorage.FileExists("manifests"))
+                    {
+                        var bw = iStorage.OpenFile("manifests", FileMode.Open);
+                        mManifests = (Dictionary<string, byte[]>)serializer.ReadObject(bw);
+                        if (mManifests.Count > 100)
+                        {
+                            var toskip = mManifests.Count - 100;
+                            mManifests = mManifests.Skip(toskip).Take(100).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                        }
+                        bw.Close();
+                    }
+                    if (iStorage.FileExists("packages"))
+                    {
+                        var bw = iStorage.OpenFile("packages", FileMode.Open);
+                        mSamples = (Dictionary<string, byte[]>)serializer.ReadObject(bw);
+                        if (mSamples.Count > 10000)
+                        {
+                            var toskip = mSamples.Count - 10000;
+                            mSamples = mSamples.Skip(toskip).Take(10000).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                        }
+                        bw.Close();
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e.Message + "\n Cannot create file.");
+                return;
+            }
+
+            iStorage.Dispose();
+        }
+
+        ~ManifestController()
+        {
+            store();
+        }
+
+        public void store()
+        {
+            DataContractSerializer serializer = new DataContractSerializer(typeof(Dictionary<string, byte[]>));
+            IsolatedStorageFile iStorage = IsolatedStorageFile.GetUserStoreForApplication();
+
+            try
+            {
+                lock (_readLock)
+                {
+                    if (mManifests.Count > 0)
+                    {
+                        var bw = iStorage.OpenFile("manifests", FileMode.Create);
+                        serializer.WriteObject(bw, mManifests);
+                        bw.Close();
+                    }
+                    if (mSamples.Count > 0)
+                    {
+                        var bw = iStorage.OpenFile("packages", FileMode.Create);
+                        serializer.WriteObject(bw, mSamples);
+                        bw.Close();
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e.Message + "\n Cannot create file.");
+                return;
+            }
+
+            iStorage.Dispose();
+        }
+
         private byte kDataPackageFileVersion = 1;
         private byte kSessionManifestFileVersion = 1;
 
         private MemoryStream mPackage;
-        private MemoryStream mHead;
         private MemoryStream mContent;
 
-        public ManifestController()
-        {
-            mHead       = new MemoryStream();
-            mPackage    = new MemoryStream();
-            mContent    = new MemoryStream();
-        }
+        private Dictionary<string, byte[]> mManifests = new Dictionary<string,byte[]>();
+        private Dictionary<string, byte[]> mSamples = new Dictionary<string, byte[]>();
 
-        // [0-1]=DataPackageFileSignature:word; //'H'+'A'
-        // [2]=DataPackageFileVersion:byte;
-        // [3-38]= SessionId:UUIDV4; //UUID to keep every session unique.
+        
         private void writeArray(MemoryStream aMS, byte[] aBlock)
         {
             aMS.Write(aBlock, 0, aBlock.Length);
         }
 
-        public void buildHeader()
-        {
-            mHead.WriteByte((byte)'H');
-            mHead.WriteByte((byte)'A');
-            mHead.WriteByte(kDataPackageFileVersion);
-
-            mHead.Write(Detector.getSessionID(), 0, Detector.getSessionID().Length);
-        }
-
-        // [0]=PackageBeginMarker:byte; //ASCII#60 '<'
-        // [1-8]=ActionOrder:uint64; //Unique index value of the gesture action order.
-        // [9]=ActionId:byte; //Predefined Unique event ID for every gesture action.
-        // [10-17]=ActionTime:DateTime; //the date and time value when the action occured.
-        // [18-25]=PositionX:double; //X coordinate value where the action begins.
-        // [26-33]=PositionY:double; //Y coordinate value where the action begins.
-        // [34-37]=Param1:variant; //Reserved: ScalePercent for zoom/pinch, RotationDegree for rotation, Shake Orientation for shakes.
-        // [...]=ViewIdLength:UInt16; //total length of ViewId value.
-        // [...]=ViewId:string; //String value of Page/view ID where the gesture action happens.
-        // [...]=ElementIdLength:UInt16; //total length of ElementId value.
-        // [...]=ElementId:string; //the ID of a user interface element related to the gesture action.
-        // [Length-1]=PackageEndMarker:byte; //ASCII#62 '>'
         public void buildDataPackage(GestureData aData)
         {
+            mPackage.WriteByte((byte)'H');
+            mPackage.WriteByte((byte)'A');
+            mPackage.WriteByte(kDataPackageFileVersion);
+
+            mPackage.Write(Detector.getSessionID(), 0, Detector.getSessionID().Length);
+
             mPackage.WriteByte((byte)'<');
 
             writeArray(mPackage, aData.ActionOrder);
@@ -125,38 +196,108 @@ namespace TouchLib
             writeArray(mPackage, aData.ElementID);
 
             mPackage.WriteByte((byte)'>');
+            lock (_readLock)
+            {
+                mSamples[Detector.getSessionIDString()] = mPackage.ToArray();
+            }
+            mPackage.Close();
+            mPackage = new MemoryStream();
         }
 
-        // [0]=PackageBeginMarker:byte; //ASCII#60 '<'
-        // [1]= SessionManifestFileVersion:byte;
-        // [2-37]= SessionId:UUIDV4; //UUID to keep every session unique.
-        // [38-45]= SessionStartDate:uint64; //Holds when the session starts.
-        // [46-53]= SessionEndDate:uint64; //holds when the session ends.
-        // [54-85]=UDID:string; //Unique device ID.
-        // [86-93]= ResolutionX:double; //the total width of the client screen.
-        // [94-101]= ResolutionY:double; //the total height of the client screen.
-        // [102]=APIVersion:byte;
-        // [103-134]=APIKey:string;
-        // [134-150]=APPVersion:Version; //the Major, Minor, Build and Revision version numbers client application as Unsigned Integers.
-        // [151-166]=OSVersion:Version; //the Major, Minor, Build and Revision version numbers of client OS as Unsigned Integers.
-        // [167-169]=SystemLocale:String; //the three-letter identifier for the region of the client.
-        // [170]=PackageEndMarker:byte; //ASCII#62 '>'
         public void buildSessionManifest()
         {
+            mContent.WriteByte((byte)'<');
             mContent.WriteByte(kSessionManifestFileVersion);
             writeArray(mContent, Detector.getSessionID());
+
             writeArray(mContent, Detector.getSessionStartDate());
+
             writeArray(mContent, Detector.getSessionEndDate());
-            writeArray(mContent, Detector.getUDID());
+
+            writeArray(mContent, Detector.getUDID().Take(32).ToArray() ); // 90 != 85 => cropping
+
             writeArray(mContent, Detector.getResolutionX());
             writeArray(mContent, Detector.getResolutionY());
-            mContent.WriteByte(Detector.ApiVersion);
+
+            mContent.WriteByte(  Detector.ApiVersion);
+
             writeArray(mContent, Detector.ApiKey);
             writeArray(mContent, Detector.AppVersion);
             writeArray(mContent, Detector.OSVersion);
             writeArray(mContent, Detector.SystemLocale);
 
             mContent.WriteByte((byte)'>');
+            lock (_readLock)
+            {
+                mManifests[Detector.getSessionIDString()] = mContent.ToArray();
+            }
+            var t = mContent.ToArray();
+            mContent.Close();
+            mContent = new MemoryStream();
         }
+
+        public bool sendManifest()
+        {
+            Dictionary<string, object> wrapper = new Dictionary<string,object>(); 
+
+            lock (_readLock)
+            {
+                foreach ( var kval in mManifests)
+                {
+                    wrapper.Add(kval.Key, new MultipartUploader.FileParameter( kval.Value ));
+                }
+            }
+
+            bool flag = Sender.tryToSend(wrapper, true);
+
+            return flag;
+        }
+        public bool sendSamples()
+        {
+            Dictionary<string, object> wrapper = new Dictionary<string, object>();
+
+            const int kMaxAtOnce = 1024*100; // 900 * 17
+            int ind = 0;
+            lock (_readLock)
+            {
+                foreach (var kval in mSamples)
+                {
+                    ind += kval.Value.Length;
+                    if (ind > kMaxAtOnce)
+                    {
+                        break;
+                    }
+                    wrapper.Add(kval.Key, new MultipartUploader.FileParameter(kval.Value));
+                }
+            }
+
+            bool flag = Sender.tryToSend(wrapper, true);
+
+            return flag;
+        }
+
+        public void deleteManifests(List<string> list)
+        {
+            lock (_readLock)
+            {
+                foreach (var item in list)
+                {
+                    mManifests.Remove(item);
+                }
+            }
+        }
+
+        public void deletePackages(List<string> list)
+        {
+            lock (_readLock)
+            {
+                foreach (var item in list)
+                {
+                    mSamples.Remove(item);
+                }
+            }
+        } 
+
+        private readonly object _readLock = new object();  
     }
 }

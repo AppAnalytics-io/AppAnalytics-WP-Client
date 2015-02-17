@@ -11,7 +11,8 @@ using Microsoft.Xna.Framework.Input.Touch;
 using System.Diagnostics;
 using System.Globalization;
 using Windows.Graphics.Display;
-using System.Collections; 
+using System.Collections;
+using Microsoft.Phone.Net.NetworkInformation; 
 
 
 namespace TouchLib
@@ -23,7 +24,7 @@ namespace TouchLib
         //gestures to-send queue 
 
         // Concurent.ConcurrentQueue<GestureData> mToSend = new ConcurrentQueue<GestureData>();
-        private static Queue<GestureData> mToSend = new Queue<GestureData>();
+        //private static Queue<GestureData> mToSend = new Queue<GestureData>();
         
         //private section /////////////////////////////////////////////////
         private static UUID.UDIDGen mIDGen = UUID.UDIDGen.Instance;
@@ -32,7 +33,7 @@ namespace TouchLib
         private static bool mNavigationOccured = false;
 
         private static Thread mWorker = null;
-        private static Sender mSender = new Sender();
+
         private static double mSessionStartTime = 0;
 
         private static string mPreviousUri = "";
@@ -72,6 +73,10 @@ namespace TouchLib
         {
             return mIDGen.SessionID;
         }
+        static public string getSessionIDString()
+        {
+            return Encoding.UTF8.GetString(mIDGen.SessionID, 0 , mIDGen.SessionID.Length);
+        }
 
         static private bool mFirstLaunch = true;
         static private void getCurent()
@@ -99,6 +104,7 @@ namespace TouchLib
         static public void init(string aApiKey)
         {
             Recognizer.Instance.Init();
+            DeviceNetworkInformation.NetworkAvailabilityChanged += new EventHandler<NetworkNotificationEventArgs>(changeDetected);
 
             mApiKey = getBytes(aApiKey);
             if (mApiKey.Length != 32)
@@ -111,16 +117,50 @@ namespace TouchLib
             if (null == mWorker)
             {
 
-                mWorker = new Thread(updateLoop);
-                mWorker.IsBackground = true;
-                mWorker.Start();
-
                 var date = DateTime.Now;
 
                 DateTime origin = new DateTime(1970, 1, 1, 0, 0, 0, 0);
                 TimeSpan diff = date.ToUniversalTime() - origin;
                 mSessionStartTime = Math.Floor(diff.TotalSeconds);
+                sendManifest();
+
+                mWorker = new Thread(updateLoop);
+                mWorker.IsBackground = true;
+                mWorker.Start();
             }
+        }
+
+        static void changeDetected(object sender, NetworkNotificationEventArgs e)
+        {
+            string change = string.Empty;
+            switch (e.NotificationType)
+            {
+                case NetworkNotificationType.InterfaceConnected:
+                    change = "Connected to ";
+                    break;
+                case NetworkNotificationType.InterfaceDisconnected:
+                    change = "Disconnected from ";
+                    break;
+                case NetworkNotificationType.CharacteristicUpdate:
+                    change = "Characteristics changed for ";
+                    break;
+                default:
+                    change = "Unknown change with ";
+                    break;
+            }
+
+            string changeInformation = String.Format(" {0} {1} {2} ({3})",
+                        DateTime.Now.ToString(), change, e.NetworkInterface.InterfaceName,
+                        e.NetworkInterface.InterfaceType.ToString());
+
+            Debug.WriteLine(changeInformation);
+
+        }
+
+        static void sendManifest()
+        {
+            ManifestController.Instance.buildSessionManifest();
+            ManifestController.Instance.sendManifest();
         }
 
         static public void terminate()
@@ -132,7 +172,7 @@ namespace TouchLib
         {
             lock (_lockObject)
             {
-                mToSend.Enqueue (aData);
+                 ManifestController.Instance.buildDataPackage(aData);
             }
         }
 
@@ -150,8 +190,10 @@ namespace TouchLib
                 Recognizer.Instance.TapsInRow = 0;
             }
         }
-
-
+        static double toSendMark = 0;
+        static double toStoreMark = 0;
+        const double kSendConst = 60;
+        const double kStoreConst = 15;
 
         static private void updateLoop()
         {
@@ -160,8 +202,22 @@ namespace TouchLib
                 var date = DateTime.Now;
 
                 TimeSpan diff = date.ToUniversalTime() - mPrevTime;
-                double sec = Math.Floor(diff.TotalSeconds);
+                double sec = diff.TotalSeconds;
                 mPrevTime = date;
+
+                toSendMark += sec;
+                toStoreMark += sec;
+
+                if (toStoreMark > kStoreConst)
+                {
+                    ManifestController.Instance.store();
+                    toStoreMark = 0;
+                }
+                if (toSendMark > kSendConst)
+                {
+                    ManifestController.Instance.sendSamples();
+                    toSendMark = 0;
+                }
 
                 handleTaps(sec);
                 // test it more
@@ -172,7 +228,7 @@ namespace TouchLib
                     lock (_lockObject)
                     {
                         mNavigationOccured = false;
-                        //create gesture report
+                        Recognizer.Instance.createGesture(GestureID.Navigation);
                     }
                 }
 
@@ -253,11 +309,11 @@ namespace TouchLib
 
         internal static byte[] getSessionEndDate()
         {
-            var date = DateTime.Now;
-
-            DateTime origin = new DateTime(1970, 1, 1, 0, 0, 0, 0);
-            TimeSpan diff = date.ToUniversalTime() - origin;
-            double sec = Math.Floor(diff.TotalSeconds);
+//             var date = DateTime.Now;
+// 
+//             DateTime origin = new DateTime(1970, 1, 1, 0, 0, 0, 0);
+//             TimeSpan diff = date.ToUniversalTime() - origin;
+            double sec = 0;//Math.Floor(diff.TotalSeconds);
 
             return BitConverter.GetBytes(sec);
         }
@@ -265,6 +321,11 @@ namespace TouchLib
         internal static byte[] getUDID()
         {
             return mIDGen.UDID;
+        }
+
+        internal static string  getUDIDString()
+        {
+            return Encoding.UTF8.GetString(mIDGen.UDID, 0, mIDGen.UDID.Length);
         }
 
         private static string getAppVersion()
@@ -361,7 +422,7 @@ namespace TouchLib
             get 
             {
                 CultureInfo cult = Thread.CurrentThread.CurrentCulture;
-                RegionInfo rf = new RegionInfo(cult.TwoLetterISOLanguageName);
+                RegionInfo rf = new RegionInfo(cult.ToString());
 
                 string lt3 = Converter.convertToThreeLetterCode( rf.TwoLetterISORegionName );
 
