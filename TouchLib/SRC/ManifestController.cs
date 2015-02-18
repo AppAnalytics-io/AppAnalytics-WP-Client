@@ -154,6 +154,11 @@ namespace TouchLib
 
         ~ManifestController()
         {
+            var copyS = mSamples;
+            foreach (var kv in mSamples)
+            {
+                if (kv.Value.Count == 0) copyS.Remove(kv.Key);
+            }
             store();
         }
 

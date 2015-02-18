@@ -23,9 +23,9 @@ using Microsoft.Phone.Applications.Common;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace ShakeGestures
+namespace TouchLib.ShakeGestures
 {
-    public class ShakeGesturesHelper
+    internal class ShakeGesturesHelper
     {
         #region Gesture parameters
 

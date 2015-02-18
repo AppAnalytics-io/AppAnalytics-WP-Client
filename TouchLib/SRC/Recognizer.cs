@@ -9,10 +9,11 @@ using System.Windows.Input;
 using System.Diagnostics;
 using System.Windows.Media;
 
-using ShakeGestures;
+//using ShakeGestures;
 //using System.
 
 using Microsoft.Xna.Framework;
+using TouchLib.ShakeGestures;
 
 namespace TouchLib
 {

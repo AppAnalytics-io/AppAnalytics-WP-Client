@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace TouchLib
 {
-    public static class MultipartUploader
+    internal static class MultipartUploader
     {
        // private static ManualResetEvent allDone = new ManualResetEvent(false);
         private static readonly Encoding encoding = Encoding.UTF8;

@@ -90,18 +90,16 @@
     <Compile Include="SRC\GestureData.cs" />
     <Compile Include="SRC\ManifestController.cs" />
     <Compile Include="SRC\Recognizer.cs" />
+    <Compile Include="SRC\Shakes\AccelerometerHelper\AccelerometerHelper.cs" />
+    <Compile Include="SRC\Shakes\AccelerometerHelper\ApplicationSettingHelper.cs" />
+    <Compile Include="SRC\Shakes\AccelerometerHelper\Simple3DVector.cs" />
+    <Compile Include="SRC\Shakes\ShakeGestureEventArgs.cs" />
+    <Compile Include="SRC\Shakes\ShakeGesturesHelper.cs" />
+    <Compile Include="SRC\Shakes\ShakeType.cs" />
+    <Compile Include="SRC\Shakes\Simulation.cs" />
     <Compile Include="SRC\web\MultipartUploader.cs" />
     <Compile Include="SRC\web\Sender.cs" />
     <Compile Include="SRC\UUID\UDIDGen.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="Microsoft.Phone.Controls, Version=8.0.0.0, Culture=neutral, PublicKeyToken=24eec0d8c86cda1e, processorArchitecture=MSIL" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ShakeGestures\ShakeGesturesCS.csproj">
-      <Project>{5fc44183-2b47-4eea-b653-d1a6abea3b24}</Project>
-      <Name>ShakeGesturesCS</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\$(TargetFrameworkIdentifier)\$(TargetFrameworkVersion)\Microsoft.$(TargetFrameworkIdentifier).$(TargetFrameworkVersion).Overrides.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\$(TargetFrameworkIdentifier)\$(TargetFrameworkVersion)\Microsoft.$(TargetFrameworkIdentifier).CSharp.targets" />

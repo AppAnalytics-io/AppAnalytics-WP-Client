@@ -21,9 +21,9 @@ using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using Microsoft.Phone.Applications.Common;
 
-namespace ShakeGestures
+namespace TouchLib.ShakeGestures
 {
-    public class Simulation
+    internal class Simulation
     {
         private static AccelerometerHelperReadingEventArgs args = new AccelerometerHelperReadingEventArgs();
 

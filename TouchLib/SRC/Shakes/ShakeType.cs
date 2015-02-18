@@ -20,9 +20,9 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 
-namespace ShakeGestures
+namespace TouchLib.ShakeGestures
 {
-    public enum ShakeType
+    internal enum ShakeType
     {
         X = 0,
         Y = 1,
