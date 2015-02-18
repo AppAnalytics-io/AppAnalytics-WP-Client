@@ -279,7 +279,6 @@ namespace TouchLib
         public void createGesture(GestureID aID)
         {
             Deployment.Current.Dispatcher.BeginInvoke(() => getCurrentPage());
-            Deployment.Current.Dispatcher.BeginInvoke(() => getElementUri());
             System.Windows.Point p = new System.Windows.Point(LastPosX, LastPosY);
 
             GestureData gd = GestureData.create(aID, p, mBufferElementUri, mBufferPageUri);
@@ -293,7 +292,10 @@ namespace TouchLib
 
             var uri = currentPage.NavigationService.CurrentSource;
 
-            mBufferPageUri = uri.ToString();
+            lock (_lockObject)
+            {
+                mBufferPageUri = uri.ToString();
+            }
         }
 
         private void getElementUri()
@@ -346,7 +348,10 @@ namespace TouchLib
                 var el = child as System.Windows.Controls.Control;
                 if (isInBBox(el, parent as UIElement))
                 {
-                    string mBufferElementUri = el.Name;
+                    lock (_lockObject)
+                    {
+                        mBufferElementUri = el.Name;
+                    }
                 }
             }
             else if (child != null && child is System.Windows.FrameworkElement)
@@ -354,7 +359,10 @@ namespace TouchLib
                 var el = child as System.Windows.FrameworkElement;
                 if (isInBBox(el, parent as UIElement))
                 {
-                    string mBufferElementUri = el.Name;
+                    lock (_lockObject)
+                    {
+                        mBufferElementUri = el.Name;
+                    }
                 }
             }
         }
@@ -646,14 +654,15 @@ namespace TouchLib
         bool doesTapHappend(TouchPointCollection tpc)
         {
             //Debug.("Tap - up");
-            var len = getAverageOffsets(tpc);
-            if (len > (HoldThreshold * 0.4) )
+            var v1 = new Vector2((float)mPositionX, (float)mPositionY);
+            var v2 = new Vector2((float)tpc[0].Position.X, (float) tpc[0].Position.Y);
+            float len = ( v1 - v2 ).Length();
+            if (len > (HoldThreshold * 0.6) )
             {
                 if (TapsInRow > 0)
                 {
                     lock (_lockObject)
                     {
-                        //LastTapFingers = 0;
                         prevTapOccured = 0;
                     }
                 }
@@ -839,7 +848,8 @@ namespace TouchLib
 
                 mPositionX = flickPoint.Position.X;
                 mPositionY = flickPoint.Position.Y;
-                
+
+                Deployment.Current.Dispatcher.BeginInvoke(() => getElementUri());
                 touchStarted = getNow();
             }
 

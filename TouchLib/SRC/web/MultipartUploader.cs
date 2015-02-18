@@ -69,6 +69,7 @@ namespace TouchLib
                 else
                 {
                     fname = string.Format("{0}_{1}.datapackage", Detector.getSessionIDString(), _packageIndex.ToString());
+                    _packageIndex++;
                 }
  
                 if (param.Value is FileParameter)
@@ -102,7 +103,7 @@ namespace TouchLib
  
         public class FileParameter
         {
-            public byte[] File { get; set; }
+            public byte[] File { get ; set; }
             public string FileName { get; set; }
             public string ContentType { get; set; }
             public FileParameter(byte[] file) : this(file, null) { }
@@ -159,7 +160,7 @@ namespace TouchLib
                     string responseString = streamRead.ReadToEnd();
                     Debug.WriteLine("[response:]" + responseString);
                 }
-                Debug.WriteLine("exception in responce callback :" + e.ToString());
+                Debug.WriteLine("exception in response callback :" + e.ToString());
             }
             finally
             {
@@ -170,10 +171,10 @@ namespace TouchLib
 
             if (response != null && response.StatusCode == HttpStatusCode.OK)
             {
-                //Sender.
+                Sender.success();
                 Debug.WriteLine("request succeed");
             }
-
+            else Sender.fail();
             //allDone.Set();
         }
     }

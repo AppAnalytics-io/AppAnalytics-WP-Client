@@ -192,7 +192,7 @@ namespace TouchLib
         }
         static double toSendMark = 0;
         static double toStoreMark = 0;
-        const double kSendConst = 60;
+        const double kSendConst = 20;
         const double kStoreConst = 15;
 
         static private void updateLoop()
@@ -201,7 +201,7 @@ namespace TouchLib
             {
                 var date = DateTime.Now;
 
-                TimeSpan diff = date.ToUniversalTime() - mPrevTime;
+                TimeSpan diff = date.ToUniversalTime() - mPrevTime.ToUniversalTime();
                 double sec = diff.TotalSeconds;
                 mPrevTime = date;
 

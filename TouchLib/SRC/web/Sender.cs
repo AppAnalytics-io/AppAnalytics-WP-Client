@@ -13,11 +13,15 @@ namespace TouchLib
         public const string kGTBaseURL      = "http://www.appanalytics.io/api/v1/"; // @"http://192.168.1.36:6249/api/v1";
         public const string kGTManifestsURL = "manifests?UDID=";
         public const string kGTSamplesURL = "samples?UDID=";
+
+        private const bool kTryToSendMore = true;
+
+        public static readonly object _lockObj = new object();
         //private Mutex mLock = new Mutex();
         static List<string> mManifestToDel = new List<string>();
-        static List<string> mPackagesToDel = new List<string>();
+        static Dictionary<string, int> mPackagesToDel = new Dictionary<string, int>();
 
-        public static bool tryToSend(Dictionary<string, object> aFiles, bool isItManfest)
+        public static bool tryToSend(Dictionary<string, object> aFiles, bool isItManfest, List<int> aHowMany = null)
         {
             if (NetworkInterface.GetIsNetworkAvailable() == true && IsPreviousOperationComplete)
             {
@@ -46,9 +50,13 @@ namespace TouchLib
                                                                             "WindowsPhone",
                                                                             aFiles,
                                                                             isItManfest);
+
+                    int i = 0;
                     foreach (var it in aFiles)
                     {
-                        mPackagesToDel.Add(it.Key);
+                        if (i < aHowMany.Count)
+                            mPackagesToDel[it.Key] = aHowMany[i];
+                        i++;
                     }
                 }
 
@@ -66,20 +74,24 @@ namespace TouchLib
         {
             ManifestController.Instance.deleteManifests(mManifestToDel);
             ManifestController.Instance.deletePackages(mPackagesToDel);
-
-            mManifestToDel.Clear();
-            mPackagesToDel.Clear();
+            lock (_lockObj)
+            {
+                mManifestToDel.Clear();
+                mPackagesToDel.Clear();
+            }
+            if (kTryToSendMore && (ManifestController.Instance.SamplesCount > 10) )
+            {
+                ManifestController.Instance.sendSamples();
+            }
         }
 
         public static void fail()
         {
-            mManifestToDel.Clear();
-            mPackagesToDel.Clear();
-        }
-
-        public static void deletePackagesFromStorage()
-        {
-
+            lock (_lockObj)
+            {
+                mManifestToDel.Clear();
+                mPackagesToDel.Clear();
+            }
         }
     }
 }
