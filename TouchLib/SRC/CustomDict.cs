@@ -7,6 +7,16 @@ using System.Xml.Serialization;
 public class SerializableDictionary<TKey, TValue>
     : Dictionary<TKey, TValue>, IXmlSerializable
 {
+
+    public SerializableDictionary()   : base()
+    {
+
+    }
+    public SerializableDictionary(SerializableDictionary<TKey, TValue> original) : base( original )
+    {
+
+    }
+
     #region IXmlSerializable Members
     public System.Xml.Schema.XmlSchema GetSchema()
     {

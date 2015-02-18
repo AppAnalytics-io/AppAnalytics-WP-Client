@@ -107,7 +107,7 @@ namespace AppAnalytics
                     {
                         XmlSerializer serializer2 = new XmlSerializer(typeof(SerializableDictionary<string, List<byte[]>>));
 
-                        var bw = iStorage.OpenFile("sample", FileMode.Open);
+                        var bw = iStorage.OpenFile("samples", FileMode.Open);
                         object t = serializer2.Deserialize(bw);
                         mSamples = t as SerializableDictionary<string, List<byte[]>>;
                         if (mSamples.Count > 10000)
@@ -154,11 +154,6 @@ namespace AppAnalytics
 
         ~ManifestController()
         {
-            var copyS = mSamples;
-            foreach (var kv in mSamples)
-            {
-                if (kv.Value.Count == 0) copyS.Remove(kv.Key);
-            }
             store();
         }
 
@@ -177,6 +172,11 @@ namespace AppAnalytics
                         serializer.WriteObject(bw, mManifests);
                         bw.Close();
                     }
+                    else
+                    {
+                        iStorage.DeleteFile("manifests");
+                    }
+
                     if (mSamples.Count > 0)
                     {
                         XmlSerializer serializer3 = new XmlSerializer(typeof(SerializableDictionary<string, List<byte[]>>));
@@ -184,6 +184,10 @@ namespace AppAnalytics
                         var bw = iStorage.OpenFile("samples", FileMode.Create);
                         serializer3.Serialize(bw, mSamples);
                         bw.Close();
+                    }
+                    else
+                    {
+                        iStorage.DeleteFile("samples");
                     }
                 }
             }
@@ -373,6 +377,13 @@ namespace AppAnalytics
                         mSamples[kval.Key].RemoveRange(0, kval.Value);
                     }
                 }
+                //mSamples.
+                var copyS = new SerializableDictionary<string, List<byte[]>> (mSamples);
+                foreach (var kv in mSamples)
+                {
+                    if (kv.Value.Count == 0) copyS.Remove(kv.Key);
+                }
+                mSamples = copyS;
             }
         } 
 

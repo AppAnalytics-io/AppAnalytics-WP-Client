@@ -10,7 +10,11 @@ namespace AppAnalytics
 {
     internal static class Sender
     {
+#if DEBUG
         public const string kGTBaseURL      = "http://www.appanalytics.io/api/v1/"; // @"http://192.168.1.36:6249/api/v1";
+#else
+        public const string kGTBaseURL      = "http://wa-api-cent-us-1.cloudapp.net/api/v1/"; //
+#endif
         public const string kGTManifestsURL = "manifests?UDID=";
         public const string kGTSamplesURL = "samples?UDID=";
 

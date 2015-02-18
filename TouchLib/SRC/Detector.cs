@@ -130,6 +130,7 @@ namespace AppAnalytics
             }
         }
 
+        // just for test yet.
         static void changeDetected(object sender, NetworkNotificationEventArgs e)
         {
             string change = string.Empty;
