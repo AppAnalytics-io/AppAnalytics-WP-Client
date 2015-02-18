@@ -13,12 +13,13 @@ using System.Windows.Media;
 //using System.
 
 using Microsoft.Xna.Framework;
-using TouchLib.ShakeGestures;
+using AppAnalytics.ShakeGestures;
 
-namespace TouchLib
+namespace AppAnalytics
 {
     internal class Recognizer
     {
+        #region data_types
         enum GState
         {
             MovingUp = 0,
@@ -87,7 +88,7 @@ namespace TouchLib
                 }
             }
         }
-
+        #endregion
         private double convertToUnixTimestamp(DateTime date)
         {
             DateTime origin = new DateTime(1970, 1, 1, 0, 0, 0, 0);
@@ -109,15 +110,43 @@ namespace TouchLib
                 double t = 0;
                 lock (_lockObject)
                 {
-                    t = prevTapOccured;
+                    t = mPrevTapOccured;
                 }
                 return t;
             }
         }
-
+        #region private_memb
         private static readonly object _lockObject = new object();
         private static Recognizer mInstance;
 
+        string mBufferPageUri = "none";
+        string mBufferElementUri = "none";
+
+        double mPreDistance = 0;
+        double mPreAngle = 0;
+
+        double[] mPreMoveX = new double[4] { 0, 0, 0, 0 };
+        double[] mPreMoveY = new double[4] { 0, 0, 0, 0 };
+        double[] mPreFlickX = new double[4] { 0, 0, 0, 0 };
+        double[] mPreFlickY = new double[4] { 0, 0, 0, 0 };
+
+        double mTouchStarted = 0;
+        double mPositionX = 0;
+        double mPositionY = 0; // where the gesture begun
+
+        Dir mTrevDir = Dir.None;
+
+        // about taps
+        double mPrevTapOccured = 0;
+        int tapsInRow = 0;
+
+        double mTimeStamp = 0;
+        int prevFingers = 0;
+
+        GData mPrevGesture = new GData();
+
+        double mInsensitivity = 0;
+        #endregion
         // public section //////////////////////////////
         public static Recognizer Instance
         {
@@ -141,7 +170,7 @@ namespace TouchLib
 
         public byte Init()
         {
-            timeStamp = convertToUnixTimestamp(DateTime.Now); 
+            mTimeStamp = convertToUnixTimestamp(DateTime.Now); 
 
             return 0;
         }
@@ -274,8 +303,6 @@ namespace TouchLib
             createGesture(id);
         }
 
-        string mBufferPageUri = "none";
-        string mBufferElementUri = "none";
 
         public void createGesture(GestureID aID)
         {
@@ -460,20 +487,6 @@ namespace TouchLib
             }
         }
 
-        // about flicks
-
-        double preDistance = 0;
-        double preAngle = 0;
-
-        double[] preMoveX = new double[4] { 0, 0, 0, 0 };
-        double[] preMoveY = new double[4] { 0, 0, 0, 0 };
-        double[] preFlickX = new double[4] { 0, 0, 0, 0 };
-        double[] preFlickY = new double[4] { 0, 0, 0, 0 };
-
-        double touchStarted = 0;
-        double mPositionX = 0;
-        double mPositionY = 0; // where the gesture begun
-
         public double LastPosX
         {
             get
@@ -508,8 +521,8 @@ namespace TouchLib
             {
                 double x = tpc[i].Position.X;
                 double y = tpc[i].Position.Y;
-                double length = Math.Sqrt(Math.Pow((x - preFlickX[i]), 2) +
-                    Math.Pow((y - preFlickY[i]), 2) );
+                double length = Math.Sqrt(Math.Pow((x - mPreFlickX[i]), 2) +
+                    Math.Pow((y - mPreFlickY[i]), 2) );
 
                 f += length;
             }
@@ -531,8 +544,8 @@ namespace TouchLib
                 float x = (float) tpc[i].Position.X;
                 float y = (float) tpc[i].Position.Y;
 
-                float x1 = (float) preMoveX[i];
-                float y1 = (float) preMoveY[i];
+                float x1 = (float) mPreMoveX[i];
+                float y1 = (float) mPreMoveY[i];
 
                 vec += new Vector2(x, y) - new Vector2(x1, y1);
             }
@@ -540,19 +553,6 @@ namespace TouchLib
 
             return vec;
         }
-
-        Dir     prevDir = Dir.None;
-
-        // about taps
-        double  prevTapOccured = 0;
-        int     tapsInRow = 0;
-
-        double  timeStamp = 0;
-        int     prevFingers = 0;
-
-        GData   prevGesture = new GData();
-
-        double  insensitivity = 0;
 
         private static double resolutionX()
         {
@@ -581,10 +581,10 @@ namespace TouchLib
             // insens. processing
             // writing gesture
             double curTime = convertToUnixTimestamp(DateTime.Now);
-            if (insensitivity > 0)
+            if (mInsensitivity > 0)
             {
-                insensitivity -= curTime - timeStamp;
-                timeStamp = curTime;
+                mInsensitivity -= curTime - mTimeStamp;
+                mTimeStamp = curTime;
                 return;
             }
 
@@ -605,7 +605,7 @@ namespace TouchLib
 
         void handleChangingDirection(Dir d, TouchPointCollection tpc)
         {
-            if (d == prevDir)
+            if (d == mTrevDir)
                 return;
 
             int numb = tpc.Count > 4 ? 4 : tpc.Count;
@@ -615,38 +615,38 @@ namespace TouchLib
             if (d == Dir.Left)
             {
                 Debug.WriteLine("<-- " + PrevFingers);
-                if (isMovingState(prevGesture.state))
+                if (isMovingState(mPrevGesture.state))
                 {
                     createFlickGesture(PrevFingers, d); // submitting PREVIOUS movement
                 }
-                prevGesture.state = GState.MovingLeft;
+                mPrevGesture.state = GState.MovingLeft;
             }
             else if (d == Dir.Right)
             {
                 Debug.WriteLine("--> " + PrevFingers);
-                if (isMovingState(prevGesture.state))
+                if (isMovingState(mPrevGesture.state))
                 {
                     createFlickGesture(PrevFingers, d); // submitting PREVIOUS movement
                 }
-                prevGesture.state = GState.MovingRight;
+                mPrevGesture.state = GState.MovingRight;
             }
             else if (d == Dir.Up)
             {
                 Debug.WriteLine("/\\ " + PrevFingers);
-                if (isMovingState(prevGesture.state))
+                if (isMovingState(mPrevGesture.state))
                 {
                     createFlickGesture(PrevFingers, d); // submitting PREVIOUS movement
                 }
-                prevGesture.state = GState.MovingUp;
+                mPrevGesture.state = GState.MovingUp;
             }
             else if (d == Dir.Down)
             {
                 Debug.WriteLine("\\/ " + PrevFingers);
-                if (isMovingState(prevGesture.state))
+                if (isMovingState(mPrevGesture.state))
                 {
                     createFlickGesture(PrevFingers, d); // submitting PREVIOUS movement
                 }
-                prevGesture.state = GState.MovingDown; 
+                mPrevGesture.state = GState.MovingDown; 
             }
         }
 
@@ -664,7 +664,7 @@ namespace TouchLib
                 {
                     lock (_lockObject)
                     {
-                        prevTapOccured = 0;
+                        mPrevTapOccured = 0;
                     }
                 }
 
@@ -679,7 +679,7 @@ namespace TouchLib
                     Debug.WriteLine("[triple tap with ]" + PrevFingers + "fingers");
                     createTapGesture(3, PrevFingers);
                     TapsInRow = 0;
-                    prevGesture.state = GState.None;
+                    mPrevGesture.state = GState.None;
 
                     return true;
                 }
@@ -687,10 +687,10 @@ namespace TouchLib
                 {
                     lastTapFingers = tpc.Count > 4 ? 4 : tpc.Count; 
 
-                    prevTapOccured = getNow();
+                    mPrevTapOccured = getNow();
                     TapsInRow = TapsInRow + 1;
                     Debug.WriteLine("                            tapsInRow=" + TapsInRow);
-                    prevGesture.state = GState.None;
+                    mPrevGesture.state = GState.None;
 
                     return true;
                 }
@@ -708,15 +708,15 @@ namespace TouchLib
             double nowflickX = flickPoint.Position.X;
             double nowflickY = flickPoint.Position.Y;
 
-            double length = Math.Pow((nowflickX - preMoveX[0]), 2) 
-                            +  Math.Pow((nowflickY - preMoveY[0]), 2);
+            double length = Math.Pow((nowflickX - mPreMoveX[0]), 2) 
+                            +  Math.Pow((nowflickY - mPreMoveY[0]), 2);
 
-            Vector2 vec = createVec(preMoveX[0] - flickPoint.Position.X,
-                preMoveY[0] - flickPoint.Position.Y);
+            Vector2 vec = createVec(mPreMoveX[0] - flickPoint.Position.X,
+                mPreMoveY[0] - flickPoint.Position.Y);
 
             var dir = getDirection(vec);
 
-            if (length > SwipeThreshold && isMovingState(prevGesture.state))
+            if (length > SwipeThreshold && isMovingState(mPrevGesture.state))
             {
                 if (Dir.Down == dir)
                 {
@@ -739,14 +739,14 @@ namespace TouchLib
                     createSwipeGesture(PrevFingers, dir);
                 }
             }
-            else if ( isMovingState(prevGesture.state))
+            else if ( isMovingState(mPrevGesture.state))
             {
                 Debug.WriteLine("<movement completed>");
-                createFlickGesture(PrevFingers, prevDir); // submitting PREVIOUS movement
+                createFlickGesture(PrevFingers, mTrevDir); // submitting PREVIOUS movement
                 //send move event
             }
 
-            prevGesture.state = GState.None;
+            mPrevGesture.state = GState.None;
             return false;
         }
 
@@ -755,40 +755,40 @@ namespace TouchLib
             TouchPoint flickPoint = tpc[0];
             double changes = getAverageOffsets(tpc);
 
-            preFlickX.CopyTo(preMoveX, 0);
-            preFlickY.CopyTo(preMoveY, 0);
+            mPreFlickX.CopyTo(mPreMoveX, 0);
+            mPreFlickY.CopyTo(mPreMoveY, 0);
             for (int i = 0; i < Math.Min(tpc.Count, 4); ++i)
             {
-                preFlickX[i] = tpc[i].Position.X;
-                preFlickY[i] = tpc[i].Position.Y;
+                mPreFlickX[i] = tpc[i].Position.X;
+                mPreFlickY[i] = tpc[i].Position.Y;
             }
 
             double nowflickX = flickPoint.Position.X;
             double nowflickY = flickPoint.Position.Y;
 
             // get average moving
-            if (changes < HoldThreshold && prevGesture.state != GState.Hold && !isRotateState(prevGesture.state) &&
-                !isZoomState(prevGesture.state) && PrevFingers == tpc.Count)
+            if (changes < HoldThreshold && mPrevGesture.state != GState.Hold && !isRotateState(mPrevGesture.state) &&
+                !isZoomState(mPrevGesture.state) && PrevFingers == tpc.Count)
             {
-                if (isMovingState(prevGesture.state))
+                if (isMovingState(mPrevGesture.state))
                 {
                     return true;
                 }
-                if ( (getNow() - touchStarted) < (TimeForTap * 1.3) )
+                if ( (getNow() - mTouchStarted) < (TimeForTap * 1.3) )
                 { 
                     return false;
                 }
 
                 Debug.WriteLine("[HOLD_1] " + tpc.Count);
                 createHoldGesture(tpc.Count > 4 ? 4 : tpc.Count);
-                prevGesture.state = GState.Hold;
+                mPrevGesture.state = GState.Hold;
 
                 return true;
             }
             else if (changes < HoldThreshold &&  PrevFingers != tpc.Count && tpc.Count <= 4)
             {
                 Debug.WriteLine("[None] " + tpc.Count);
-                prevGesture.state = GState.None;
+                mPrevGesture.state = GState.None;
 
                 return true;
             }
@@ -810,11 +810,11 @@ namespace TouchLib
                 }
                 else if (isMovingState(domState))
                 {
-                    Vector2 vec = createVec(preMoveX[0] - flickPoint.Position.X,
-                        preMoveY[0] - flickPoint.Position.Y);
+                    Vector2 vec = createVec(mPreMoveX[0] - flickPoint.Position.X,
+                        mPreMoveY[0] - flickPoint.Position.Y);
 
                     handleChangingDirection(getDirection(vec), tpc);
-                    prevDir = getDirection(vec);
+                    mTrevDir = getDirection(vec);
                 }
             }
 
@@ -840,18 +840,18 @@ namespace TouchLib
             {
                 for (int i = 0; i < Math.Min(tpc.Count, 4); ++i)
                 {
-                    preFlickX[i] = tpc[i].Position.X;
-                    preFlickY[i] = tpc[i].Position.Y;
+                    mPreFlickX[i] = tpc[i].Position.X;
+                    mPreFlickY[i] = tpc[i].Position.Y;
                 }
                 //Debug.WriteLine("finger - down");
                 startTap = getNow();
-                prevDir = Dir.None;
+                mTrevDir = Dir.None;
 
                 mPositionX = flickPoint.Position.X;
                 mPositionY = flickPoint.Position.Y;
 
                 Deployment.Current.Dispatcher.BeginInvoke(() => getElementUri());
-                touchStarted = getNow();
+                mTouchStarted = getNow();
             }
 
             return false;
@@ -871,26 +871,26 @@ namespace TouchLib
 
                 if ((X2 - X1) == 0)
                 {
-                    preAngle = 90;
+                    mPreAngle = 90;
                 }
                 else
                 {
-                    preAngle = Math.Atan((Y2 - Y1) / (X2 - X1));
+                    mPreAngle = Math.Atan((Y2 - Y1) / (X2 - X1));
                 }
 
-                preDistance = Math.Sqrt( Math.Pow((X1 - X2), 2) + Math.Pow((Y1 - Y2), 2));
+                mPreDistance = Math.Sqrt( Math.Pow((X1 - X2), 2) + Math.Pow((Y1 - Y2), 2));
             }
         }
 
         GState chooseDominating(TouchPointCollection tpc, double avarageMove)
         {
-            if ( isRotateState(prevGesture.state))
+            if ( isRotateState(mPrevGesture.state))
             {
-                return prevGesture.state;
+                return mPrevGesture.state;
             }
-            else if (isZoomState(prevGesture.state))
+            else if (isZoomState(mPrevGesture.state))
             {
-                return prevGesture.state;
+                return mPrevGesture.state;
             }
 
             GState st = GState.None;
@@ -952,7 +952,7 @@ namespace TouchLib
 
                 // Detect two fingers enlargement and shrink.
                 var distance = Math.Sqrt( Math.Pow((X1 - X2), 2) + Math.Pow((Y1 - Y2), 2) );
-                var distDif = distance - preDistance ;
+                var distDif = distance - mPreDistance ;
                 distDif = Math.Abs(distDif);
                 if (distDif > 0)
                 {
@@ -996,15 +996,15 @@ namespace TouchLib
                 }
 
                 double diff = 0;
-                if ( Math.Sign(nowAngle) == Math.Sign(preAngle) )
+                if ( Math.Sign(nowAngle) == Math.Sign(mPreAngle) )
                 {
-                    diff = Math.Abs(nowAngle - preAngle);
+                    diff = Math.Abs(nowAngle - mPreAngle);
                 }
                 else
                 {
-                    double na = nowAngle, pa = preAngle;
+                    double na = nowAngle, pa = mPreAngle;
 
-                    if (preAngle < 0) pa = (Math.PI * 2) + pa;
+                    if (mPreAngle < 0) pa = (Math.PI * 2) + pa;
                     if (nowAngle < 0) na = (Math.PI * 2) + na;
 
                     diff = Math.Abs(na - pa);
@@ -1035,23 +1035,23 @@ namespace TouchLib
 
             // Detect two fingers enlargement and shrink.
             var distance = Math.Sqrt( Math.Pow((X1 - X2), 2) + Math.Pow((Y1 - Y2), 2) );
-            if ( (distance > (preDistance)) && (GState.Enlarge != prevGesture.state) )
+            if ( (distance > (mPreDistance)) && (GState.Enlarge != mPrevGesture.state) )
             {
                 Debug.WriteLine("enlarge");
                 // push
                 createGesture(GestureID.ZoomWith2Finger);
-                prevGesture.state = GState.Enlarge; // also known as zoom
+                mPrevGesture.state = GState.Enlarge; // also known as zoom
                 flag = true;
             }
-            else if ( (distance < (preDistance)) && (GState.Shrink != prevGesture.state))
+            else if ( (distance < (mPreDistance)) && (GState.Shrink != mPrevGesture.state))
             {
                 Debug.WriteLine("shrink"); // also known as pinch
                 // push
                 createGesture(GestureID.PinchWith2Finger);
-                prevGesture.state = GState.Shrink;
+                mPrevGesture.state = GState.Shrink;
                 flag = true;
             }
-            preDistance = distance;
+            mPreDistance = distance;
 
             return flag;
         }
@@ -1086,11 +1086,11 @@ namespace TouchLib
 //                     return false;
 //                 }
 //                 else
-                if ((GState.RotateC != prevGesture.state) && (GState.RotateAC != prevGesture.state))
+                if ((GState.RotateC != mPrevGesture.state) && (GState.RotateAC != mPrevGesture.state))
                 {
                     Debug.WriteLine("rotation");
                     createGesture(GestureID.RotateWith2Finger);
-                    prevGesture.state = GState.RotateAC;
+                    mPrevGesture.state = GState.RotateAC;
                 }
 
 //                 if ((nowAngle > preAngle) && (GState.RotateC != prevGesture.state))

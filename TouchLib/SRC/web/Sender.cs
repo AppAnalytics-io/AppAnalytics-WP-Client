@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Phone.Net.NetworkInformation;
 
-namespace TouchLib
+namespace AppAnalytics
 {
     internal static class Sender
     {

@@ -1,4 +1,0 @@
-C:\Users\Vlad\documents\visual studio 2013\Projects\TouchCatcher\TouchLib\Bin\Debug\TouchLib.dll
-C:\Users\Vlad\documents\visual studio 2013\Projects\TouchCatcher\TouchLib\Bin\Debug\TouchLib.pdb
-C:\Users\Vlad\documents\visual studio 2013\Projects\TouchCatcher\TouchLib\obj\Debug\TouchLib.dll
-C:\Users\Vlad\documents\visual studio 2013\Projects\TouchCatcher\TouchLib\obj\Debug\TouchLib.pdb

@@ -11,7 +11,7 @@ using System.Runtime.Serialization;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace TouchLib
+namespace AppAnalytics
 {
     public enum GestureID
     {

@@ -23,7 +23,7 @@ using Microsoft.Phone.Applications.Common;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace TouchLib.ShakeGestures
+namespace AppAnalytics.ShakeGestures
 {
     internal class ShakeGesturesHelper
     {

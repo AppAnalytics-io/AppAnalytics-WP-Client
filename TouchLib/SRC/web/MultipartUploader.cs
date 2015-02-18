@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace TouchLib
+namespace AppAnalytics
 {
     internal static class MultipartUploader
     {

@@ -7,7 +7,7 @@ using System.IO;
 using System.IO.IsolatedStorage;
 using System.Diagnostics;
 
-namespace TouchLib.UUID
+namespace AppAnalytics.UUID
 {
     internal class UDIDGen
     {

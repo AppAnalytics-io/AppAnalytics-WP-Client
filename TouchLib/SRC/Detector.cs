@@ -15,7 +15,7 @@ using System.Collections;
 using Microsoft.Phone.Net.NetworkInformation; 
 
 
-namespace TouchLib
+namespace AppAnalytics
 {
     public static class Detector
     {

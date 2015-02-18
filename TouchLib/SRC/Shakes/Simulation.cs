@@ -21,7 +21,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using Microsoft.Phone.Applications.Common;
 
-namespace TouchLib.ShakeGestures
+namespace AppAnalytics.ShakeGestures
 {
     internal class Simulation
     {

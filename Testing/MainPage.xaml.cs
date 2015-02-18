@@ -12,9 +12,9 @@ using Testing.Resources;
 using System.Windows.Media;
 using System.Windows.Input;
 using Microsoft.Xna.Framework.Input.Touch;
- 
 
-using TouchLib;
+
+using AppAnalytics;
 
 namespace Testing
 {
