@@ -55,21 +55,13 @@ namespace AppAnalytics
 //                 //ManipulationStartedEventHandler p = new ManipulationStartedEventHandler(  //(manipulationStarted);
 //                 currentPage.PointerCanceled += _pointerExitedRouted;
 //                 currentPage.AddHandler(UIElement.PointerMovedEvent, new PointerEventHandler(_pointerMovedRouted), true);
-//             }
-//             else
-//             {
-                //var t = window.ge;
-                //window.SetPointerCapture();
+//             } 
             window.PointerPressed += _pointerPressed;
             window.PointerReleased += _pointerReleased;
             window.PointerMoved += _pointerMoved;
             window.PointerExited += _pointerExited;
             window.PointerEntered += _pointerPressed;
-            window.PointerCaptureLost += _pointerLost;
-            //window.IsInputEnabled = false;
-                //window.PointerPressed
- //           }  
-            
+            window.PointerCaptureLost += _pointerLost;  
         }
 
         TouchPointCollection mTPC = new TouchPointCollection();

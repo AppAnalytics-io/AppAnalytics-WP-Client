@@ -176,7 +176,7 @@ namespace AppAnalytics
             }
         }
 
-        static public void init(string aApiKe)
+        static public void init(string aApiKey)
         {
             //TODO : RENEW
             //Recognizer.Instance.Init();

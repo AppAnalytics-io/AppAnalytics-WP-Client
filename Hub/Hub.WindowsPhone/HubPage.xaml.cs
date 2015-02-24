@@ -50,7 +50,7 @@ namespace Hub
 
 //            this.PointerMoved += _pointerMoved;
             
-            AppAnalytics.Detector.init("IcawZz1SbQA1TA8upkLqgPDg5hka6VMQ", block1);
+            AppAnalytics.Detector.init("IcawZz1SbQA1TA8upkLqgPDg5hka6VMQ");
             // Hub is only supported in Portrait orientation
             DisplayInformation.AutoRotationPreferences = DisplayOrientations.Portrait;
 
@@ -167,12 +167,19 @@ namespace Hub
         {
             var fg = sender as Frame;
            // fg.CapturePointer(e.Pointer);
-           // Debug.WriteLine("::::::::::::::::::::::::::::::::::::::::::::::::::::::");
+           Debug.WriteLine("::::::::::::::::::::::::::::::::::::::::::::::::::::::");
         }
 
         private void Frame_ManipulationStarting(object sender, ManipulationStartingRoutedEventArgs e)
         {
 
+        }
+
+        private void Frame_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            var t = sender as Frame;
+            e.Handled = false;
+            //t.CapturePointer(e.Pointer);
         }
     }
 }
