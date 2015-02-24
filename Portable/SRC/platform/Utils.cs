@@ -8,6 +8,8 @@ using Windows.ApplicationModel;
 using Windows.UI.Xaml.Controls;
 using System.Text.RegularExpressions;
 using Windows.Foundation;
+using Windows.UI.Xaml.Input;
+using Windows.UI.Input;
 //using AppAnalytics.SystemInfo;
 
 namespace AppAnalitics
@@ -20,7 +22,6 @@ namespace AppAnalitics
     }
     internal class TouchPoint
     {
-        Point mPos = new Point();
         TouchAction mAction = TouchAction.Down;
 
         public TouchAction Action { get { return mAction; } set { mAction = value;} }

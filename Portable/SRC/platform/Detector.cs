@@ -176,7 +176,7 @@ namespace AppAnalytics
             }
         }
 
-        static public void init(string aApiKey)
+        static public void init(string aApiKe)
         {
             //TODO : RENEW
             //Recognizer.Instance.Init();
@@ -273,7 +273,7 @@ namespace AppAnalytics
                     ManifestController.Instance.sendSamples();
                     toSendMark = 0;
                 }
-
+                //RTRecognizer.Instance.getTouchFrame();
                 handleTaps(sec);
                 try
                 {

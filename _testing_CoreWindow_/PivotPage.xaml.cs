@@ -1,8 +1,9 @@
-﻿using Hub.Common;
-using Hub.Data;
-
+﻿using App7.Common;
+using App7.Data;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -10,55 +11,72 @@ using Windows.ApplicationModel.Resources;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Graphics.Display;
-using Windows.UI.Core;
-using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
-using System.Runtime.InteropServices;
+using Windows.UI.Core;
+using Windows.ApplicationModel.Core;
 using System.Diagnostics;
- 
-// The Universal Hub Application project template is documented at http://go.microsoft.com/fwlink/?LinkID=391955
 
-namespace Hub
+// The Pivot Application template is documented at http://go.microsoft.com/fwlink/?LinkID=391641
+
+namespace App7
 {
-    /// <summary>
-    /// A page that displays a grouped collection of items.
-    /// </summary>
-    public sealed partial class HubPage : Page
+    public sealed partial class PivotPage : Page
     {
+        private const string FirstGroupName = "FirstGroup";
+        private const string SecondGroupName = "SecondGroup";
+
         private readonly NavigationHelper navigationHelper;
         private readonly ObservableDictionary defaultViewModel = new ObservableDictionary();
         private readonly ResourceLoader resourceLoader = ResourceLoader.GetForCurrentView("Resources");
 
-
-//         private void _pointerMoved(object sender, PointerRoutedEventArgs e)
-//         {
-//             //var CurrentPoint = e.CurrentPoint;
-//         }
-
-
-
-        public HubPage()
-        { 
+        public PivotPage()
+        {
+            CoreWindow window = CoreApplication.MainView.CoreWindow;
+            window.SetPointerCapture();
+            window.PointerPressed += _pointerPressed;
+            window.PointerReleased += _pointerReleased;
+            window.PointerMoved += _pointerMoved;
+            window.PointerExited += _pointerExited;
+            window.PointerEntered += _pointerPressed;
+            window.PointerCaptureLost += _pointerLost;
             this.InitializeComponent();
 
-//            this.PointerMoved += _pointerMoved;
-            
-            AppAnalytics.Detector.init("IcawZz1SbQA1TA8upkLqgPDg5hka6VMQ", block1);
-            // Hub is only supported in Portrait orientation
-            DisplayInformation.AutoRotationPreferences = DisplayOrientations.Portrait;
-
             this.NavigationCacheMode = NavigationCacheMode.Required;
-             
+
+
             this.navigationHelper = new NavigationHelper(this);
             this.navigationHelper.LoadState += this.NavigationHelper_LoadState;
             this.navigationHelper.SaveState += this.NavigationHelper_SaveState;
+        }
+        private void _pointerPressed(object sender, PointerEventArgs e)
+        {
+            Debug.WriteLine("pressed");
+        }
+
+        private void _pointerMoved(object sender, PointerEventArgs e)
+        {
+            Debug.WriteLine(">>>>>>>>>>>>>>>>>>>>");
+        }
+
+        private void _pointerReleased(object sender, PointerEventArgs e)
+        {
+            Debug.WriteLine("released");
+        }
+
+        private void _pointerExited(object sender, PointerEventArgs e)
+        {
+            Debug.WriteLine("exited");
+        }
+
+        private void _pointerLost(object sender, PointerEventArgs e)
+        {
+            Debug.WriteLine("capture lost");
         }
 
         /// <summary>
@@ -79,29 +97,29 @@ namespace Hub
         }
 
         /// <summary>
-        /// Populates the page with content passed during navigation.  Any saved state is also
+        /// Populates the page with content passed during navigation. Any saved state is also
         /// provided when recreating a page from a prior session.
         /// </summary>
         /// <param name="sender">
-        /// The source of the event; typically <see cref="NavigationHelper"/>
+        /// The source of the event; typically <see cref="NavigationHelper"/>.
         /// </param>
         /// <param name="e">Event data that provides both the navigation parameter passed to
-        /// <see cref="Frame.Navigate(Type, object)"/> when this page was initially requested and
+        /// <see cref="Frame.Navigate(Type, Object)"/> when this page was initially requested and
         /// a dictionary of state preserved by this page during an earlier
-        /// session.  The state will be null the first time a page is visited.</param>
+        /// session. The state will be null the first time a page is visited.</param>
         private async void NavigationHelper_LoadState(object sender, LoadStateEventArgs e)
         {
             // TODO: Create an appropriate data model for your problem domain to replace the sample data
-            var sampleDataGroups = await SampleDataSource.GetGroupsAsync();
-            this.DefaultViewModel["Groups"] = sampleDataGroups;
+            var sampleDataGroup = await SampleDataSource.GetGroupAsync("Group-1");
+            this.DefaultViewModel[FirstGroupName] = sampleDataGroup;
         }
 
         /// <summary>
         /// Preserves state associated with this page in case the application is suspended or the
-        /// page is discarded from the navigation cache.  Values must conform to the serialization
+        /// page is discarded from the navigation cache. Values must conform to the serialization
         /// requirements of <see cref="SuspensionManager.SessionState"/>.
         /// </summary>
-        /// <param name="sender">The source of the event; typically <see cref="NavigationHelper"/></param>
+        /// <param name="sender">The source of the event; typically <see cref="NavigationHelper"/>.</param>
         /// <param name="e">Event data that provides an empty dictionary to be populated with
         /// serializable state.</param>
         private void NavigationHelper_SaveState(object sender, SaveStateEventArgs e)
@@ -110,31 +128,33 @@ namespace Hub
         }
 
         /// <summary>
-        /// Shows the details of a clicked group in the <see cref="SectionPage"/>.
+        /// Adds an item to the list when the app bar button is clicked.
         /// </summary>
-        /// <param name="sender">The source of the click event.</param>
-        /// <param name="e">Details about the click event.</param>
-        private void GroupSection_ItemClick(object sender, ItemClickEventArgs e)
+        private void AddAppBarButton_Click(object sender, RoutedEventArgs e)
         {
-            var groupId = ((SampleDataGroup)e.ClickedItem).UniqueId;
-            if (!Frame.Navigate(typeof(SectionPage), groupId))
+        }
+
+        /// <summary>
+        /// Invoked when an item within a section is clicked.
+        /// </summary>
+        private void ItemView_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            // Navigate to the appropriate destination page, configuring the new page
+            // by passing required information as a navigation parameter
+            var itemId = ((SampleDataItem)e.ClickedItem).UniqueId;
+            if (!Frame.Navigate(typeof(ItemPage), itemId))
             {
                 throw new Exception(this.resourceLoader.GetString("NavigationFailedExceptionMessage"));
             }
         }
 
         /// <summary>
-        /// Shows the details of an item clicked on in the <see cref="ItemPage"/>
+        /// Loads the content for the second pivot item when it is scrolled into view.
         /// </summary>
-        /// <param name="sender">The source of the click event.</param>
-        /// <param name="e">Defaults about the click event.</param>
-        private void ItemView_ItemClick(object sender, ItemClickEventArgs e)
+        private async void SecondPivot_Loaded(object sender, RoutedEventArgs e)
         {
-            var itemId = ((SampleDataItem)e.ClickedItem).UniqueId;
-            if (!Frame.Navigate(typeof(ItemPage), itemId))
-            {
-                throw new Exception(this.resourceLoader.GetString("NavigationFailedExceptionMessage"));
-            }
+            var sampleDataGroup = await SampleDataSource.GetGroupAsync("Group-2");
+            this.DefaultViewModel[SecondGroupName] = sampleDataGroup;
         }
 
         #region NavigationHelper registration
@@ -143,14 +163,15 @@ namespace Hub
         /// The methods provided in this section are simply used to allow
         /// NavigationHelper to respond to the page's navigation methods.
         /// <para>
-        /// Page specific logic should be placed in event handlers for the
+        /// Page specific logic should be placed in event handlers for the  
         /// <see cref="NavigationHelper.LoadState"/>
         /// and <see cref="NavigationHelper.SaveState"/>.
-        /// The navigation parameter is available in the LoadState method
+        /// The navigation parameter is available in the LoadState method 
         /// in addition to page state preserved during an earlier session.
         /// </para>
         /// </summary>
-        /// <param name="e">Event data that describes how this page was reached.</param>
+        /// <param name="e">Provides data for navigation methods and event
+        /// handlers that cannot cancel the navigation request.</param>
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             this.navigationHelper.OnNavigatedTo(e);
@@ -162,17 +183,5 @@ namespace Hub
         }
 
         #endregion
-
-        private void Frame_PointerMoved(object sender, PointerRoutedEventArgs e)
-        {
-            var fg = sender as Frame;
-           // fg.CapturePointer(e.Pointer);
-           // Debug.WriteLine("::::::::::::::::::::::::::::::::::::::::::::::::::::::");
-        }
-
-        private void Frame_ManipulationStarting(object sender, ManipulationStartingRoutedEventArgs e)
-        {
-
-        }
     }
 }

@@ -71,7 +71,11 @@
     </Page.Resources>
 
     <Grid x:Name="LayoutRoot">
-        <Hub x:Name="Hub" x:Uid="Hub" Header="application name" Background="{ThemeResource HubBackgroundImageBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="2*"/>
+            <RowDefinition Height="3*"/>
+        </Grid.RowDefinitions>
+        <Hub x:Name="Hub" x:Uid="Hub" Header="application name" Background="{ThemeResource HubBackgroundImageBrush}" Grid.RowSpan="2">
             <HubSection x:Uid="HubSection1" Header="SECTION 1" DataContext="{Binding Groups}" HeaderTemplate="{ThemeResource HubSectionHeaderTemplate}">
                 <DataTemplate>
                     <ListView
@@ -167,5 +171,7 @@
                 </DataTemplate>
             </HubSection>
         </Hub>
+        <Frame x:Uid="Frm" Content="Frame" HorizontalAlignment="Left" Margin="-257,259.167,-1196,-18" VerticalAlignment="Top" Height="143" Width="1853" PointerMoved="Frame_PointerMoved" ManipulationStarting="Frame_ManipulationStarting" Grid.Row="1"/>
+        <TextBlock Name="block1" x:Uid="TxtBlock" HorizontalAlignment="Left" Margin="129,84,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Height="31" Width="230" FontSize="24"/>
     </Grid>
 </Page>
