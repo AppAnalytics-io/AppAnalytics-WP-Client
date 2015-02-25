@@ -47,14 +47,15 @@ namespace AppAnalytics.UUID
                         mGUID = new Guid(binary);
                         br.Close();
                     }
+                    iStorage.Dispose();
                     return true;
                 }
                 catch (Exception e)
                 {
                     Debug.WriteLine(e.Message + "\n Cannot open file or read from it.");
+                    iStorage.Dispose();
                     return false;
                 }
-                iStorage.Dispose();
             }
 
             return false;

@@ -162,9 +162,9 @@ namespace AppAnalytics
             DataContractSerializer serializer = new DataContractSerializer(typeof(Dictionary<string, byte[]>));
             IsolatedStorageFile iStorage = IsolatedStorageFile.GetUserStoreForApplication();
 
-            try
+            lock (_readLock)
             {
-                lock (_readLock)
+                try
                 {
                     if (mManifests.Count > 0)
                     {
@@ -189,12 +189,13 @@ namespace AppAnalytics
                     {
                         iStorage.DeleteFile("samples");
                     }
+
                 }
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine(e.Message + "\n Cannot create file.");
-                return;
+                catch (Exception e)
+                {
+                    Debug.WriteLine(e.Message + "\n Cannot create file.");
+                    return;
+                }
             }
 
             iStorage.Dispose();

@@ -44,27 +44,24 @@ namespace AppAnalytics
             var state = new KeyValuePair<HttpWebRequest, byte[]>(request, formData);
             var result = request.BeginGetRequestStream(GetRequestStreamCallback, state);
 
-            var tmp = mFlag;
-            mFlag = false;
-            return tmp;
+            return true;
         }
 
         static int _packageIndex = 0;
         private static byte[] GetMultipartFormData(Dictionary<string, object> postParameters, string boundary, bool isManifest)
         {
             Stream formDataStream = new System.IO.MemoryStream();
-            bool needsCLRF = true;
+            bool needsCLRF = false;
  
             foreach (var param in postParameters)
             {
                 if (needsCLRF)
                     formDataStream.Write(encoding.GetBytes("\r\n"), 0, encoding.GetByteCount("\r\n"));
- 
-                needsCLRF = true;
+  
                 string fname = "";
                 if (isManifest)
                 {
-                    fname = Detector.getSessionID() + ".manifest";
+                    fname = Detector.getSessionIDString() + ".manifest";
                 }
                 else
                 {
