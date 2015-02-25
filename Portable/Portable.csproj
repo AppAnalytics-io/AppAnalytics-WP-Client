@@ -39,16 +39,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SRC\CustomDict.cs" />
-    <Compile Include="SRC\platform\Detector.cs" />
-    <Compile Include="SRC\GestureData.cs" />
-    <Compile Include="SRC\ManifestController.cs" />
+    <Compile Include="SRC\RTCustomDict.cs" />
+    <Compile Include="SRC\platform\RTDetector.cs" />
+    <Compile Include="SRC\RTGestureData.cs" />
+    <Compile Include="SRC\RTManifestController.cs" />
     <Compile Include="SRC\platform\RTRecognizer.cs" />
     <Compile Include="SRC\platform\Utils.cs" />
-    <Compile Include="SRC\platform\Recognizer.cs" />
-    <Compile Include="SRC\UUID\UDIDGen.cs" />
-    <Compile Include="SRC\web\MultipartUploader.cs" />
-    <Compile Include="SRC\web\Sender.cs" />
+    <Compile Include="SRC\platform\CoreRecognizer.cs" />
+    <Compile Include="SRC\UUID\RTUDIDGen.cs" />
+    <Compile Include="SRC\web\RTMultipartUploader.cs" />
+    <Compile Include="SRC\web\RTSender.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

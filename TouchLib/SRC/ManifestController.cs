@@ -234,7 +234,7 @@ namespace AppAnalytics
             mPackage.WriteByte((byte)'>');
             lock (_readLock)
             {
-                if (mSamples.ContainsKey(Detector.getSessionIDString()))
+                if (mSamples.ContainsKey(Detector.getSessionIDStringWithDashes()))
                 {
                     mSamples[Detector.getSessionIDStringWithDashes()].Add(mPackage.ToArray());
                 }

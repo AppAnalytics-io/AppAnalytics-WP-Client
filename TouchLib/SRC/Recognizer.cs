@@ -936,7 +936,7 @@ namespace AppAnalytics
         }
 
         const UInt16 kZoomMetricCf = 1;
-        const UInt16 kRotateMetricCf = 2;
+        const float kRotateMetricCf = 1.7f;
 
         double checkForZoom(TouchPointCollection tpc)
         {

@@ -432,7 +432,7 @@ namespace AppAnalytics
             {
                 CultureInfo cult = Thread.CurrentThread.CurrentCulture;
                 RegionInfo rf = new RegionInfo(cult.ToString());
-
+                
                 string lt3 = Converter.convertToThreeLetterCode( rf.TwoLetterISORegionName );
 
                 return new byte[3] { (byte)lt3[0], (byte)lt3[1], (byte)lt3[2] };
