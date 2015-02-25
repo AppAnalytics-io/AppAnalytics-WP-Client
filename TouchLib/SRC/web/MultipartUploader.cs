@@ -18,6 +18,8 @@ namespace AppAnalytics
 
         public static bool MultipartFormDataPost(string postUrl, string userAgent, Dictionary<string, object> postParameters, bool isManifest)
         {
+            var d = Guid.NewGuid();
+
             string formDataBoundary = String.Format("----------{0:N}", Guid.NewGuid());
             string contentType = "multipart/form-data; boundary=" + formDataBoundary;
 
@@ -72,12 +74,16 @@ namespace AppAnalytics
                 if (param.Value is FileParameter)
                 {
                     FileParameter fileToUpload = (FileParameter)param.Value;
-  
-                    string header = string.Format("--{0}\r\nContent-Disposition: form-data; name=\"{1}\"; filename=\"{2}\"\r\nContent-Type: {3}\r\n\r\n",
+//                     string header =
+//                       string.Format("--{0}\r\nContent-Disposition: form-data; name=\"{1}\"; filename=\"{2}\"\r\nContent-Type: {3}\r\n\r\n Manifest:",
+//                       boundary,
+//                       isManifest ? "Manifest_" : "Sample_",
+//                       fname,
+//                       "application/octet-stream");
+                    string header =
+                        string.Format("--{0}\r\nContent-Disposition: form-data; name=\"{1}\" Manifest:\r\n\r\n",
                         boundary,
-                        isManifest ? "Manifest" : "Sample",
-                        fname,
-                        "application/octet-stream");
+                        fname);
  
                     formDataStream.Write(encoding.GetBytes(header), 0, encoding.GetByteCount(header));
  
@@ -120,8 +126,6 @@ namespace AppAnalytics
             var dataToSend = state.Value;
             // End the operation
             Stream postStream = request.EndGetRequestStream(asynchronousResult);
-
-            Console.WriteLine("Please enter the input data to be posted:");
 
             // Write to the request stream.
             postStream.Write(dataToSend, 0, dataToSend.Length);

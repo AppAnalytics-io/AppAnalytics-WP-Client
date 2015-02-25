@@ -95,6 +95,22 @@ namespace AppAnalytics.UUID
             }
         }
 
+        public Guid SessionIDRaw
+        {
+            get
+            {
+                return mSessionID;
+            }
+        }
+
+        public Guid UDIDRaw
+        {
+            get
+            {
+                return mGUID;
+            }
+        }
+
         public byte[] UDID
         {
             get
