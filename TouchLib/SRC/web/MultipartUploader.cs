@@ -43,6 +43,8 @@ namespace AppAnalytics
             request.CookieContainer = new CookieContainer();
             request.ContentLength = formData.Length;
 
+            var st = request.ToString();
+
             var state = new KeyValuePair<HttpWebRequest, byte[]>(request, formData);
             var result = request.BeginGetRequestStream(GetRequestStreamCallback, state);
 
@@ -53,7 +55,7 @@ namespace AppAnalytics
         private static byte[] GetMultipartFormData(Dictionary<string, object> postParameters, string boundary, bool isManifest)
         {
             Stream formDataStream = new System.IO.MemoryStream();
-            bool needsCLRF = false;
+            bool needsCLRF = true;
  
             foreach (var param in postParameters)
             {
@@ -73,17 +75,27 @@ namespace AppAnalytics
  
                 if (param.Value is FileParameter)
                 {
-                    FileParameter fileToUpload = (FileParameter)param.Value;
+//                     FileParameter fileToUpload = (FileParameter)param.Value;
 //                     string header =
-//                       string.Format("--{0}\r\nContent-Disposition: form-data; name=\"{1}\"; filename=\"{2}\"\r\nContent-Type: {3}\r\n\r\n Manifest:",
+//                       string.Format("--{0}\r\nContent-Disposition: form-data; name=\"{1}\"; filename=\"{2}\"\r\nContent-Type: {3}\r\n",// \r\n",
 //                       boundary,
-//                       isManifest ? "Manifest_" : "Sample_",
+//                       isManifest ? "Manifest" : "Sample",
 //                       fname,
 //                       "application/octet-stream");
+                    FileParameter fileToUpload = (FileParameter)param.Value;
+
+//                     string header =
+//                       string.Format("--{0}\r\nContent-Disposition: form-data; name=\"{1}\"; filename=\"{2}\"\r\nContent-Type: {3}\r\n",// \r\n",
+//                       boundary,
+//                       isManifest ? "Manifest" : "Sample",
+//                       fname,
+//                       "application/octet-stream");
+
                     string header =
-                        string.Format("--{0}\r\nContent-Disposition: form-data; name=\"{1}\" Manifest:\r\n\r\n",
-                        boundary,
-                        fname);
+                      string.Format("--{0}\r\nContent-Disposition: form-data; name={1}\r\nContent-Type: {2}\r\n\r\n",// \r\n",
+                      boundary,
+                      isManifest ? "Manifest" : "Sample",
+                      "application/octet-stream");
  
                     formDataStream.Write(encoding.GetBytes(header), 0, encoding.GetByteCount(header));
  

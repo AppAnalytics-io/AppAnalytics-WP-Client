@@ -145,9 +145,16 @@ namespace AppAnalytics
         {
             return mIDGen.SessionID;
         }
-        static public string getSessionIDString()
+
+
+        static public string getSessionIDStringWithDashes()
         {
-            return Encoding.UTF8.GetString(mIDGen.SessionID, 0 , mIDGen.SessionID.Length);
+            return mIDGen.SessionIDRaw.ToString();
+        }
+
+        internal static string  getUDIDString()
+        {
+            return mIDGen.UDIDRaw.ToString("N");
         }
 
         static private bool mFirstLaunch = true;
@@ -381,9 +388,11 @@ namespace AppAnalytics
             return mIDGen.UDID;
         }
 
-        internal static string  getUDIDString()
+        static public string getSessionIDString()
         {
-            return Encoding.UTF8.GetString(mIDGen.UDID, 0, mIDGen.UDID.Length);
+            var raw = mIDGen.SessionIDRaw;
+
+            return raw.ToString("N");
         }
 
         private static string getAppVersion()

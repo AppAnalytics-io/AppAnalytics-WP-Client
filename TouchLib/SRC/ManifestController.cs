@@ -218,12 +218,6 @@ namespace AppAnalytics
 
         public void buildDataPackage(GestureData aData)
         {
-            mPackage.WriteByte((byte)'H');
-            mPackage.WriteByte((byte)'A');
-            mPackage.WriteByte(kDataPackageFileVersion);
-
-            mPackage.Write(Detector.getSessionID(), 0, Detector.getSessionID().Length);
-
             mPackage.WriteByte((byte)'<');
 
             writeArray(mPackage, aData.ActionOrder);
@@ -242,12 +236,12 @@ namespace AppAnalytics
             {
                 if (mSamples.ContainsKey(Detector.getSessionIDString()))
                 {
-                    mSamples[Detector.getSessionIDString()].Add( mPackage.ToArray() );
+                    mSamples[Detector.getSessionIDStringWithDashes()].Add(mPackage.ToArray());
                 }
                 else
                 {
-                    mSamples[Detector.getSessionIDString()] = new List<byte[]>();
-                    mSamples[Detector.getSessionIDString()].Add(mPackage.ToArray());
+                    mSamples[Detector.getSessionIDStringWithDashes()] = new List<byte[]>();
+                    mSamples[Detector.getSessionIDStringWithDashes()].Add(mPackage.ToArray());
                 }
             }
             mPackage.Close();
@@ -314,6 +308,21 @@ namespace AppAnalytics
                 foreach (var kval in mSamples)
                 {
                     int index  = 0;
+
+                    var ms = new MemoryStream();
+
+                    ms.WriteByte((byte)'H');
+                    ms.WriteByte((byte)'A');
+                    ms.WriteByte(kDataPackageFileVersion);
+
+                    var session = Encoding.UTF8.GetBytes(kval.Key);
+                    Debug.Assert(session.Length == 36);
+
+                    ms.Write(Detector.getSessionID(), 0, Detector.getSessionID().Length);
+                    
+                    wrapper.Add( kval.Key, new MultipartUploader.FileParameter(ms.ToArray()) );
+                    ms.Close();
+
                     foreach (var gst in kval.Value)
                     {
                         bts += gst.Length;
@@ -330,13 +339,15 @@ namespace AppAnalytics
                             }
                             else Debug.WriteLine("logical error: MC sendSamples()");
                         }
-                        else
-                        {
-                            wrapper.Add(kval.Key, new MultipartUploader.FileParameter(gst));
-                        }
+
+
                         index ++;
                     }
                     count.Add(index);
+
+                    // just for sending ONE session at once. Ill keep pld code
+                    // in case if logic changes
+                    break;
                 }
             }
 

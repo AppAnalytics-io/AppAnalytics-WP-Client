@@ -28,7 +28,7 @@ namespace AppAnalytics
         public static bool tryToSend(Dictionary<string, object> aFiles, bool isItManfest, List<int> aHowMany = null)
         {
             return false; // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            if (NetworkInterface.GetIsNetworkAvailable() == true && IsPreviousOperationComplete)
+            if (NetworkInterface.GetIsNetworkAvailable() == true && IsPreviousOperationComplete && aFiles.Count > 0)
             {
                 if (isItManfest)
                 {

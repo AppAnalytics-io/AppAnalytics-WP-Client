@@ -81,26 +81,16 @@ namespace AppAnalytics
                     formDataStream.Write(encoding.GetBytes("\r\n"), 0, encoding.GetByteCount("\r\n"));
  
                 needsCLRF = true;
-                string fname = "";
-                if (isManifest)
-                {
-                    fname = Detector.getSessionID() + ".manifest";
-                }
-                else
-                {
-                    fname = string.Format("{0}_{1}.datapackage", Detector.getSessionIDString(), _packageIndex.ToString());
-                    _packageIndex++;
-                }
  
                 if (param.Value is FileParameter)
                 {
                     FileParameter fileToUpload = (FileParameter)param.Value;
-  
-                    string header = string.Format("--{0}\r\nContent-Disposition: form-data; name=\"{1}\"; filename=\"{2}\"\r\nContent-Type: {3}\r\n\r\n",
-                        boundary,
-                        isManifest ? "Manifest" : "Sample",
-                        fname,
-                        "application/octet-stream");
+
+                    string header =
+                      string.Format("--{0}\r\nContent-Disposition: form-data; name={1}\r\nContent-Type: {2}\r\n\r\n",// \r\n",
+                      boundary,
+                      isManifest ? "Manifest" : "Sample",
+                      "application/octet-stream");
  
                     formDataStream.Write(encoding.GetBytes(header), 0, encoding.GetByteCount(header));
  

@@ -80,6 +80,11 @@ namespace AppAnalytics
             return raw.ToString("N");
         }
 
+        static public string getSessionIDStringWithDashes()
+        {
+            return mIDGen.SessionIDRaw.ToString();
+        }
+
         static private bool mFirstLaunch = true;
         static private void getCurent()
         { 

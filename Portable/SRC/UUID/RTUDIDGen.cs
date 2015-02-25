@@ -105,9 +105,17 @@ namespace AppAnalytics.UUID
 
         public byte[] SessionID
         {
+            get
+            {
+                return mEncoding.GetBytes(mSessionID.ToString());
+            }
+        }
+        
+        public Guid SessionIDRaw
+        {
             get 
             {
-                return mEncoding.GetBytes( mSessionID.ToString() );
+                return mSessionID;
             }
         }
 
@@ -116,6 +124,13 @@ namespace AppAnalytics.UUID
             get
             {
                 return mEncoding.GetBytes( mGUID.ToString() );
+            }
+        }
+        public Guid UDIDRaw
+        {
+            get
+            {
+                return mGUID ;
             }
         }
     }
