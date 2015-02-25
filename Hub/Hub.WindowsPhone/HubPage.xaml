@@ -8,7 +8,7 @@
     DataContext="{Binding DefaultViewModel, RelativeSource={RelativeSource Self}}"
     d:DataContext="{Binding Source={d:DesignData Source=../Hub.Shared/DataModel/SampleData.json, Type=data:SampleDataSource}}"
     xmlns:data="using:Hub.Data"
-    mc:Ignorable="d">
+    mc:Ignorable="d" >
 
     <Page.Resources>
         <ResourceDictionary>
@@ -70,13 +70,18 @@
         </ResourceDictionary>
     </Page.Resources>
 
-    <Grid x:Name="LayoutRoot">
+    <Grid x:Name="LayoutRoot" PointerMoved="LayoutRoot_PointerMoved">
         <Grid.RowDefinitions>
             <RowDefinition Height="2*"/>
             <RowDefinition Height="3*"/>
         </Grid.RowDefinitions>
         <Hub x:Name="Hub" x:Uid="Hub" Header="application name" Background="{ThemeResource HubBackgroundImageBrush}" Grid.RowSpan="2">
             <HubSection x:Uid="HubSection1" Header="SECTION 1" DataContext="{Binding Groups}" HeaderTemplate="{ThemeResource HubSectionHeaderTemplate}">
+                <FlyoutBase.AttachedFlyout>
+                    <Flyout>
+                        <Grid Height="100" Width="100"/>
+                    </Flyout>
+                </FlyoutBase.AttachedFlyout>
                 <DataTemplate>
                     <ListView
                         ItemsSource="{Binding}"
@@ -171,7 +176,10 @@
                 </DataTemplate>
             </HubSection>
         </Hub>
-        <Frame x:Uid="Frm" Content="Frame" HorizontalAlignment="Left" Margin="-258,146.167,-1196,-18" VerticalAlignment="Top" Height="256" Width="1854" PointerMoved="Frame_PointerMoved" ManipulationStarting="Frame_ManipulationStarting" Grid.Row="1" PointerPressed="Frame_PointerPressed"/>
         <TextBlock Name="block1" x:Uid="TxtBlock" HorizontalAlignment="Left" Margin="129,84,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Height="31" Width="230" FontSize="24"/>
+        <!--<Rectangle HorizontalAlignment="Left" Height="722" Margin="-189,-52,-186,-30" Stroke="#02000000" VerticalAlignment="Top" Width="775" Grid.RowSpan="2" IsTapEnabled="False" IsRightTapEnabled="False" IsHoldingEnabled="False" IsDoubleTapEnabled="False" Fill="#02000000" PointerPressed="Rectangle_PointerPressed" PointerMoved="Rectangle_PointerMoved">
+            
+         </Rectangle>-->
+
     </Grid>
 </Page>

@@ -40,8 +40,11 @@ namespace AppAnalytics
             var currentPage = Window.Current.Content as Frame;
             CoreWindow window = CoreApplication.MainView.CoreWindow;
             //window.TouchHitTesting += testing;
-            
+
+ //           currentPage.AddHandler(UIElement.PointerMovedEvent, new PointerEventHandler(_pointerMovedRouted), true);
+
             window.IsInputEnabled = true;
+
             //window.
 //             if (useRouted)
 //             {
@@ -56,6 +59,9 @@ namespace AppAnalytics
 //                 currentPage.PointerCanceled += _pointerExitedRouted;
 //                 currentPage.AddHandler(UIElement.PointerMovedEvent, new PointerEventHandler(_pointerMovedRouted), true);
 //             } 
+            var view = CoreApplication.MainView; 
+            bool isMain = view.IsMain;
+
             window.PointerPressed += _pointerPressed;
             window.PointerReleased += _pointerReleased;
             window.PointerMoved += _pointerMoved;
@@ -105,12 +111,12 @@ namespace AppAnalytics
                 }
             }
         } 
-
+        // app-level handlers - working with raw data
         private void _pointerPressed(object sender, PointerEventArgs e)
         { 
             Debug.WriteLine("pressed");
             var CurrentPoint = e.CurrentPoint; 
-
+            
             TouchPoint tp = new TouchPoint(); 
             tp.Action = TouchAction.Down;
             tp.X = (float)CurrentPoint.Position.X; tp.Y = (float)CurrentPoint.Position.Y;

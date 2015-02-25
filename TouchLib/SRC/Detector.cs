@@ -226,6 +226,7 @@ namespace AppAnalytics
 
                 if (mNavigationOccured)
                 {
+                    Debug.WriteLine("hit");
                     lock (_lockObject)
                     {
                         mNavigationOccured = false;

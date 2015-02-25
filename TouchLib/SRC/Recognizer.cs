@@ -153,6 +153,7 @@ namespace AppAnalytics
             // singleton
             get { return mInstance ?? (mInstance = new Recognizer()); }
         }
+       
         protected Recognizer() 
         {
             Touch.FrameReported += new TouchFrameEventHandler(touchFrameReported);
@@ -328,24 +329,28 @@ namespace AppAnalytics
 
         private void getElementUri()
         {
-            var currentPage = ((PhoneApplicationFrame)Application.Current.RootVisual).Content as PhoneApplicationPage;
-           // PhoneApplicationFrame g; g.con
-           // currentPage.Content
-            //var uri = currentPage.
-            //currentPage.Children;
-            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(currentPage); i++)
+            try
             {
-                DependencyObject child = VisualTreeHelper.GetChild(currentPage, i);
+                var currentPage = ((PhoneApplicationFrame)Application.Current.RootVisual).Content as PhoneApplicationPage;
+               // PhoneApplicationFrame g; g.con
+               // currentPage.Content
+                //var uri = currentPage.
+                //currentPage.Children;
+                for (int i = 0; i < VisualTreeHelper.GetChildrenCount(currentPage); i++)
+                {
+                    DependencyObject child = VisualTreeHelper.GetChild(currentPage, i);
                 
-                if (child != null && child is System.Windows.Controls.Control)
-                {
-                    checkChild(child, currentPage);
-                }
-                if (VisualTreeHelper.GetChildrenCount(child) > 0)
-                {
-                    subChildSearch(child);
+                    if (child != null && child is System.Windows.Controls.Control)
+                    {
+                        checkChild(child, currentPage);
+                    }
+                    if (VisualTreeHelper.GetChildrenCount(child) > 0)
+                    {
+                        subChildSearch(child);
+                    }
                 }
             }
+            catch { Debug.WriteLine("uri can't be found"); }
         }
         
         private bool isInBBox (System.Windows.UIElement el, System.Windows.UIElement ancestor)

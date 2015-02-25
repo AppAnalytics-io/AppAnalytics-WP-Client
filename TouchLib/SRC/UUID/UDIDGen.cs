@@ -46,6 +46,7 @@ namespace AppAnalytics.UUID
                         var binary = br.ReadBytes(mSessionID.ToByteArray().Length);
                         mGUID = new Guid(binary);
                         br.Close();
+                        return true;
                     }
                 }
                 catch (Exception e)

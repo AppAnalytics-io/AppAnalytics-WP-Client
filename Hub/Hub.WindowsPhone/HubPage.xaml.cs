@@ -167,7 +167,6 @@ namespace Hub
         {
             var fg = sender as Frame;
            // fg.CapturePointer(e.Pointer);
-           Debug.WriteLine("::::::::::::::::::::::::::::::::::::::::::::::::::::::");
         }
 
         private void Frame_ManipulationStarting(object sender, ManipulationStartingRoutedEventArgs e)
@@ -180,6 +179,23 @@ namespace Hub
             var t = sender as Frame;
             e.Handled = false;
             //t.CapturePointer(e.Pointer);
+        }
+
+        private void Rectangle_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            Debug.WriteLine("==pressed");
+
+        }
+
+        private void Rectangle_PointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            Debug.WriteLine("==moved");
+
+        }
+
+        private void LayoutRoot_PointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            Debug.WriteLine("<<<==moved");
         }
     }
 }
