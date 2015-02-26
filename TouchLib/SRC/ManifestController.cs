@@ -233,11 +233,30 @@ namespace AppAnalytics
             writeArray(mPackage, aData.ElementID);
 
             mPackage.WriteByte((byte)'>');
-            string ansii = Encoding.UTF8.GetString(mPackage.ToArray(), 0, mPackage.ToArray().Length);
 
-            var it = BitConverter.ToInt16( mPackage.ToArray().Skip(38).Take(2).ToArray(), 0);
+            // tmp
+           // fo
+//             var arrayOfBytes = mPackage.ToArray();
+//             string ansii = Detector.getString(arrayOfBytes);
+// 
+// 
+//             var ln = ansii.Length;
+//             
+// 
+//             var urlLength = BitConverter.ToUInt16(arrayOfBytes, 38);
+//             var elLength = BitConverter.ToUInt16(arrayOfBytes, 40 + urlLength);
+// 
+//             var ElementID = Encoding.UTF8.GetString(arrayOfBytes, Convert.ToInt32(sampleElementIDIndex) + urlLength, elLength);
+//             Debug.WriteLine("URL len:" + urlLength + " ELEMENT len:" + elLength);
+// 
+//             var name = Encoding.UTF8.GetString(arrayOfBytes.Skip(40).Take(aData.ViewIDLenght).ToArray(), 0,
+//                 aData.ViewIDLenght);
+//             var name2 = Encoding.UTF8.GetString(arrayOfBytes.Skip(42 + aData.ViewIDLenght).Take(aData.ElementIDLenght).ToArray(), 0,
+//                 aData.ElementIDLenght);
+// 
+//             Debug.WriteLine("URL:" + name + " ELEMENT:" + name2);
 
-            var ln = ansii.Length;
+            // tmp
             lock (_readLock)
             {
                 if (mSamples.ContainsKey(Detector.getSessionIDStringWithDashes()))

@@ -25,9 +25,9 @@ namespace AppAnalytics
         {
             GestureData newOne = new GestureData();
             newOne.ActionID = (byte)aID;
-
-            newOne.ViewID = Detector.getBytes(aPage);
-            newOne.ElementID = Detector.getBytes(aElement);
+             
+            newOne.ViewID = Encoding.UTF8.GetBytes(aPage);// Detector.getBytes(aPage); 
+            newOne.ElementID = Encoding.UTF8.GetBytes(aElement);//Detector.getBytes(aElement);
 
             newOne.mPosX = aLocation.X;
             newOne.mPosY = aLocation.Y;
@@ -50,9 +50,7 @@ namespace AppAnalytics
 
         public static long convertToUnixTimestamp(DateTime date)
         {
-            //DateTime origin = new DateTime(1970, 1, 1, 0, 0, 0, 0);
-            //TimeSpan diff = date.ToUniversalTime() - origin;
-            return date.ToBinary();//Math.Floor(diff.TotalSeconds);
+            return date.ToBinary();
         }
 
         public void setCurrentTime()
