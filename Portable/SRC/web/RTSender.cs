@@ -27,7 +27,10 @@ namespace AppAnalytics
 
         public static bool tryToSend(Dictionary<string, object> aFiles, bool isItManfest, List<int> aHowMany = null)
         {
+            // TODO : remove @return if App is able to test in online mode
             return false; // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
             if (NetworkInterface.GetIsNetworkAvailable() == true && IsPreviousOperationComplete && aFiles.Count > 0)
             {
                 if (isItManfest)

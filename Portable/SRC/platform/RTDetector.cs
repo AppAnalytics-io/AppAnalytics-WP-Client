@@ -31,7 +31,7 @@ using Windows.UI.Input;
 namespace AppAnalytics
 {
     public static class Detector
-    {
+    { 
         //static Windows.UI.Input.GestureRecognizer p1 = new Windows.UI.Input.GestureRecognizer();
         static readonly object _lockObject = new object();
         //gestures to-send queue 
@@ -189,6 +189,9 @@ namespace AppAnalytics
             //Recognizer.Instance.Init();
             RTRecognizer.Instance.init();
 
+
+            //Hooker.setHook(1);
+
             mApiKey = getBytes(aApiKey);
             if (mApiKey.Length != 32)
             {
@@ -214,7 +217,7 @@ namespace AppAnalytics
         }
 
         static void sendManifest()
-        {
+        { 
             var it = ManifestController.Instance;
             it.buildSessionManifest();
             it.sendManifest();

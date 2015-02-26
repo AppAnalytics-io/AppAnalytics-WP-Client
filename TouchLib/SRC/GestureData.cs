@@ -46,13 +46,13 @@ namespace AppAnalytics
         public byte ActionID = 0;
         //private string
 
-        private double mTime = 0;
+        private long mTime = 0;
 
-        public static double convertToUnixTimestamp(DateTime date)
+        public static long convertToUnixTimestamp(DateTime date)
         {
-            DateTime origin = new DateTime(1970, 1, 1, 0, 0, 0, 0);
-            TimeSpan diff = date.ToUniversalTime() - origin;
-            return Math.Floor(diff.TotalSeconds);
+            //DateTime origin = new DateTime(1970, 1, 1, 0, 0, 0, 0);
+            //TimeSpan diff = date.ToUniversalTime() - origin;
+            return date.ToBinary();//Math.Floor(diff.TotalSeconds);
         }
 
         public void setCurrentTime()
@@ -87,13 +87,13 @@ namespace AppAnalytics
 
         public UInt16 ViewIDLenght
         {
-            get { return (UInt16)(ViewID.Length * sizeof(char)); }
+            get { return (UInt16)(ViewID.Length ); }
         }
 
         public byte[] ElementID = null;
         public UInt16 ElementIDLenght
         {
-            get { return (UInt16)(ElementID.Length * sizeof(char)); }
+            get { return (UInt16)(ElementID.Length ); }
         }
     }
 }

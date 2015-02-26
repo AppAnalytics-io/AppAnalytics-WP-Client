@@ -44,10 +44,6 @@ namespace AppAnalytics
                 }
                 else
                 {
-//                     Dictionary<string, object> tmp;
-//                     List<byte> total;
-//                     foreach ()
-
                     bool success = MultipartUploader.MultipartFormDataPost(kGTBaseURL +
                                                                            kGTSamplesURL
                                                                             + Detector.getUDIDString(),

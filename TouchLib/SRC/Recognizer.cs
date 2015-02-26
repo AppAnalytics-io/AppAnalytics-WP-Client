@@ -14,6 +14,7 @@ using System.Windows.Media;
 
 using Microsoft.Xna.Framework;
 using AppAnalytics.ShakeGestures;
+using System.Threading;
 
 namespace AppAnalytics
 {
@@ -304,12 +305,22 @@ namespace AppAnalytics
             createGesture(id);
         }
 
-
+        EventWaitHandle mWHanlde = new AutoResetEvent(false);
         public void createGesture(GestureID aID)
         {
-            Deployment.Current.Dispatcher.BeginInvoke(() => getCurrentPage());
+            //mWHanlde.Reset();\  
+            var id = System.Threading.Thread.CurrentThread.ManagedThreadId;
+            if (Detector.isInUITHread())//Deployment.Current.Dispatcher.CheckAccess())
+            {
+                getCurrentPage();
+            }
+            else
+            {
+                Deployment.Current.Dispatcher.BeginInvoke(() => getCurrentPage());
+            }
+            
             System.Windows.Point p = new System.Windows.Point(LastPosX, LastPosY);
-
+            mWHanlde.WaitOne(7);
             GestureData gd = GestureData.create(aID, p, mBufferElementUri, mBufferPageUri);
 
             Detector.pushReport(gd);
@@ -325,6 +336,7 @@ namespace AppAnalytics
             {
                 mBufferPageUri = uri.ToString();
             }
+            mWHanlde.Set();
         }
 
         private void getElementUri()

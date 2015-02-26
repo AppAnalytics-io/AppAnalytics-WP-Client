@@ -219,19 +219,25 @@ namespace AppAnalytics
         public void buildDataPackage(GestureData aData)
         {
             mPackage.WriteByte((byte)'<');
-
+             
             writeArray(mPackage, aData.ActionOrder);
             mPackage.WriteByte(aData.ActionID);
             writeArray(mPackage, aData.ActionTime);
             writeArray(mPackage, aData.PosX);
             writeArray(mPackage, aData.PosY);
             writeArray(mPackage, aData.Param1);
+            
             writeArray(mPackage, BitConverter.GetBytes(aData.ViewIDLenght));
             writeArray(mPackage, aData.ViewID);
             writeArray(mPackage, BitConverter.GetBytes(aData.ElementIDLenght));
             writeArray(mPackage, aData.ElementID);
 
             mPackage.WriteByte((byte)'>');
+            string ansii = Encoding.UTF8.GetString(mPackage.ToArray(), 0, mPackage.ToArray().Length);
+
+            var it = BitConverter.ToInt16( mPackage.ToArray().Skip(38).Take(2).ToArray(), 0);
+
+            var ln = ansii.Length;
             lock (_readLock)
             {
                 if (mSamples.ContainsKey(Detector.getSessionIDStringWithDashes()))
@@ -318,7 +324,7 @@ namespace AppAnalytics
                     var session = Encoding.UTF8.GetBytes(kval.Key);
                     Debug.Assert(session.Length == 36);
 
-                    ms.Write(Detector.getSessionID(), 0, Detector.getSessionID().Length);
+                    ms.Write(session, 0, session.Length);
                     
                     wrapper.Add( kval.Key, new MultipartUploader.FileParameter(ms.ToArray()) );
                     ms.Close();
@@ -345,12 +351,11 @@ namespace AppAnalytics
                     }
                     count.Add(index);
 
-                    // just for sending ONE session at once. Ill keep pld code
+                    // just for sending ONE session at once. Ill keep old code
                     // in case if logic changes
                     break;
                 }
             }
-
             bool flag = Sender.tryToSend(wrapper, false, count);
 
             return flag;

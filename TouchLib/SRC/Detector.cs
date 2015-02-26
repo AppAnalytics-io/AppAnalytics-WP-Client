@@ -28,7 +28,7 @@ namespace AppAnalytics
         
         //private section /////////////////////////////////////////////////
         private static UUID.UDIDGen mIDGen = UUID.UDIDGen.Instance;
-
+        private static int mUIThreadID = -1;
         private static bool mKeepWorking = true;
         private static bool mNavigationOccured = false;
 
@@ -43,6 +43,14 @@ namespace AppAnalytics
         public  static byte[] ApiKey
         {
             get { return mApiKey; }
+        }
+
+        public static int UIThreadID
+        {
+            get
+            {
+                return mUIThreadID;
+            }
         }
 
         public static byte[] getResolutionX()
@@ -108,8 +116,14 @@ namespace AppAnalytics
             }
         }
 
+        static public bool isInUITHread()
+        {
+            return mUIThreadID == System.Threading.Thread.CurrentThread.ManagedThreadId;
+        }
+
         static public void init(string aApiKey)
         {
+            mUIThreadID = System.Threading.Thread.CurrentThread.ManagedThreadId;
             Recognizer.Instance.Init();
             DeviceNetworkInformation.NetworkAvailabilityChanged += new EventHandler<NetworkNotificationEventArgs>(changeDetected);
 

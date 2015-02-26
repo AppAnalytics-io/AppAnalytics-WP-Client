@@ -46,6 +46,7 @@
     <Compile Include="SRC\platform\RTRecognizer.cs" />
     <Compile Include="SRC\platform\Utils.cs" />
     <Compile Include="SRC\platform\CoreRecognizer.cs" />
+    <Compile Include="SRC\native\NativeHook.cs" />
     <Compile Include="SRC\UUID\RTUDIDGen.cs" />
     <Compile Include="SRC\web\RTMultipartUploader.cs" />
     <Compile Include="SRC\web\RTSender.cs" />

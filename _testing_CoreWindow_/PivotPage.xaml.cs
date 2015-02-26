@@ -37,46 +37,21 @@ namespace App7
 
         public PivotPage()
         {
-            CoreWindow window = CoreApplication.MainView.CoreWindow;
-            window.SetPointerCapture();
-            window.PointerPressed += _pointerPressed;
-            window.PointerReleased += _pointerReleased;
-            window.PointerMoved += _pointerMoved;
-            window.PointerExited += _pointerExited;
-            window.PointerEntered += _pointerPressed;
-            window.PointerCaptureLost += _pointerLost;
             this.InitializeComponent();
-
+            
             this.NavigationCacheMode = NavigationCacheMode.Required;
 
 
             this.navigationHelper = new NavigationHelper(this);
             this.navigationHelper.LoadState += this.NavigationHelper_LoadState;
             this.navigationHelper.SaveState += this.NavigationHelper_SaveState;
-        }
-        private void _pointerPressed(object sender, PointerEventArgs e)
-        {
-            Debug.WriteLine("pressed");
+
+            this.AddHandler(UIElement.PointerMovedEvent, new PointerEventHandler(testMove), true);
         }
 
-        private void _pointerMoved(object sender, PointerEventArgs e)
+        private void testMove(object sender, PointerRoutedEventArgs e)
         {
-            Debug.WriteLine(">>>>>>>>>>>>>>>>>>>>");
-        }
-
-        private void _pointerReleased(object sender, PointerEventArgs e)
-        {
-            Debug.WriteLine("released");
-        }
-
-        private void _pointerExited(object sender, PointerEventArgs e)
-        {
-            Debug.WriteLine("exited");
-        }
-
-        private void _pointerLost(object sender, PointerEventArgs e)
-        {
-            Debug.WriteLine("capture lost");
+            Debug.WriteLine("move-->");
         }
 
         /// <summary>

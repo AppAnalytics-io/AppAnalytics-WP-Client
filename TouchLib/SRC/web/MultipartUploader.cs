@@ -75,13 +75,6 @@ namespace AppAnalytics
  
                 if (param.Value is FileParameter)
                 {
-//                     FileParameter fileToUpload = (FileParameter)param.Value;
-//                     string header =
-//                       string.Format("--{0}\r\nContent-Disposition: form-data; name=\"{1}\"; filename=\"{2}\"\r\nContent-Type: {3}\r\n",// \r\n",
-//                       boundary,
-//                       isManifest ? "Manifest" : "Sample",
-//                       fname,
-//                       "application/octet-stream");
                     FileParameter fileToUpload = (FileParameter)param.Value;
 
 //                     string header =
