@@ -51,7 +51,7 @@ namespace Testing
             TestRectangle.ManipulationCompleted +=
                 new EventHandler<ManipulationCompletedEventArgs>(Rectangle_ManipulationCompleted);
 
-            AppAnalytics.Detector.init("Xg83L5rxtYl3VGxL3zbRu7HOTsQx9fUw");
+            AppAnalytics.Detector.init("B6xBAJWQzHjLlc6V4w2Um6JU2iNt7ZS9");
         }
 
         void Drag_ManipulationDelta(object sender, ManipulationDeltaEventArgs e)

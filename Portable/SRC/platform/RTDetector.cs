@@ -400,8 +400,6 @@ namespace AppAnalytics
 
         private static string getAppVersion()
         {
-            var xmlReaderSettings = new XmlReaderSettings();
-
             try
             {
                 PackageVersion vs = Windows.ApplicationModel.Package.Current.Id.Version;
@@ -477,8 +475,7 @@ namespace AppAnalytics
         {
             get 
             {
-                string lt3 = "USA";
-                // potential issues
+                string lt3 = "USA"; 
                 try
                 {
                     // this statement may probably generate wrong data, 

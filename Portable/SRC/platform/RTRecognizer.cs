@@ -39,6 +39,7 @@ namespace AppAnalytics
         {
             var currentPage = Window.Current.Content as Frame;
             CoreWindow window = CoreApplication.MainView.CoreWindow;
+ //           window.AutomationHostProvider.
             //window.TouchHitTesting += testing;
 
  //           currentPage.AddHandler(UIElement.PointerMovedEvent, new PointerEventHandler(_pointerMovedRouted), true);

@@ -21,7 +21,7 @@ namespace AppAnalytics
 
         GestureData() { }
 
-        static public GestureData create(GestureID aID,  Point aLocation, string aElement, string aPage)
+        static public GestureData create(GestureID aID,  Point aLocation, string aElement, string aPage, byte[] param1 = null)
         {
             GestureData newOne = new GestureData();
             newOne.ActionID = (byte)aID;
@@ -31,6 +31,11 @@ namespace AppAnalytics
 
             newOne.mPosX = aLocation.X;
             newOne.mPosY = aLocation.Y;
+
+            if (param1 != null && param1.Length == 4)
+            {
+                newOne.mParam1 = param1;
+            }
 
             newOne.setCurrentTime();
             newOne.setIndex();
@@ -76,8 +81,9 @@ namespace AppAnalytics
         public void setPosY(double Y) { mPosY = Y; }
 
 
+        private byte[] mParam1 = new byte[4]{0,0,0,0};
         public byte[] Param1
-        { get { return BitConverter.GetBytes( (UInt32)0); } }
+        { get { return mParam1; } }
 
         // View ID
 

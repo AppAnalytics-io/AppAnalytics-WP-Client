@@ -306,7 +306,7 @@ namespace AppAnalytics
         }
 
         EventWaitHandle mWHanlde = new AutoResetEvent(false);
-        public void createGesture(GestureID aID)
+        public void createGesture(GestureID aID, byte[] param1 = null)
         {
             //mWHanlde.Reset();\  
             var id = System.Threading.Thread.CurrentThread.ManagedThreadId;
@@ -321,7 +321,7 @@ namespace AppAnalytics
             
             System.Windows.Point p = new System.Windows.Point(LastPosX, LastPosY);
             mWHanlde.WaitOne(7);
-            GestureData gd = GestureData.create(aID, p, mBufferElementUri, mBufferPageUri);
+            GestureData gd = GestureData.create(aID, p, mBufferElementUri, mBufferPageUri, param1);
 
             Detector.pushReport(gd);
         }
@@ -1106,7 +1106,9 @@ namespace AppAnalytics
                 if ((GState.RotateC != mPrevGesture.state) && (GState.RotateAC != mPrevGesture.state))
                 {
                     Debug.WriteLine("rotation");
-                    createGesture(GestureID.RotateWith2Finger);
+                    var bts = BitConverter.GetBytes((float)nowAngle);
+
+                    createGesture(GestureID.RotateWith2Finger, bts);
                     mPrevGesture.state = GState.RotateAC;
                 }
 

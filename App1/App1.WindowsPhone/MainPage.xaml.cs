@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -25,9 +26,14 @@ namespace App1
         public MainPage()
         {
             this.InitializeComponent();
-
+            this.AddHandler(UIElement.PointerMovedEvent, new PointerEventHandler(pointerMoved), true);
             AppAnalytics.Detector.init("IcawZz1SbQA1TA8upkLqgPDg5hka6VMQ");
             this.NavigationCacheMode = NavigationCacheMode.Required;
+        }
+
+        void pointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            Debug.WriteLine("-");
         }
 
         /// <summary>

@@ -55,10 +55,16 @@ namespace Hub
             DisplayInformation.AutoRotationPreferences = DisplayOrientations.Portrait;
 
             this.NavigationCacheMode = NavigationCacheMode.Required;
+            this.AddHandler(UIElement.PointerMovedEvent, new PointerEventHandler(pointerMoved), true); 
              
             this.navigationHelper = new NavigationHelper(this);
             this.navigationHelper.LoadState += this.NavigationHelper_LoadState;
             this.navigationHelper.SaveState += this.NavigationHelper_SaveState;
+        }
+
+        void pointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            Debug.WriteLine("-");
         }
 
         /// <summary>
