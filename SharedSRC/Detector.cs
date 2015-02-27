@@ -2,17 +2,28 @@
 using System.Windows;
 using System.Xml;
 using System.Collections.Generic;
-using System.Windows.Navigation;
 using System.Text;
 using System.Threading;
 using System.Windows.Input;
-using Microsoft.Phone.Controls;
-using Microsoft.Xna.Framework.Input.Touch;
 using System.Diagnostics;
 using System.Globalization;
 using Windows.Graphics.Display;
 using System.Collections;
-using Microsoft.Phone.Net.NetworkInformation; 
+using Windows.Foundation;
+using Windows.UI.ViewManagement;
+using System.Threading.Tasks;
+using Windows.ApplicationModel.Core;
+#if SILVERLIGHT
+using Microsoft.Phone.Net.NetworkInformation;
+using Microsoft.Phone.Controls;
+using Microsoft.Xna.Framework.Input.Touch;
+using System.Windows.Navigation;
+using Windows.ApplicationModel;
+#else
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
+using Windows.Globalization;
+#endif
 
 
 namespace AppAnalytics
@@ -31,8 +42,11 @@ namespace AppAnalytics
         private static int mUIThreadID = -1;
         private static bool mKeepWorking = true;
         private static bool mNavigationOccured = false;
-
+#if SILVERLIGHT
         private static Thread mWorker = null;
+#else
+        private static Task mWorker = null;
+#endif
 
         private static double mSessionStartTime = 0;
 
@@ -44,7 +58,7 @@ namespace AppAnalytics
         {
             get { return mApiKey; }
         }
-
+        // only needed on Silverlight
         public static int UIThreadID
         {
             get
@@ -52,7 +66,8 @@ namespace AppAnalytics
                 return mUIThreadID;
             }
         }
-
+        #region resolution_getters
+#if SILVERLIGHT
         public static byte[] getResolutionX()
         {
             var content = Application.Current.Host.Content;
@@ -74,6 +89,88 @@ namespace AppAnalytics
 
             return BitConverter.GetBytes( h );
         }
+#else
+        public static byte[] getResolutionX()
+        {
+            return BitConverter.GetBytes(Math.Floor(ScreenSize.Width));
+        }
+        public static byte[] getResolutionY()
+        {
+            return BitConverter.GetBytes(Math.Floor(ScreenSize.Height));
+        }
+
+        public static double getResolutionXDouble()
+        {
+            return Math.Floor(ScreenSize.Width);
+        }
+        public static double getResolutionYDouble()
+        {
+            return Math.Floor(ScreenSize.Height);
+        }
+        // actually it returns a Window size which is the same as screen size in WP apps or full screen apps
+        static private Size ScreenSize
+        {
+            get
+            {
+                var bounds = Window.Current.Bounds;
+                double w = bounds.Width;
+                double h = bounds.Height;
+                Size resolution = new Size();
+
+                switch (DisplayInformation.GetForCurrentView().ResolutionScale)
+                {
+                    case ResolutionScale.Scale120Percent:
+                        w = Math.Ceiling(w * 1.2);
+                        h = Math.Ceiling(h * 1.2);
+
+                        break;
+                    case ResolutionScale.Scale150Percent:
+                        w = Math.Ceiling(w * 1.5);
+                        h = Math.Ceiling(h * 1.5);
+
+                        break;
+                    case ResolutionScale.Scale160Percent:
+                        w = Math.Ceiling(w * 1.6);
+                        h = Math.Ceiling(h * 1.6);
+
+                        break;
+                    case ResolutionScale.Scale225Percent:
+                        w = Math.Ceiling(w * 2.25);
+                        h = Math.Ceiling(h * 2.25);
+
+                        break;
+                    case ResolutionScale.Scale140Percent:
+                        w = Math.Ceiling(w * 1.4);
+                        h = Math.Ceiling(h * 1.4);
+
+                        break;
+                    case ResolutionScale.Scale180Percent:
+                        w = Math.Ceiling(w * 1.8);
+                        h = Math.Ceiling(h * 1.8);
+
+                        break;
+                }
+
+                if (ApplicationView.GetForCurrentView().IsFullScreen
+                    && ApplicationView.GetForCurrentView().Orientation == ApplicationViewOrientation.Landscape)
+                {
+                    resolution = new Size(w, h);
+                }
+                else if (ApplicationView.GetForCurrentView().IsFullScreen
+                    && ApplicationView.GetForCurrentView().Orientation == ApplicationViewOrientation.Landscape)
+                {
+                    resolution = new Size(h, w);
+                }
+                else
+                {
+                    resolution = new Size(w + 320.0 + 22.0, h);
+                }
+                return resolution;
+            }
+        }
+#endif
+        #endregion
+
         public static byte ApiVersion = 1;
 
         //public section //////////////////////////////////////////////////
@@ -96,10 +193,15 @@ namespace AppAnalytics
         static private bool mFirstLaunch = true;
         static private void getCurent()
         { 
+#if SILVERLIGHT
             var currentPage = ((PhoneApplicationFrame)Application.Current.RootVisual).Content as PhoneApplicationPage;
-
             var uri = currentPage.NavigationService.CurrentSource;
-
+#else
+            var currentPage = Window.Current.Content as Frame;
+            //Frame.
+            if (null != currentPage) return;
+            var uri = currentPage.BaseUri;
+#endif
             string nUri = uri.ToString();
             if (nUri != mPreviousUri && !mFirstLaunch)
             {
@@ -115,17 +217,21 @@ namespace AppAnalytics
                 mPreviousUri = nUri;
             }
         }
-
+        
+#if SILVERLIGHT
         static public bool isInUITHread()
         {
             return mUIThreadID == System.Threading.Thread.CurrentThread.ManagedThreadId;
         }
-
+#endif
         static public void init(string aApiKey)
         {
+#if SILVERLIGHT
             mUIThreadID = System.Threading.Thread.CurrentThread.ManagedThreadId;
             Recognizer.Instance.Init();
-            DeviceNetworkInformation.NetworkAvailabilityChanged += new EventHandler<NetworkNotificationEventArgs>(changeDetected);
+#else
+            Recognizer.Instance.init();
+#endif
 
             mApiKey = getBytes(aApiKey);
             if (mApiKey.Length != 32)
@@ -144,39 +250,14 @@ namespace AppAnalytics
                 TimeSpan diff = date.ToUniversalTime() - origin;
                 mSessionStartTime = Math.Floor(diff.TotalSeconds);
                 sendManifest();
-
+#if SILVERLIGHT
                 mWorker = new Thread(updateLoop);
                 mWorker.IsBackground = true;
+#else
+                mWorker = new Task(updateLoop);
+#endif
                 mWorker.Start();
             }
-        }
-
-        // just for test yet.
-        static void changeDetected(object sender, NetworkNotificationEventArgs e)
-        {
-            string change = string.Empty;
-            switch (e.NotificationType)
-            {
-                case NetworkNotificationType.InterfaceConnected:
-                    change = "Connected to ";
-                    break;
-                case NetworkNotificationType.InterfaceDisconnected:
-                    change = "Disconnected from ";
-                    break;
-                case NetworkNotificationType.CharacteristicUpdate:
-                    change = "Characteristics changed for ";
-                    break;
-                default:
-                    change = "Unknown change with ";
-                    break;
-            }
-
-            string changeInformation = String.Format(" {0} {1} {2} ({3})",
-                        DateTime.Now.ToString(), change, e.NetworkInterface.InterfaceName,
-                        e.NetworkInterface.InterfaceType.ToString());
-
-            Debug.WriteLine(changeInformation);
-
         }
 
         static void sendManifest()
@@ -202,6 +283,7 @@ namespace AppAnalytics
 
         public static void  handleTaps(double deltaT)
         {
+#if SILVERLIGHT
             double tstDif = Recognizer.getNow() - Recognizer.Instance.PrevTapOccured;
             
             if ((tstDif > Recognizer.Instance.TimeForTap) && (Recognizer.Instance.TapsInRow > 0))
@@ -211,13 +293,20 @@ namespace AppAnalytics
                 Recognizer.Instance.createTapGesture(Recognizer.Instance.TapsInRow, Recognizer.Instance.LastTapFingers);
                 Recognizer.Instance.TapsInRow = 0;
             }
+#else
+            //todo - implemet a delay
+#endif
         }
         static double toSendMark = 0;
         static double toStoreMark = 0;
         const double kSendConst = 20;
         const double kStoreConst = 15;
 
+#if SILVERLIGHT
         static private void updateLoop()
+#else
+        static async private void updateLoop()
+#endif
         {
             while (mKeepWorking)
             {
@@ -243,8 +332,20 @@ namespace AppAnalytics
 
                 handleTaps(sec);
                 // test it more
+#if SILVERLIGHT
                 Deployment.Current.Dispatcher.BeginInvoke(() => getCurent());
-
+#else
+                try
+                {
+                    await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(
+                            Windows.UI.Core.CoreDispatcherPriority.Normal,
+                            () => getCurent());
+                }
+                catch
+                {
+                    Debug.WriteLine("Detector: unable to get current view for now.");
+                }
+#endif
                 if (mNavigationOccured)
                 {
                     Debug.WriteLine("hit");
@@ -254,74 +355,6 @@ namespace AppAnalytics
                         Recognizer.Instance.createGesture(GestureID.Navigation);
                     }
                 }
-
-                var gestres = TouchPanel.GetState();
-                #region processing
-                ////                 while (TouchPanel.IsGestureAvailable)
-                ////                 { 
-                ////                     Deployment.Current.Dispatcher.BeginInvoke(() => getCurent()); 
-                //// 
-                ////                     GestureSample gs = TouchPanel.ReadGesture();
-                ////                     //TouchPanel.GetState().
-                ////                     switch (gs.GestureType)
-                ////                     {
-                ////                         case GestureType.VerticalDrag:
-                ////                             verticalDragStarted = true;
-                ////                             
-                ////                             Debug.WriteLine("   +vertical drag catched\n");
-                //// 
-                ////                             break;
-                //// 
-                ////                         case GestureType.Flick:
-                ////                             Debug.WriteLine("   +flick catched\n");
-                ////                             var da = Math.Abs(gs.Delta.X) + Math.Abs(gs.Delta.Y);
-                ////                             var dn = Math.Abs(gs.Delta2.X) + Math.Abs(gs.Delta2.Y);
-                //// 
-                ////                             if (da > 0 && dn > 0 )
-                ////                             {
-                ////                                 Debug.WriteLine("   +flick2x catched\n");
-                ////                             }
-                //// 
-                ////                             break;
-                //// 
-                ////                         case GestureType.Tap:
-                ////                             Debug.WriteLine("   +tap cathced\n");
-                ////                                                         
-                ////                             break;
-                //// 
-                ////                         case GestureType.PinchComplete:
-                ////                             Debug.WriteLine("   +pinch catched\n");
-                ////                             
-                ////                             break;
-                //// 
-                ////                         case GestureType.HorizontalDrag:
-                ////                             horizontalDragStarted = true;
-                ////                             Debug.WriteLine("   +horizontal drag catched\n");
-                //// 
-                ////                             break;
-                //// 
-                ////                         case GestureType.Hold:
-                ////                             Debug.WriteLine("   +hold catched\n");
-                //// 
-                ////                             break;
-                //// 
-                ////                         case GestureType.DragComplete:
-                ////                             if(horizontalDragStarted)
-                ////                             {
-                ////                                 Debug.WriteLine("<- horiz. ended\n");
-                ////                             }
-                ////                             if(verticalDragStarted)
-                ////                             {
-                ////                                 Debug.WriteLine("<- vert. ended\n");
-                ////                             }
-                ////                             horizontalDragStarted = false;
-                ////                             verticalDragStarted = false;
-                ////                             Debug.WriteLine("   +hold catched\n");
-                //// 
-                ////                             break;
-                ////                     }
-                ////                 } of while
-                #endregion
             }
         }
 
@@ -353,6 +386,7 @@ namespace AppAnalytics
 
         private static string getAppVersion()
         {
+#if SILVERLIGHT
             var xmlReaderSettings = new XmlReaderSettings
             {
                 XmlResolver = new XmlXapResolver()
@@ -370,7 +404,16 @@ namespace AppAnalytics
                 {
                     return "";
                 }
+            } 
+#else
+            try
+            {
+                PackageVersion vs = Windows.ApplicationModel.Package.Current.Id.Version;
+                return vs.Build + "." + vs.Major + "." + vs.Minor + "." + vs.Revision;
             }
+            catch { Debug.WriteLine("prob. null ref expn"); }
+            return "";
+#endif
         }
 
         public static byte[] AppVersion 
@@ -423,7 +466,11 @@ namespace AppAnalytics
             get 
             {
                 StringBuilder sb = new StringBuilder();
+#if SILVERLIGHT
                 var vs = Environment.OSVersion.Version;
+#else
+                var vs = AppAnalytics.Utils.OSVersion; // TODO: implement that for universal apps. upd: there is no way to di it.
+#endif
 
                 byte[] buffer = new byte[16];
                 System.Buffer.BlockCopy(toBytes(vs.Major), 0, buffer, 0, toBytes(vs.Major).Length);
@@ -431,24 +478,29 @@ namespace AppAnalytics
                 System.Buffer.BlockCopy(toBytes(vs.Build), 0, buffer, 8, toBytes(vs.Build).Length);
                 System.Buffer.BlockCopy(toBytes(vs.Revision), 0, buffer, 12, toBytes(vs.Revision).Length);
 
-//                 sb.Append(getString(toBytes(vs.Major)))
-//                   .Append(getString(toBytes(vs.Minor)))
-//                   .Append(getString(toBytes(vs.Build)))
-//                   .Append(getString(toBytes(vs.Revision)));
-
                 return buffer;  
             }
         }
 
         public static byte[] SystemLocale 
         {
-            get 
+            get
             {
+                string lt3 = "USA"; 
+#if SILVERLIGHT
                 CultureInfo cult = Thread.CurrentThread.CurrentCulture;
-                RegionInfo rf = new RegionInfo(cult.ToString());
-                
-                string lt3 = Converter.convertToThreeLetterCode( rf.TwoLetterISORegionName );
-
+                RegionInfo rf = new RegionInfo(cult.ToString());   
+                lt3 = Converter.convertToThreeLetterCode( rf.TwoLetterISORegionName );
+#else
+                try
+                {
+                    // this statement may probably generate wrong data, 
+                    // at least it is not as stable as silverlight version
+                    GeographicRegion userRegion = new GeographicRegion();
+                    lt3 = userRegion.CodeThreeLetter; 
+                }
+                catch { }
+#endif          
                 return new byte[3] { (byte)lt3[0], (byte)lt3[1], (byte)lt3[2] };
             }
         }

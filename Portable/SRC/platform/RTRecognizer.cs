@@ -17,18 +17,18 @@ using TouchPointCollection = System.Collections.ObjectModel.Collection<AppAnalit
 
 namespace AppAnalytics 
 {
-    internal class RTRecognizer
+    internal class Recognizer
     {
  //       private GestureRecognizer mRecognizer = null;
         private readonly object _lockObj = new object();
 
-        private static RTRecognizer mInstance = null;
-        protected RTRecognizer()
+        private static Recognizer mInstance = null;
+        protected Recognizer()
         {   }
 
-        public static RTRecognizer Instance
+        public static Recognizer Instance
         {
-            get { return mInstance ?? (mInstance = new RTRecognizer()); }
+            get { return mInstance ?? (mInstance = new Recognizer()); }
         }
 
         private void testing (CoreWindow sender, TouchHitTestingEventArgs e)

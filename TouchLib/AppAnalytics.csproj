@@ -24,7 +24,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>..\Library\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;WINDOWS_PHONE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;SILVERLIGHT</DefineConstants>
     <NoStdLib>true</NoStdLib>
     <NoConfig>true</NoConfig>
     <ErrorReport>prompt</ErrorReport>
@@ -83,11 +83,28 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\SharedSRC\Detector.cs">
+      <Link>SRC\Shared\Detector.cs</Link>
+    </Compile>
+    <Compile Include="..\SharedSRC\GestureData.cs">
+      <Link>SRC\Shared\GestureData.cs</Link>
+    </Compile>
+    <Compile Include="..\SharedSRC\ManifestBuilder.cs">
+      <Link>SRC\Shared\ManifestBuilder.cs</Link>
+    </Compile>
+    <Compile Include="..\SharedSRC\utils\Converter.cs">
+      <Link>SRC\Utils\Converter.cs</Link>
+    </Compile>
+    <Compile Include="..\SharedSRC\utils\CustomDict.cs">
+      <Link>SRC\Utils\CustomDict.cs</Link>
+    </Compile>
+    <Compile Include="..\SharedSRC\web\MultipartUploader.cs">
+      <Link>SRC\Web\MultipartUploader.cs</Link>
+    </Compile>
+    <Compile Include="..\SharedSRC\web\Sender.cs">
+      <Link>SRC\Web\Sender.cs</Link>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SRC\Converter.cs" />
-    <Compile Include="SRC\CustomDict.cs" />
-    <Compile Include="SRC\Detector.cs" />
-    <Compile Include="SRC\GestureData.cs" />
     <Compile Include="SRC\ManifestController.cs" />
     <Compile Include="SRC\Recognizer.cs" />
     <Compile Include="SRC\Shakes\AccelerometerHelper\AccelerometerHelper.cs" />
@@ -97,10 +114,9 @@
     <Compile Include="SRC\Shakes\ShakeGesturesHelper.cs" />
     <Compile Include="SRC\Shakes\ShakeType.cs" />
     <Compile Include="SRC\Shakes\Simulation.cs" />
-    <Compile Include="SRC\web\MultipartUploader.cs" />
-    <Compile Include="SRC\web\Sender.cs" />
     <Compile Include="SRC\UUID\UDIDGen.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\$(TargetFrameworkIdentifier)\$(TargetFrameworkVersion)\Microsoft.$(TargetFrameworkIdentifier).$(TargetFrameworkVersion).Overrides.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\$(TargetFrameworkIdentifier)\$(TargetFrameworkVersion)\Microsoft.$(TargetFrameworkIdentifier).CSharp.targets" />
   <ProjectExtensions />

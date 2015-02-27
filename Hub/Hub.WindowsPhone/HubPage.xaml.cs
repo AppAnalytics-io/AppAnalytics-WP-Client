@@ -22,6 +22,9 @@ using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
+using AppAnalytics;
+
+using  System.Reflection ;
  
 // The Universal Hub Application project template is documented at http://go.microsoft.com/fwlink/?LinkID=391955
 
@@ -42,10 +45,8 @@ namespace Hub
 //             //var CurrentPoint = e.CurrentPoint;
 //         }
 
-
-
         public HubPage()
-        { 
+        {
             this.InitializeComponent();
 
 //            this.PointerMoved += _pointerMoved;
@@ -60,6 +61,57 @@ namespace Hub
             this.navigationHelper = new NavigationHelper(this);
             this.navigationHelper.LoadState += this.NavigationHelper_LoadState;
             this.navigationHelper.SaveState += this.NavigationHelper_SaveState;
+
+        }
+
+        void testDgEnter(object sender, DragEventArgs e)
+        {
+            Debug.WriteLine("1");
+        }
+        void lost(object sender, PointerRoutedEventArgs e)
+        {
+            Debug.WriteLine("lost");
+        }
+        void testingF(object sender, PointerRoutedEventArgs e)
+        {
+            Debug.WriteLine("testing");
+        }
+        void registerAllChildren(UIElement aRoot)
+        {
+            if (null != aRoot)
+            {
+
+                var currentPage = aRoot;
+
+                var tst = currentPage as Windows.UI.Xaml.Controls.Hub;
+               var tst2 = currentPage as Windows.UI.Xaml.Controls.HubSection;
+                if (null != tst )//|| tst2 != null)
+                {
+                    int o = 1;
+                    tst.ManipulationMode = ManipulationModes.None;
+                    //tst.ena
+                    //tst.IsHitTestVisible = false;
+                    //tst.Add
+                }
+                if (null != tst2)
+                {
+                    //tst2.di
+                    tst2.DragEnter += testDgEnter;
+                    tst2.PointerCaptureLost += lost;
+                    tst2.AddHandler(UIElement.PointerMovedEvent, new PointerEventHandler(testingF), true);
+                }
+
+                for (int i = 0; i < VisualTreeHelper.GetChildrenCount(currentPage); i++)
+                {
+                    DependencyObject child = VisualTreeHelper.GetChild(currentPage, i);
+
+                    AAGestureRecognizer.Instance.RegisterUIElement(currentPage as UIElement);
+                    if (VisualTreeHelper.GetChildrenCount(child) > 0)
+                    {
+                        registerAllChildren(child as UIElement); // recurs. enumerate children
+                    }
+                }
+            }
         }
 
         void pointerMoved(object sender, PointerRoutedEventArgs e)
@@ -121,7 +173,7 @@ namespace Hub
         /// <param name="sender">The source of the click event.</param>
         /// <param name="e">Details about the click event.</param>
         private void GroupSection_ItemClick(object sender, ItemClickEventArgs e)
-        {
+        { 
             var groupId = ((SampleDataGroup)e.ClickedItem).UniqueId;
             if (!Frame.Navigate(typeof(SectionPage), groupId))
             {
@@ -202,6 +254,17 @@ namespace Hub
         private void LayoutRoot_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
             Debug.WriteLine("<<<==moved");
+        }
+
+        private void Page_Loaded(object sender, RoutedEventArgs e)
+        {
+            //registerAllChildren(this);
+        }
+
+        private void Rectangle_PointerPressed_1(object sender, PointerRoutedEventArgs e)
+        {
+            var t = sender as UIElement;
+            //t.CapturePointer(e.Pointer);
         }
     }
 }

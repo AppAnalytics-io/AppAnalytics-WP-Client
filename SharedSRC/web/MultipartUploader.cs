@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,6 +28,24 @@ namespace AppAnalytics
  
             return PostForm(postUrl, userAgent, contentType, formData);
         }
+#if UNIVERSAL
+        static private void SetHeader(HttpWebRequest Request, string Header, string Value)
+        {
+            // Retrieve the property through reflection.
+            PropertyInfo PropertyInfo = Request.GetType().GetRuntimeProperty(Header.Replace("-", string.Empty));
+            // Check if the property is available.
+            if (PropertyInfo != null)
+            {
+                // Set the value of the header.
+                PropertyInfo.SetValue(Request, Value, null);
+            }
+            else
+            {
+                // Set the value of the header.
+                Request.Headers[Header] = Value;
+            }
+        }
+#endif
 
         private static bool PostForm(string postUrl, string userAgent, string contentType, byte[] formData)
         {
@@ -39,9 +58,14 @@ namespace AppAnalytics
 
             request.Method = "PUT";
             request.ContentType = contentType;
+#if SILVERLIGHT
             request.UserAgent = userAgent;
-            request.CookieContainer = new CookieContainer();
             request.ContentLength = formData.Length;
+#else
+            SetHeader(request, "UserAgent", userAgent);
+            SetHeader(request, "ContentLength", userAgent);
+#endif
+            request.CookieContainer = new CookieContainer();
 
             var st = request.ToString();
 
@@ -134,7 +158,11 @@ namespace AppAnalytics
 
             // Write to the request stream.
             postStream.Write(dataToSend, 0, dataToSend.Length);
+#if SILVERLIGHT
             postStream.Close();
+#else
+            postStream.Dispose();
+#endif
 
             // Start the asynchronous operation to get the response
             request.BeginGetResponse(new AsyncCallback(GetResponseCallback), request);
@@ -170,9 +198,9 @@ namespace AppAnalytics
             }
             finally
             {
-                if (null != streamResponse) streamResponse.Close();
-                if (null != streamRead) streamRead.Close();
-                if (null != response) response.Close();
+                if (null != streamResponse) streamResponse.Dispose();
+                if (null != streamRead) streamRead.Dispose();
+                if (null != response) response.Dispose();
             }
 
             if (response != null && response.StatusCode == HttpStatusCode.OK)

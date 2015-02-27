@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Net.NetworkInformation;
+//using Microsoft.Phone.Net.NetworkInformation;
 
 namespace AppAnalytics
 {
@@ -27,15 +28,11 @@ namespace AppAnalytics
 
         public static bool tryToSend(Dictionary<string, object> aFiles, bool isItManfest, List<int> aHowMany = null)
         {
-            // TODO : remove @return if App is able to test in online mode
-            return false; // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
             if (NetworkInterface.GetIsNetworkAvailable() == true && IsPreviousOperationComplete && aFiles.Count > 0)
             {
                 if (isItManfest)
                 {
-                    bool success = MultipartUploader.MultipartFormDataPUT(kGTBaseURL +
+                    bool success = MultipartUploader.MultipartFormDataPost(kGTBaseURL +
                                                                            kGTManifestsURL 
                                                                             + Detector.getUDIDString(),
                                                                             "WindowsPhone",
@@ -48,7 +45,7 @@ namespace AppAnalytics
                 }
                 else
                 {
-                    bool success = MultipartUploader.MultipartFormDataPUT(kGTBaseURL +
+                    bool success = MultipartUploader.MultipartFormDataPost(kGTBaseURL +
                                                                            kGTSamplesURL
                                                                             + Detector.getUDIDString(),
                                                                             "WindowsPhone",

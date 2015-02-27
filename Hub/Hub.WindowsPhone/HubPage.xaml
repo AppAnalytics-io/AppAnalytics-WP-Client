@@ -8,7 +8,7 @@
     DataContext="{Binding DefaultViewModel, RelativeSource={RelativeSource Self}}"
     d:DataContext="{Binding Source={d:DesignData Source=../Hub.Shared/DataModel/SampleData.json, Type=data:SampleDataSource}}"
     xmlns:data="using:Hub.Data"
-    mc:Ignorable="d" >
+    mc:Ignorable="d" Loaded="Page_Loaded" >
 
     <Page.Resources>
         <ResourceDictionary>
@@ -76,7 +76,7 @@
             <RowDefinition Height="3*"/>
         </Grid.RowDefinitions>
         <Hub x:Name="Hub" x:Uid="Hub" Header="application name" Background="{ThemeResource HubBackgroundImageBrush}" Grid.RowSpan="2">
-            <HubSection x:Uid="HubSection1" Header="SECTION 1" DataContext="{Binding Groups}" HeaderTemplate="{ThemeResource HubSectionHeaderTemplate}">
+            <HubSection x:Uid="HubSection1" Header="SECTION 1" DataContext="{Binding Groups}" HeaderTemplate="{ThemeResource HubSectionHeaderTemplate}" ManipulationMode="All" IsTapEnabled="False" IsRightTapEnabled="False" IsHoldingEnabled="False" IsDoubleTapEnabled="False">
                 <FlyoutBase.AttachedFlyout>
                     <Flyout>
                         <Grid Height="100" Width="100"/>
@@ -100,7 +100,7 @@
             </HubSection>
 
             <HubSection x:Uid="HubSection2" Header="SECTION 2" Width="Auto"
-                         DataContext="{Binding Groups[0]}" HeaderTemplate="{ThemeResource HubSectionHeaderTemplate}">
+                         DataContext="{Binding Groups[0]}" HeaderTemplate="{ThemeResource HubSectionHeaderTemplate}" IsTapEnabled="False" IsRightTapEnabled="False" IsHoldingEnabled="False" IsDoubleTapEnabled="False" ManipulationMode="System">
                 <DataTemplate>
                     <GridView
                         Margin="0,9.5,0,0"
@@ -122,7 +122,7 @@
             </HubSection>
 
             <HubSection x:Uid="HubSection3" Header="SECTION 3"
-                        DataContext="{Binding Groups[1]}" HeaderTemplate="{ThemeResource HubSectionHeaderTemplate}">
+                        DataContext="{Binding Groups[1]}" HeaderTemplate="{ThemeResource HubSectionHeaderTemplate}" IsTapEnabled="False" IsRightTapEnabled="False" IsHoldingEnabled="False" IsDoubleTapEnabled="False" ManipulationMode="System">
                 <DataTemplate>
                     <ListView 
                         AutomationProperties.AutomationId="ItemListViewSection3"
@@ -138,7 +138,7 @@
             </HubSection>
 
             <HubSection x:Uid="HubSection4" Header="SECTION 4"
-                        DataContext="{Binding Groups[2]}" HeaderTemplate="{ThemeResource HubSectionHeaderTemplate}">
+                        DataContext="{Binding Groups[2]}" HeaderTemplate="{ThemeResource HubSectionHeaderTemplate}" ManipulationMode="System" IsDoubleTapEnabled="False" IsHoldingEnabled="False" IsRightTapEnabled="False" IsTapEnabled="False">
                 <DataTemplate>
                     <ListView 
                         AutomationProperties.AutomationId="ItemListViewSection4"
@@ -161,7 +161,7 @@
             </HubSection>
 
             <HubSection x:Uid="HubSection5" Header="SECTION 5"
-                        DataContext="{Binding Groups[3]}" HeaderTemplate="{ThemeResource HubSectionHeaderTemplate}">
+                        DataContext="{Binding Groups[3]}" HeaderTemplate="{ThemeResource HubSectionHeaderTemplate}" IsRightTapEnabled="False" IsTapEnabled="False" IsHoldingEnabled="False" IsDoubleTapEnabled="False" ManipulationMode="System">
                 <DataTemplate>
                     <ListView 
                         AutomationProperties.AutomationId="ItemListViewSection5"
@@ -177,6 +177,7 @@
             </HubSection>
         </Hub>
         <TextBlock Name="block1" x:Uid="TxtBlock" HorizontalAlignment="Left" Margin="129,84,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Height="31" Width="230" FontSize="24"/>
+        <Rectangle Fill="#07F4F4F5" HorizontalAlignment="Left" Height="729" Stroke="Black" VerticalAlignment="Top" Width="581" Margin="-81,-55,-100,-34" Grid.RowSpan="2" ManipulationMode="All" PointerPressed="Rectangle_PointerPressed_1"/>
         <!--<Rectangle HorizontalAlignment="Left" Height="722" Margin="-189,-52,-186,-30" Stroke="#02000000" VerticalAlignment="Top" Width="775" Grid.RowSpan="2" IsTapEnabled="False" IsRightTapEnabled="False" IsHoldingEnabled="False" IsDoubleTapEnabled="False" Fill="#02000000" PointerPressed="Rectangle_PointerPressed" PointerMoved="Rectangle_PointerMoved">
             
          </Rectangle>-->

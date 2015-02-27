@@ -13,65 +13,9 @@ using System.Xml.Serialization;
 
 namespace AppAnalytics
 {
-    public enum GestureID
-    {
-        SingleTapWith1Finger = 1,
-        DoubleTapWith1Finger = 2,
-        TripleTapWith1Finger = 3,
-        SingleTapWith2Finger = 4,
-        DoubleTapWith2Finger = 5,
-        TripleTapWith2Finger = 6,
-        SingleTapWith3Finger = 7,
-        DoubleTapWith3Finger = 8,
-        TripleTapWith3Finger = 9,
-        SingleTapWith4Finger = 10,
-        DoubleTapWith4Finger = 11,
-        TripleTapWith4Finger = 12,
-        HoldWith1Finger = 13,
-        HoldWith2Finger = 14,
-        HoldWith3Finger = 15,
-        HoldWith4Finger = 16,
-        PinchWith2Finger = 17,
-        ZoomWith2Finger = 18,
-        RotateWith2Finger = 19,
-        SwipeRightWith1Finger = 20,
-        SwipeLeftWith1Finger = 21,
-        SwipeDownWith1Finger = 22,
-        SwipeUpWith1Finger = 23,
-        FlickRightWith1Finger = 24,
-        FlickLeftWith1Finger = 25,
-        FlickDownWith1Finger = 26,
-        FlickUpWith1Finger = 27,
-        SwipeRightWith2Finger = 28,
-        SwipeLeftWith2Finger = 29,
-        SwipeDownWith2Finger = 30,
-        SwipeUpWith2Finger = 31,
-        FlickRightWith2Finger = 32,
-        FlickLeftWith2Finger = 33,
-        FlickDownWith2Finger = 34,
-        FlickUpWith2Finger = 35,
-        SwipeRightWith3Finger = 36,
-        SwipeLeftWith3Finger = 37,
-        SwipeDownWith3Finger = 38,
-        SwipeUpWith3Finger = 39,
-        FlickRightWith3Finger = 40,
-        FlickLeftWith3Finger = 41,
-        FlickDownWith3Finger = 42,
-        FlickUpWith3Finger = 43,
-        SwipeRightWith4Finger = 44,
-        SwipeLeftWith4Finger = 45,
-        SwipeDownWith4Finger = 46,
-        SwipeUpWith4Finger = 47,
-        FlickLeftWith4Finger = 48,
-        FlickRightWith4Finger = 49,
-        FlickDownWith4Finger = 50,
-        FlickUpWith4Finger = 51,
-        Shake = 52,
-        Navigation = 53
-    }
-
     class ManifestController
     {
+        private readonly object _readLock = new object();  
         private static ManifestController mInstance;
         public static ManifestController Instance
         {
@@ -81,8 +25,6 @@ namespace AppAnalytics
 
         protected ManifestController()
         {
-            mContent = new MemoryStream();
-            mPackage = new MemoryStream();
             //
             IsolatedStorageFile iStorage = IsolatedStorageFile.GetUserStoreForApplication();
 
@@ -201,85 +143,17 @@ namespace AppAnalytics
             iStorage.Dispose();
         }
 
-        private byte kDataPackageFileVersion = 1;
-        private byte kSessionManifestFileVersion = 1;
-
-        private MemoryStream mPackage;
-        private MemoryStream mContent;
-
         private Dictionary<string, byte[]> mManifests = new Dictionary<string,byte[]>();
         private SerializableDictionary<string, List<byte[]>> mSamples = new SerializableDictionary<string, List<byte[]>>();
 
-        
-        private void writeArray(MemoryStream aMS, byte[] aBlock)
-        {
-            aMS.Write(aBlock, 0, aBlock.Length);
-        }
-
         public void buildDataPackage(GestureData aData)
         {
-            mPackage.WriteByte((byte)'<');
-             
-            writeArray(mPackage, aData.ActionOrder);
-            mPackage.WriteByte(aData.ActionID);
-            writeArray(mPackage, aData.ActionTime);
-            writeArray(mPackage, aData.PosX);
-            writeArray(mPackage, aData.PosY);
-            writeArray(mPackage, aData.Param1);
-            
-            writeArray(mPackage, BitConverter.GetBytes(aData.ViewIDLenght));
-            writeArray(mPackage, aData.ViewID);
-            writeArray(mPackage, BitConverter.GetBytes(aData.ElementIDLenght));
-            writeArray(mPackage, aData.ElementID);
-
-            mPackage.WriteByte((byte)'>');
-             
-            lock (_readLock)
-            {
-                if (mSamples.ContainsKey(Detector.getSessionIDStringWithDashes()))
-                {
-                    mSamples[Detector.getSessionIDStringWithDashes()].Add(mPackage.ToArray());
-                }
-                else
-                {
-                    mSamples[Detector.getSessionIDStringWithDashes()] = new List<byte[]>();
-                    mSamples[Detector.getSessionIDStringWithDashes()].Add(mPackage.ToArray());
-                }
-            }
-            mPackage.Close();
-            mPackage = new MemoryStream();
+            ManifestBuilder.buildDataPackage(aData, mSamples, _readLock);
         }
 
         public void buildSessionManifest()
         {
-            mContent.WriteByte((byte)'<');
-            mContent.WriteByte(kSessionManifestFileVersion);
-            writeArray(mContent, Detector.getSessionID());
-
-            writeArray(mContent, Detector.getSessionStartDate());
-
-            writeArray(mContent, Detector.getSessionEndDate());
-
-            writeArray(mContent, Detector.getUDID().Take(32).ToArray() ); // 90 != 85 => cropping
-
-            writeArray(mContent, Detector.getResolutionX());
-            writeArray(mContent, Detector.getResolutionY());
-
-            mContent.WriteByte(  Detector.ApiVersion);
-
-            writeArray(mContent, Detector.ApiKey);
-            writeArray(mContent, Detector.AppVersion);
-            writeArray(mContent, Detector.OSVersion);
-            writeArray(mContent, Detector.SystemLocale);
-
-            mContent.WriteByte((byte)'>');
-            lock (_readLock)
-            {
-                mManifests[Detector.getSessionIDString()] = mContent.ToArray();
-            }
-            var t = mContent.ToArray();
-            mContent.Close();
-            mContent = new MemoryStream();
+            ManifestBuilder.buildSessionManifest(mManifests, _readLock);
         }
 
         public bool sendManifest()
@@ -315,7 +189,7 @@ namespace AppAnalytics
 
                     ms.WriteByte((byte)'H');
                     ms.WriteByte((byte)'A');
-                    ms.WriteByte(kDataPackageFileVersion);
+                    ms.WriteByte(ManifestBuilder.kDataPackageFileVersion);
 
                     var session = Encoding.UTF8.GetBytes(kval.Key);
                     Debug.Assert(session.Length == 36);
@@ -400,6 +274,5 @@ namespace AppAnalytics
             }
         } 
 
-        private readonly object _readLock = new object();  
     }
 }

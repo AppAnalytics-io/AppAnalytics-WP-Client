@@ -12,7 +12,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Input;
 //using AppAnalytics.SystemInfo;
 
-namespace AppAnalitics
+namespace AppAnalytics
 {
     enum TouchAction
     {
@@ -120,11 +120,7 @@ namespace AppAnalitics
 
         static public async Task<int> GetOSVersion()
         {
-             
-            Version v = new Version("0.0.0.0");
-            
-           // var str = await WindowsStoreSystemInfo.GetWindowsVersionAsync();
-            //Version.TryParse(str, out v);
+            Version v = new Version("0.0.0.0"); 
 
             _cache = v;
             return 0;
@@ -134,9 +130,6 @@ namespace AppAnalitics
         {
             get
             {
-//                 var tsk = GetOSVersion();
-//                 tsk.Wait();
-
                 return _cache;
             }
         }

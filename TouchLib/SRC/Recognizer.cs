@@ -167,6 +167,18 @@ namespace AppAnalytics
         void instanceShakeGesture(object sender, ShakeGestureEventArgs e)
         {
             Debug.WriteLine("shaking");
+            if (e.ShakeType == ShakeType.X)
+            {
+                //to-do -> set shake orientation
+            }
+            else if (e.ShakeType == ShakeType.Y)
+            {
+                //to-do -> set shake orientation
+            }
+            else 
+            {
+                //to-do -> set shake orientation
+            }
             createGesture(GestureID.Shake);
         }
 
