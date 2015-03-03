@@ -14,6 +14,7 @@ using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
+
 using TouchPointCollection = System.Collections.ObjectModel.Collection<AppAnalytics.TouchPoint>;
 
 namespace AppAnalytics 
@@ -39,7 +40,6 @@ namespace AppAnalytics
 
         private readonly object _lockObj = new object();
         private Stopwatch mStopWatch = new Stopwatch();
-       // private Dictionary<double, int> mFingersOverTime = new Dictionary<double, int>();
 
         private const bool kUseRecognizer = true;
         private const float kOneGestureTimeTolerance = 0.08f;
@@ -85,12 +85,6 @@ namespace AppAnalytics
         public static RTRecognizer Instance
         {
             get { return mInstance ?? (mInstance = new RTRecognizer()); }
-        }
-
-        async private void shaken(object sender, AccelerometerShakenEventArgs e)
-        {
-            Debug.WriteLine("shaken");
-            GestureProcessor.createGesture(GestureID.Shake);
         } 
 
         void instanceShakeGesture(object sender, ShakeGestureEventArgs e)
@@ -126,6 +120,11 @@ namespace AppAnalytics
  //               | GestureSettings.ManipulationRotateInertia
                 | GestureSettings.ManipulationTranslateInertia;
 
+            /* 
+             * NOTE : Build-in accelerator event Shaken will NEVER be fired on WP platform.
+             * I'm using custom code fro this. You can find proof on msdn (class Accelerometer, event Shaken)
+             * https://msdn.microsoft.com/en-us/library/windows/apps/windows.devices.sensors.accelerometer.shaken
+             */
 
             ShakeGesturesHelper.Instance.ShakeGesture +=
                 new EventHandler<ShakeGestureEventArgs>(instanceShakeGesture);

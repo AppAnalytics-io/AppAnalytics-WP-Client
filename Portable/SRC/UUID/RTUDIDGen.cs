@@ -21,8 +21,7 @@ namespace AppAnalytics.UUID
         protected UDIDGen()
         {
             mGUID = new Guid();
-            mSessionID = Guid.NewGuid();
-            // test a bit
+            mSessionID = Guid.NewGuid(); 
         }
 
         async Task<bool> handleUDID()
@@ -73,7 +72,7 @@ namespace AppAnalytics.UUID
                 }
                 catch (Exception e)
                 {
-                    Debug.WriteLine(e.Message + "\n Cannot open file or read from it.");
+                    Debug.WriteLine(e.Message + "\n *****Cannot open file or read from it.");
                     mGUID = Guid.NewGuid();
                     return false;
                 } 

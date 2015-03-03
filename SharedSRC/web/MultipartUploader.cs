@@ -29,6 +29,7 @@ namespace AppAnalytics
             return PostForm(postUrl, userAgent, contentType, formData);
         }
 #if UNIVERSAL
+        // winrt version of HttpWebRequest doesn't have UserAgent as header by default.
         static private void SetHeader(HttpWebRequest Request, string Header, string Value)
         {
             // Retrieve the property through reflection.

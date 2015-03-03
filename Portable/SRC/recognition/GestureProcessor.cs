@@ -34,6 +34,7 @@ namespace AppAnalytics
 
             None
         }
+
         const double kTimeForHold = 0.48f;
 
         const double kHoldThreshold = 0.42;
@@ -60,7 +61,7 @@ namespace AppAnalytics
 
         private static readonly object _lockObject = new object();
 
-        static string mBufferPageUri = "none";
+        static string mBufferPageUri    = "none";
         static string mBufferElementUri = "none";
         public static string ElementURI
         {
@@ -165,8 +166,7 @@ namespace AppAnalytics
                     Debug.WriteLine("[Enlarge > shrink]");
                     // todo - convert
                     createGesture(GestureID.ZoomWith2Finger, BitConverter.GetBytes(aRelativeScale));
-                    mState = GState.Shrink;
-                    // push event
+                    mState = GState.Shrink; 
                 }
                 else if (aScale > 0 && mState != GState.Enlarge)
                 {
@@ -336,18 +336,7 @@ namespace AppAnalytics
         static double checkForZoom(double distDif)
         {
             if (RTRecognizer.Instance.Fingers < 2) return 0;
-            double metric = distDif;
-    
-//             distDif = Math.Abs(distDif);
-//             if (distDif > 0)
-//             {
-//                 var vec = new Vector2(  (float)Detector.getResolutionXDouble(), 
-//                                         (float)Detector.getResolutionYDouble());
-// 
-//                 distDif = (distDif / vec.Length()) * 100;  // 100 -> percent
-// 
-//                 metric = kZoomMetricCf * distDif;
-//             }
+            double metric = distDif; 
 
             return metric * kZoomMetricCf;
         }

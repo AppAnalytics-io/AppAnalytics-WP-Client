@@ -22,11 +22,11 @@ namespace AppAnalytics
         private const bool kTryToSendMore = true;
 
         public static readonly object _lockObj = new object();
-        //private Mutex mLock = new Mutex();
+
         static List<string> mManifestToDel = new List<string>();
         static Dictionary<string, int> mPackagesToDel = new Dictionary<string, int>();
-         
 
+        // isItManfest flag is deprecated, change it. there may be event also
         public static bool tryToSend(Dictionary<string, object> aFiles, bool isItManfest, List<int> aHowMany = null)
         {
             if (NetworkInterface.GetIsNetworkAvailable() == true && IsPreviousOperationComplete && aFiles.Count > 0)
