@@ -25,6 +25,7 @@ namespace AppAnalytics
         //private Mutex mLock = new Mutex();
         static List<string> mManifestToDel = new List<string>();
         static Dictionary<string, int> mPackagesToDel = new Dictionary<string, int>();
+         
 
         public static bool tryToSend(Dictionary<string, object> aFiles, bool isItManfest, List<int> aHowMany = null)
         {
@@ -62,8 +63,9 @@ namespace AppAnalytics
                 }
 
                 return true;
-            }
-            else return false;
+            }                
+            
+            return false;
         }
 
         static public bool IsPreviousOperationComplete

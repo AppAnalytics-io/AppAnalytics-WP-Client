@@ -122,7 +122,7 @@ namespace AppAnalytics
         static public async Task<int> GetOSVersion()
         {
             Version v = new Version("0.0.0.0"); 
-
+            // can't use Enviropment -> OSVersion on WP8+ winRT
             _cache = v;
             return 0;
         }

@@ -1,0 +1,8 @@
+Portable - vesion for universal apps
+TouchLib (proj. name AppAnalytics) - silverlight
+
+folder SharedSRC contains *.cs files which is shared between Universal and Silverlight version. Those files are added as references. 
+
+Beware of editin UDIDGen instead of RTUDIDGen (for example) if you are in Portable project. These classes have equal names. I may change it later. 
+
+#testing and #App1(WP8.0) are ready for testing, just set it as startup and run.

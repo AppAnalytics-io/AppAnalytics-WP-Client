@@ -43,6 +43,7 @@ namespace AppAnalytics
 
             lock (_lock)
             {
+                var tst = Detector.getSessionIDStringWithDashes();
                 if (mSamples.ContainsKey(Detector.getSessionIDStringWithDashes()))
                 {
                     mSamples[Detector.getSessionIDStringWithDashes()].Add(mPackage.ToArray());
@@ -62,6 +63,7 @@ namespace AppAnalytics
         {
             mManifestStream.WriteByte((byte)'<');
             mManifestStream.WriteByte(kSessionManifestFileVersion);
+            var tst = Detector.getSessionID();
             writeArray(mManifestStream, Detector.getSessionID());
 
             writeArray(mManifestStream, Detector.getSessionStartDate());

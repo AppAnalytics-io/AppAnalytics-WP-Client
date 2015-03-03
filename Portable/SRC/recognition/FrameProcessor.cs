@@ -6,9 +6,7 @@ using System.Text;
 using System.Threading.Tasks; 
 using System.Windows.Input;
 using System.Diagnostics; 
-
-//using ShakeGestures;
-//using System. 
+ 
 using System.Threading;
 using Windows.Foundation;
 using Windows.UI.Xaml;
@@ -16,6 +14,11 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 
 using TouchPointCollection = System.Collections.ObjectModel.Collection<AppAnalytics.TouchPoint>;
+
+/*
+ * Used for detecting multiple fingers tap.
+ * Will be refactored.
+ */
 
 namespace AppAnalytics
 {
@@ -90,9 +93,6 @@ namespace AppAnalytics
         private static readonly object _lockObject = new object();
         private static FrameProcessor mInstance;
 
-        string mBufferPageUri = "none";
-        string mBufferElementUri = "none";
-
         double mPreDistance = 0;
         double mPreAngle = 0;
 
@@ -127,9 +127,9 @@ namespace AppAnalytics
         {
         }
 
-        const double swipeThreshold = 0.07;
+        //const double swipeThreshold = 0.07;
 
-        const double insensitivityConst = 0.08;
+        //const double insensitivityConst = 0.08;
         const double timeForTap = 0.30f;
 
         int lastTapFingers = 0;
@@ -214,8 +214,8 @@ namespace AppAnalytics
             return Detector.getResolutionYDouble();
         }
 
-        int PrevFingers;
-        int mMaxFingersInTap;
+        int PrevFingers = 0;
+        int mMaxFingersInTap = 0;
 
         // MAIN CALLBACK //////////////////////////////////////////////////////////////////////////////////////////
         public void manipulationFrame(TouchPointCollection tpc)

@@ -115,6 +115,7 @@ namespace AppAnalytics.UUID
         {
             get
             {
+                var tst = mGUID.ToString();
                 return mEncoding.GetBytes( mGUID.ToString() );
             }
         }

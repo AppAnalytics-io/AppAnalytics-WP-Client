@@ -30,10 +30,9 @@ using Windows.ApplicationModel;
 namespace AppAnalytics
 {
     public static class Detector
-    {
-        //static Windows.UI.Input.GestureRecognizer p1 = new Windows.UI.Input.GestureRecognizer();
+    { 
         static readonly object _lockObject = new object();
-        //gestures to-send queue 
+         
 
         // Concurent.ConcurrentQueue<GestureData> mToSend = new ConcurrentQueue<GestureData>();
         //private static Queue<GestureData> mToSend = new Queue<GestureData>();
@@ -233,6 +232,12 @@ namespace AppAnalytics
 #else
             RTRecognizer.Instance.init();
 #endif
+            var tsk = new Task(mIDGen.Init);
+            tsk.Start();
+            tsk.Wait();
+
+//             var check = mIDGen.UDID;
+//             var check2 = mIDGen.UDIDRaw;
 
             mApiKey = getBytes(aApiKey);
             if (mApiKey.Length != 32)
@@ -391,6 +396,8 @@ namespace AppAnalytics
 
         internal static string  getUDIDString()
         {
+            var tst = mIDGen.UDIDRaw.ToString("N");
+            var tst2 = mIDGen.UDIDRaw.ToString();
             return mIDGen.UDIDRaw.ToString("N");
         }
 

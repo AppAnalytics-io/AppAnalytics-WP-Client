@@ -33,6 +33,7 @@ namespace AppAnalytics
          * being tracked -> 
          * https://social.msdn.microsoft.com/Forums/windowsapps/en-US/ceb4a3dc-05f4-4361-bbf7-039310a5d0d3/failed-to-start-tracking-the-pointer-because-it-is-already-being-tracked?forum=winappswithcsharp
          * it being used for basic manipulations
+         * also it can't recognize 2-3-4 fingers taps. did it by my own.
          */
         private GestureRecognizer mRecognizer = new GestureRecognizer();
 
@@ -42,6 +43,13 @@ namespace AppAnalytics
 
         private const bool kUseRecognizer = true;
         private const float kOneGestureTimeTolerance = 0.08f;
+
+        const float kTimeToUpdateFingersCount = 50; //ms
+        bool        mIsIteriaSubmited = false;
+        int         mStepsWaiting = 0;
+        const int   kStepsBeforeStart = 5; // temporary solution. may be changed any time soon.
+                                          // added 'cause of specific manipulationUpdated firing mechanism
+        const float kSwipeIteriaThreshold = 1.0f;
 
         private int mFingers = 0;
         public int Fingers
@@ -83,15 +91,7 @@ namespace AppAnalytics
         {
             Debug.WriteLine("shaken");
             GestureProcessor.createGesture(GestureID.Shake);
-        }
-
-//         async private void ReadingChanged(object sender, AccelerometerReadingChangedEventArgs e)
-//         {
-//             AccelerometerReading reading = e.Reading;
-//             Debug.WriteLine(String.Format("{0,5:0.00}", reading.AccelerationX));
-//             Debug.WriteLine(String.Format("{0,5:0.00}", reading.AccelerationY));
-//             Debug.WriteLine(String.Format("{0,5:0.00}", reading.AccelerationZ));
-//         }
+        } 
 
         void instanceShakeGesture(object sender, ShakeGestureEventArgs e)
         {
@@ -146,7 +146,7 @@ namespace AppAnalytics
 
             var view = CoreApplication.MainView; 
             bool isMain = view.IsMain;
-//             if (!kUseRecognizer)
+//             if (!kUseRecognizer) // still waiting for MSDN staff to fix strange CoreWindow behavior.
 //             {
 //                 window.PointerPressed += _pointerPressed;
 //                 window.PointerReleased += _pointerReleased;
@@ -251,11 +251,6 @@ namespace AppAnalytics
             mStepsWaiting = 0;
         }
 
-        bool mIsIteriaSubmited = false;
-        int  mStepsWaiting = 0;
-        const int kStepsBeforeStart = 5;
-        const float kSwipeIteriaThreshold = 1.0f;
-
         void manipulationInertiaStarted(GestureRecognizer sender, ManipulationInertiaStartingEventArgs args)
         {
             var x = args.Velocities.Linear.X;
@@ -270,7 +265,6 @@ namespace AppAnalytics
             }
         }
 
-        const float kTimeToUpdateFingersCount = 50; //ms
         void manipulationUpdated(GestureRecognizer sender, ManipulationUpdatedEventArgs args)
         {
             if (kStepsBeforeStart > mStepsWaiting && !(Fingers == 2 && args.Delta.Expansion != 0))
@@ -294,9 +288,8 @@ namespace AppAnalytics
                 {
                     Fingers = mTouches[mLastFrame].Count;
                 }
-            }          
-            //if (Fingers == 2 && args.Delta.Expansion == 0) return;
-            //float len = (new Vector2((float)args.Delta.Expansion.X, (float)args.Delta.Translation.Y)).Length();
+            }           
+
            GestureProcessor.updateState(args.Delta.Expansion, args.Delta.Rotation, args.Delta.Translation, args.Delta.Scale);
         }
 
@@ -318,12 +311,7 @@ namespace AppAnalytics
             else
             {
                 GestureProcessor.createGestureFromState(PrevFingers, true, args.Cumulative);
-            }
-
-//             Debug.WriteLine("complete");
-//             Debug.WriteLine(" scale -> " + args.Cumulative.Scale);
-//             Debug.WriteLine(" rotation -> " + args.Cumulative.Rotation);
-//             Debug.WriteLine(" translation -> " + args.Cumulative.Translation);
+            } 
         }
 
         void pushIntoCollection(TouchPoint tp, uint pointerID, uint frameID)
@@ -431,8 +419,7 @@ namespace AppAnalytics
         {
             if (mPointerStatus.ContainsKey(point.PointerId) && true == mPointerStatus[point.PointerId])
             {
-                var CurrentPoint = point;
-                //Debug.WriteLine("_up_");
+                var CurrentPoint = point; 
                 TouchPoint tp = new TouchPoint();
                 tp.Action = TouchAction.Up;
                 tp.X = (float)CurrentPoint.Position.X; tp.Y = (float)CurrentPoint.Position.Y;

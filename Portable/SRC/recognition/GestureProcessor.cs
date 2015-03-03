@@ -434,7 +434,7 @@ namespace AppAnalytics
 
         static public async void createGesture(GestureID aID, byte[] param1 = null)
         { 
-           await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal , () => getCurrentPage()); 
+            await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal , () => getCurrentPage()); 
 
             Point p = new Point(RTRecognizer.Instance.StartX, RTRecognizer.Instance.StartY);
 

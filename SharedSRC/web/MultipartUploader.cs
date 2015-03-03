@@ -15,7 +15,7 @@ namespace AppAnalytics
     {
        // private static ManualResetEvent allDone = new ManualResetEvent(false);
         private static readonly Encoding encoding = Encoding.UTF8;
-        private static bool mFlag = false;
+        //private static bool mFlag = false;
 
         public static bool MultipartFormDataPost(string postUrl, string userAgent, Dictionary<string, object> postParameters, bool isManifest)
         {
@@ -79,7 +79,7 @@ namespace AppAnalytics
             return true;
         }
 
-        static int _packageIndex = 0;
+        //static int _packageIndex = 0;
         private static byte[] GetMultipartFormData(Dictionary<string, object> postParameters, string boundary, bool isManifest)
         {
             Stream formDataStream = new System.IO.MemoryStream();
@@ -90,16 +90,16 @@ namespace AppAnalytics
                 if (needsCLRF)
                     formDataStream.Write(encoding.GetBytes("\r\n"), 0, encoding.GetByteCount("\r\n"));
   
-                string fname = "";
-                if (isManifest)
-                {
-                    fname = Detector.getSessionIDString() + ".manifest";
-                }
-                else
-                {
-                    fname = string.Format("{0}_{1}.datapackage", Detector.getSessionIDString(), _packageIndex.ToString());
-                    _packageIndex++;
-                }
+//                 string fname = "";
+//                 if (isManifest)
+//                 {
+//                     fname = Detector.getSessionIDString() + ".manifest";
+//                 }
+//                 else
+//                 {
+//                     fname = string.Format("{0}_{1}.datapackage", Detector.getSessionIDString(), _packageIndex.ToString());
+//                     _packageIndex++;
+//                 }
  
                 if (param.Value is FileParameter)
                 {
@@ -212,7 +212,11 @@ namespace AppAnalytics
                 Sender.success();
                 Debug.WriteLine("request succeed");
             }
-            else Sender.fail();
+            else
+            {
+                Sender.fail();
+                Debug.WriteLine("request failed. retry");
+            }
             //allDone.Set();
         }
     }

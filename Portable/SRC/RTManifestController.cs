@@ -12,6 +12,7 @@ using System.Xml;
 using System.Xml.Serialization;
 using Windows.Foundation;
 using System.Threading;
+using System.Net.NetworkInformation;
 
 namespace AppAnalytics
 {
@@ -38,6 +39,12 @@ namespace AppAnalytics
         }
 
         AutoResetEvent mSyncEvent = new AutoResetEvent(false);
+
+        // temporary version. will be rewritten after tests.
+        const int kMaxTasks = 4;
+        Task[] mManifestTaskPool = new Task[5];
+        Task[] mSamplesTaskPool = new Task[5];
+        //.
 
         async void loadData()
         {
@@ -77,29 +84,7 @@ namespace AppAnalytics
                             tmpSmpl.Skip(toskip).Take(10000).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
                     }
                     stream.Dispose();
-                } 
-                //testing
-                #region tst
-//                 if (true)
-//                 {
-//                     mSamples.Clear();
-//                     XmlSerializer serializer3 = new XmlSerializer(typeof(SerializableDictionary<string, List<byte[]>>));
-//                     GestureData tst0 = GestureData.create(GestureID.DoubleTapWith1Finger, new Point(), "1", "1");
-//                     GestureData tst1 = GestureData.create(GestureID.DoubleTapWith1Finger, new Point(), "123", "1234567");
-//                     GestureData tst2 = GestureData.create(GestureID.DoubleTapWith1Finger, new Point(), "123", "1234567");
-// 
-//                     buildDataPackage(tst0); buildDataPackage(tst1); buildDataPackage(tst2);
-//                     var file = await folder.CreateFileAsync("tst", CreationCollisionOption.ReplaceExisting);
-//                     var stream = await file.OpenStreamForWriteAsync();
-//                     serializer3.Serialize(stream, mSamples);
-//                     stream.Dispose();
-// 
-//                     stream = await file.OpenStreamForReadAsync();
-//                     object t = serializer3.Deserialize(stream);
-//                     mSamples = t as SerializableDictionary<string, List<byte[]>>;
-//                     stream.Dispose();
-//                 }
-                #endregion
+                }  
             }
             catch (Exception e)
             {
@@ -108,7 +93,7 @@ namespace AppAnalytics
 
             lock (_readLock)
             {
-                if (tmpMan.Count != 0)
+                if (tmpMan.Count != 0 && false)
                 {
                     mManifests = tmpMan;
                 }
@@ -128,13 +113,15 @@ namespace AppAnalytics
             mPackage = new MemoryStream();
             //
             Task load = new Task(loadData);
-            load.Start();
+            load.Start(); // maybe we can @fire and forget@ about this. will think about it.
             load.Wait();
         }
 
         ~ManifestController()
         {
-            store();
+            var tmp = new Task(store);
+            tmp.Start();
+            tmp.Wait(); // storing samples that not sending.
         }
 
         public async void store()
@@ -202,14 +189,38 @@ namespace AppAnalytics
             ManifestBuilder.buildSessionManifest(mManifests, _readLock);
         }
 
+        public async void TryToSendManifestLeter(Dictionary<string,object> list)
+        {
+            await Task.Delay(5000);
+            Sender.tryToSend(list, true);
+        }
+        public async void TryToSendSamplesLeter(Dictionary<string, object> list)
+        {
+            await Task.Delay(5000);
+            Sender.tryToSend(list, false);
+        }
+
+
         public bool sendManifest()
         {
-            Dictionary<string, object> wrapper = new Dictionary<string,object>();
+            Dictionary<string, object> wrapper = new Dictionary<string, object>();
+            var tst = Detector.getSessionID();
             lock (_readLock)
             {
+                int counter = 0;
                 foreach ( var kval in mManifests)
                 {
-                    wrapper.Add(kval.Key, new MultipartUploader.FileParameter( kval.Value ));
+                    if (counter == 0)
+                    {
+                        wrapper.Add(kval.Key, new MultipartUploader.FileParameter(kval.Value));
+                    }
+                    // temporary solution. it will be changed 
+                    else if (counter < (kMaxTasks+1) && NetworkInterface.GetIsNetworkAvailable())
+                    {
+                        mManifestTaskPool[counter-1] = new Task(() => TryToSendManifestLeter(wrapper));
+                        mManifestTaskPool[counter - 1].Start();
+                    }
+                    counter++;
                 }
             }
 
@@ -217,6 +228,7 @@ namespace AppAnalytics
 
             return flag;
         }
+
         public bool sendSamples()
         {
             Dictionary<string, object> wrapper = new Dictionary<string, object>();
@@ -226,9 +238,10 @@ namespace AppAnalytics
             int bts = 0;
             lock (_readLock)
             {
+                int counter = 0; // temporary.
+                int index = 0;
                 foreach (var kval in mSamples)
                 {
-                    int index = 0;
 
                     var ms = new MemoryStream();
 
@@ -238,8 +251,8 @@ namespace AppAnalytics
 
                     var session = Encoding.UTF8.GetBytes(kval.Key);
                     Debug.Assert(session.Length == 36);
-
-                    ms.Write(Detector.getSessionID(), 0, Detector.getSessionID().Length);
+                    var tst = Detector.getSessionID();
+                    ms.Write(session, 0, Detector.getSessionID().Length);
 
                     wrapper.Add(kval.Key, new MultipartUploader.FileParameter(ms.ToArray()));
                     ms.Dispose();
@@ -265,16 +278,25 @@ namespace AppAnalytics
                         index++;
                     }
                     count.Add(index);
-
-                    // just for sending ONE session at once. Ill keep pld code
-                    // in case if logic changes
-                    break;
+                    
+                    // temporary solution. it will be changed 
+                    if (counter == 0)
+                    {
+                        bool flag = Sender.tryToSend(wrapper, false, count);
+                    }
+                    else if (counter < (kMaxTasks+1) && NetworkInterface.GetIsNetworkAvailable())
+                    {
+                        mSamplesTaskPool[counter - 1] = new Task(() => TryToSendSamplesLeter(wrapper));
+                        mSamplesTaskPool[counter - 1].Start();
+                    }
+                    counter++;
+                
+                    wrapper.Clear(); 
                 }
             }
 
-            bool flag = Sender.tryToSend(wrapper, false, count);
 
-            return flag;
+            return true;
         }
 
         public void deleteManifests(List<string> list)
