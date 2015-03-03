@@ -394,6 +394,13 @@ namespace AppAnalytics
             return mIDGen.UDID;
         }
 
+        internal static byte[] getUDID32()
+        {
+            var bts = Encoding.UTF8.GetBytes(mIDGen.UDIDRaw.ToString("N"));
+            Debug.Assert(bts.Length == 32);
+            return bts;
+        }
+
         internal static string  getUDIDString()
         {
             var tst = mIDGen.UDIDRaw.ToString("N");

@@ -70,7 +70,7 @@ namespace AppAnalytics
 
             writeArray(mManifestStream, Detector.getSessionEndDate());
 
-            writeArray(mManifestStream, Detector.getUDID().Take(32).ToArray()); // 90 != 85 => cropping
+            writeArray(mManifestStream, Detector.getUDID32()); // 90 != 85 => cropping
 
             writeArray(mManifestStream, Detector.getResolutionX());
             writeArray(mManifestStream, Detector.getResolutionY());
