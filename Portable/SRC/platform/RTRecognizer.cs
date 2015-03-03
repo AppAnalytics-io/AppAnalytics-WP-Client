@@ -116,9 +116,14 @@ namespace AppAnalytics
             var currentPage = Window.Current.Content as Frame;
             CoreWindow window = CoreApplication.MainView.CoreWindow;
 
-            mRecognizer.GestureSettings = GestureSettings.Tap | GestureSettings.Hold | GestureSettings.ManipulationMultipleFingerPanning
-                | GestureSettings.ManipulationScale | GestureSettings.ManipulationTranslateX | GestureSettings.ManipulationTranslateY |
-                GestureSettings.Drag | GestureSettings.ManipulationRotate 
+            mRecognizer.GestureSettings = GestureSettings.Tap | GestureSettings.Hold 
+                | GestureSettings.ManipulationMultipleFingerPanning
+                | GestureSettings.ManipulationScale 
+                | GestureSettings.ManipulationTranslateX 
+                | GestureSettings.ManipulationTranslateY 
+                | GestureSettings.Drag 
+                | GestureSettings.ManipulationRotate 
+ //               | GestureSettings.ManipulationRotateInertia
                 | GestureSettings.ManipulationTranslateInertia;
 
 
@@ -289,11 +294,7 @@ namespace AppAnalytics
                 {
                     Fingers = mTouches[mLastFrame].Count;
                 }
-            }
-//             Debug.WriteLine("upd");
-//             Debug.WriteLine(" scale -> " + args.Cumulative.Scale);
-//             Debug.WriteLine(" rotation -> " + args.Cumulative.Rotation);
-//             Debug.WriteLine(" translation -> " + args.Cumulative.Translation);           
+            }          
             //if (Fingers == 2 && args.Delta.Expansion == 0) return;
             //float len = (new Vector2((float)args.Delta.Expansion.X, (float)args.Delta.Translation.Y)).Length();
            GestureProcessor.updateState(args.Delta.Expansion, args.Delta.Rotation, args.Delta.Translation, args.Delta.Scale);
@@ -306,7 +307,18 @@ namespace AppAnalytics
                 mIsIteriaSubmited = false;
                 return;
             }
-            GestureProcessor.createGestureFromState(PrevFingers, true, args.Cumulative);
+            var x = args.Velocities.Linear.X;
+            var y = args.Velocities.Linear.Y;
+            float len = (new Vector2((float)x, (float)y)).Length();
+
+            if ( (kSwipeIteriaThreshold < (len*0.7)) && GestureProcessor.isMovingState())
+            {
+                GestureProcessor.createSwipeFromState(PrevFingers, true);
+            }
+            else
+            {
+                GestureProcessor.createGestureFromState(PrevFingers, true, args.Cumulative);
+            }
 
 //             Debug.WriteLine("complete");
 //             Debug.WriteLine(" scale -> " + args.Cumulative.Scale);

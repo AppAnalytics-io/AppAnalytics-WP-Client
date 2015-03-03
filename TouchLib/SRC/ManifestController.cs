@@ -65,22 +65,22 @@ namespace AppAnalytics
                     #region tst
                     if (false)
                     {
-                        mSamples.Clear();
-                        XmlSerializer serializer3 = new XmlSerializer(typeof(SerializableDictionary<string, List<byte[]>>));
-                        GestureData tst0 = GestureData.create(GestureID.DoubleTapWith1Finger, new System.Windows.Point(), "1", "1");
-                        GestureData tst1 = GestureData.create(GestureID.DoubleTapWith1Finger, new System.Windows.Point(), "123", "1234567");
-                        GestureData tst2 = GestureData.create(GestureID.DoubleTapWith1Finger, new System.Windows.Point(), "123", "1234567");
-
-                        buildDataPackage(tst0); buildDataPackage(tst1); buildDataPackage(tst2);
-
-                        var bw = iStorage.OpenFile("tst", FileMode.Create);
-                        serializer3.Serialize(bw, mSamples);
-                        bw.Close();
-
-                        var stream = iStorage.OpenFile("tst", FileMode.Open);
-                        object t = serializer3.Deserialize(stream);
-                        mSamples = t as SerializableDictionary<string, List<byte[]>>;
-                        stream.Close();
+//                         mSamples.Clear();
+//                         XmlSerializer serializer3 = new XmlSerializer(typeof(SerializableDictionary<string, List<byte[]>>));
+//                         GestureData tst0 = GestureData.create(GestureID.DoubleTapWith1Finger, new System.Windows.Point(), "1", "1");
+//                         GestureData tst1 = GestureData.create(GestureID.DoubleTapWith1Finger, new System.Windows.Point(), "123", "1234567");
+//                         GestureData tst2 = GestureData.create(GestureID.DoubleTapWith1Finger, new System.Windows.Point(), "123", "1234567");
+// 
+//                         buildDataPackage(tst0); buildDataPackage(tst1); buildDataPackage(tst2);
+// 
+//                         var bw = iStorage.OpenFile("tst", FileMode.Create);
+//                         serializer3.Serialize(bw, mSamples);
+//                         bw.Close();
+// 
+//                         var stream = iStorage.OpenFile("tst", FileMode.Open);
+//                         object t = serializer3.Deserialize(stream);
+//                         mSamples = t as SerializableDictionary<string, List<byte[]>>;
+//                         stream.Close();
                     }
                     #endregion
                 }
