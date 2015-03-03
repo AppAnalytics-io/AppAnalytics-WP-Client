@@ -93,6 +93,7 @@ namespace AppAnalytics
     {
         static private Version _cache = new Version("0.0.0.0");
 
+
 //        public static Task<string> GetOSAsync()
 //        {
 //             var t = new TaskCompletionSource<string>();

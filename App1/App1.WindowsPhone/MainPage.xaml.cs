@@ -28,13 +28,13 @@ namespace App1
         {
             this.InitializeComponent();
             this.AddHandler(UIElement.PointerMovedEvent, new PointerEventHandler(pointerMoved), true);
-            AppAnalytics.Detector.init("IcawZz1SbQA1TA8upkLqgPDg5hka6VMQ");
+            AppAnalytics.Detector.init("aunax1tKfUkuySLKkqaDAZxLEL1k5TpF");
             this.NavigationCacheMode = NavigationCacheMode.Required;
         }
 
         void pointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            Debug.WriteLine("-");
+            //Debug.WriteLine("-");
         }
 
         /// <summary>
@@ -51,6 +51,12 @@ namespace App1
             // Windows.Phone.UI.Input.HardwareButtons.BackPressed event.
             // If you are using the NavigationHelper provided by some templates,
             // this event is handled for you.
+        }
+
+        private void Canvas_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            var ui = sender as UIElement;
+            ui.CapturePointer(e.Pointer);
         }
     }
 }

@@ -25,7 +25,7 @@ namespace App1
         public MainPage()
         {
             this.InitializeComponent();
-            AppAnalytics.Detector.init("IcawZz1SbQA1TA8upkLqgPDg5hka6VMQ");
+            AppAnalytics.Detector.init("aunax1tKfUkuySLKkqaDAZxLEL1k5TpF");
         }
     }
 }

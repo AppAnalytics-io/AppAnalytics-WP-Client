@@ -11,6 +11,7 @@ using System.Runtime.Serialization;
 using System.Xml;
 using System.Xml.Serialization;
 using Windows.Foundation;
+using System.Threading;
 
 namespace AppAnalytics
 {
@@ -35,6 +36,8 @@ namespace AppAnalytics
                 return false;
             }
         }
+
+        AutoResetEvent mSyncEvent = new AutoResetEvent(false);
 
         async void loadData()
         {
@@ -62,7 +65,7 @@ namespace AppAnalytics
                 {
                     XmlSerializer serializer2 = new XmlSerializer(typeof(SerializableDictionary<string, List<byte[]>>));
 
-                    var file = await folder.GetFileAsync("manifests");
+                    var file = await folder.GetFileAsync("samples");
                     var stream = await file.OpenStreamForReadAsync();
                     object t = serializer2.Deserialize(stream);
 
@@ -74,46 +77,53 @@ namespace AppAnalytics
                             tmpSmpl.Skip(toskip).Take(10000).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
                     }
                     stream.Dispose();
-                }
-
+                } 
                 //testing
                 #region tst
-                if (true)
-                {
-                    mSamples.Clear();
-                    XmlSerializer serializer3 = new XmlSerializer(typeof(SerializableDictionary<string, List<byte[]>>));
-                    GestureData tst0 = GestureData.create(GestureID.DoubleTapWith1Finger, new Point(), "1", "1");
-                    GestureData tst1 = GestureData.create(GestureID.DoubleTapWith1Finger, new Point(), "123", "1234567");
-                    GestureData tst2 = GestureData.create(GestureID.DoubleTapWith1Finger, new Point(), "123", "1234567");
-
-                    buildDataPackage(tst0); buildDataPackage(tst1); buildDataPackage(tst2);
-                    var file = await folder.CreateFileAsync("tst", CreationCollisionOption.ReplaceExisting);
-                    var stream = await file.OpenStreamForWriteAsync();
-                    serializer3.Serialize(stream, mSamples);
-                    stream.Dispose();
-
-                    stream = await file.OpenStreamForReadAsync();
-                    object t = serializer3.Deserialize(stream);
-                    mSamples = t as SerializableDictionary<string, List<byte[]>>;
-                    stream.Dispose();
-                }
+//                 if (true)
+//                 {
+//                     mSamples.Clear();
+//                     XmlSerializer serializer3 = new XmlSerializer(typeof(SerializableDictionary<string, List<byte[]>>));
+//                     GestureData tst0 = GestureData.create(GestureID.DoubleTapWith1Finger, new Point(), "1", "1");
+//                     GestureData tst1 = GestureData.create(GestureID.DoubleTapWith1Finger, new Point(), "123", "1234567");
+//                     GestureData tst2 = GestureData.create(GestureID.DoubleTapWith1Finger, new Point(), "123", "1234567");
+// 
+//                     buildDataPackage(tst0); buildDataPackage(tst1); buildDataPackage(tst2);
+//                     var file = await folder.CreateFileAsync("tst", CreationCollisionOption.ReplaceExisting);
+//                     var stream = await file.OpenStreamForWriteAsync();
+//                     serializer3.Serialize(stream, mSamples);
+//                     stream.Dispose();
+// 
+//                     stream = await file.OpenStreamForReadAsync();
+//                     object t = serializer3.Deserialize(stream);
+//                     mSamples = t as SerializableDictionary<string, List<byte[]>>;
+//                     stream.Dispose();
+//                 }
                 #endregion
             }
             catch (Exception e)
             {
-                Debug.WriteLine(e.Message + "\n Cannot create file.");
-                return;
+                Debug.WriteLine(e.Message + "\n Cannot create file."); 
             }
 
             lock (_readLock)
             {
-                mManifests = tmpMan;
-                mSamples = tmpSmpl;
-            } 
+                if (tmpMan.Count != 0)
+                {
+                    mManifests = tmpMan;
+                }
+               if (tmpSmpl.Count != 0)
+                {
+                    mSamples = tmpSmpl;
+                }
+            }
+
+            mSyncEvent.Set();
         }
 
         protected ManifestController()
         {
+            mSyncEvent.Reset();
             mContent = new MemoryStream();
             mPackage = new MemoryStream();
             //
@@ -188,13 +198,13 @@ namespace AppAnalytics
 
         public void buildSessionManifest()
         {
+            mSyncEvent.WaitOne();
             ManifestBuilder.buildSessionManifest(mManifests, _readLock);
         }
 
         public bool sendManifest()
         {
-            Dictionary<string, object> wrapper = new Dictionary<string,object>(); 
-
+            Dictionary<string, object> wrapper = new Dictionary<string,object>();
             lock (_readLock)
             {
                 foreach ( var kval in mManifests)

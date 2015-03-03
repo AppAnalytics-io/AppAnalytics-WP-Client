@@ -12,6 +12,7 @@
         <Grid HorizontalAlignment="Left" Height="459" Margin="44,66,0,0" VerticalAlignment="Top" Width="287">
             <ContentControl Content="ContentControl" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="95" Width="93"/>
             <ContentControl Content="ContentControl" HorizontalAlignment="Left" Margin="140,10,0,0" VerticalAlignment="Top" Height="95" Width="93"/>
+            <Canvas Name="test1" HorizontalAlignment="Left" Height="254" Margin="10,195,0,0" VerticalAlignment="Top" Width="267" Background="{ThemeResource ListBoxBackgroundThemeBrush}" PointerPressed="Canvas_PointerPressed"/>
         </Grid>
 
     </Grid>

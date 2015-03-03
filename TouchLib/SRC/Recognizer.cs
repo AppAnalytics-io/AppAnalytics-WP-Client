@@ -330,8 +330,8 @@ namespace AppAnalytics
             {
                 Deployment.Current.Dispatcher.BeginInvoke(() => getCurrentPage());
             }
-            
-            System.Windows.Point p = new System.Windows.Point(LastPosX, LastPosY);
+
+            Windows.Foundation.Point p = new Windows.Foundation.Point(LastPosX, LastPosY);
             mWHanlde.WaitOne(7);
             GestureData gd = GestureData.create(aID, p, mBufferElementUri, mBufferPageUri, param1);
 

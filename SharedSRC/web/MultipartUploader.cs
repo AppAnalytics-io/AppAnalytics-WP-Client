@@ -34,16 +34,20 @@ namespace AppAnalytics
             // Retrieve the property through reflection.
             PropertyInfo PropertyInfo = Request.GetType().GetRuntimeProperty(Header.Replace("-", string.Empty));
             // Check if the property is available.
-            if (PropertyInfo != null)
+            try
             {
-                // Set the value of the header.
-                PropertyInfo.SetValue(Request, Value, null);
+//                 if (PropertyInfo != null)
+//                 {
+//                     // Set the value of the header.
+//                     PropertyInfo.SetValue(Request, Value, null); 
+//                 }
+//                 else
+                {
+                    // Set the value of the header.
+                    Request.Headers[Header] = Value; 
+                }
             }
-            else
-            {
-                // Set the value of the header.
-                Request.Headers[Header] = Value;
-            }
+            catch { }
         }
 #endif
 
@@ -63,7 +67,7 @@ namespace AppAnalytics
             request.ContentLength = formData.Length;
 #else
             SetHeader(request, "UserAgent", userAgent);
-            SetHeader(request, "ContentLength", userAgent);
+            SetHeader(request, "ContentLength", formData.Length.ToString());
 #endif
             request.CookieContainer = new CookieContainer();
 
@@ -128,7 +132,7 @@ namespace AppAnalytics
             formDataStream.Position = 0;
             byte[] formData = new byte[formDataStream.Length];
             formDataStream.Read(formData, 0, formData.Length);
-            formDataStream.Close();
+            formDataStream.Dispose();
  
             return formData;
         }

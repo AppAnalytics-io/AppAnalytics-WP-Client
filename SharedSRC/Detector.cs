@@ -23,6 +23,7 @@ using Windows.ApplicationModel;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.Globalization;
+using Windows.ApplicationModel;
 #endif
 
 
@@ -230,7 +231,7 @@ namespace AppAnalytics
             mUIThreadID = System.Threading.Thread.CurrentThread.ManagedThreadId;
             Recognizer.Instance.Init();
 #else
-            Recognizer.Instance.init();
+            RTRecognizer.Instance.init();
 #endif
 
             mApiKey = getBytes(aApiKey);
@@ -294,7 +295,15 @@ namespace AppAnalytics
                 Recognizer.Instance.TapsInRow = 0;
             }
 #else
-            //todo - implemet a delay
+            double tstDif = (FrameProcessor.getNow() - FrameProcessor.Instance.PrevTapOccured).TotalSeconds;
+
+            if ((tstDif > FrameProcessor.Instance.TimeForTap) && (FrameProcessor.Instance.TapsInRow > 0))
+            {
+                Debug.WriteLine(FrameProcessor.Instance.TapsInRow + " < taps with > " + FrameProcessor.Instance.LastTapFingers);
+
+                GestureProcessor.createTapGesture(FrameProcessor.Instance.TapsInRow, FrameProcessor.Instance.LastTapFingers);
+                FrameProcessor.Instance.TapsInRow = 0;
+            }
 #endif
         }
         static double toSendMark = 0;
@@ -352,7 +361,8 @@ namespace AppAnalytics
                     lock (_lockObject)
                     {
                         mNavigationOccured = false;
-                        Recognizer.Instance.createGesture(GestureID.Navigation);
+                        //todo
+                        //Recognizer.Instance.createGesture(GestureID.Navigation);
                     }
                 }
             }

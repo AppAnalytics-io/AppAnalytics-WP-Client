@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Foundation;
 
 namespace AppAnalytics
 {
@@ -21,7 +22,7 @@ namespace AppAnalytics
 
         GestureData() { }
 
-        static public GestureData create(GestureID aID,  Point aLocation, string aElement, string aPage, byte[] param1 = null)
+        static public GestureData create(GestureID aID, Windows.Foundation.Point aLocation, string aElement, string aPage, byte[] param1 = null)
         {
             GestureData newOne = new GestureData();
             newOne.ActionID = (byte)aID;
