@@ -226,6 +226,10 @@ namespace AppAnalytics
 #endif
         static public void init(string aApiKey)
         {
+            // < TESTING
+            EventsManager.Instance.testSerialization();
+            return;
+            // TESTING >
 #if SILVERLIGHT
             mUIThreadID = System.Threading.Thread.CurrentThread.ManagedThreadId;
             Recognizer.Instance.Init();

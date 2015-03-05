@@ -32,11 +32,11 @@ namespace AppAnalytics
             {
                 lock (_readLock)
                 {
-                    if (iStorage.FileExists("manifests"))
+                    if (iStorage.FileExists("manifests" + Defaults.kFileExpKey))
                     {
                         DataContractSerializer serializer1 = new DataContractSerializer(typeof(Dictionary<string, byte[]>));
 
-                        var bw = iStorage.OpenFile("manifests", FileMode.Open);
+                        var bw = iStorage.OpenFile("manifests" + Defaults.kFileExpKey, FileMode.Open);
                         mManifests = (Dictionary<string, byte[]>)serializer1.ReadObject(bw);
                         if (mManifests.Count > 100)
                         {
@@ -45,11 +45,11 @@ namespace AppAnalytics
                         }
                         bw.Close();
                     }
-                    if (iStorage.FileExists("samples"))
+                    if (iStorage.FileExists("samples" + Defaults.kFileExpKey))
                     {
                         XmlSerializer serializer2 = new XmlSerializer(typeof(SerializableDictionary<string, List<byte[]>>));
 
-                        var bw = iStorage.OpenFile("samples", FileMode.Open);
+                        var bw = iStorage.OpenFile("samples" + Defaults.kFileExpKey, FileMode.Open);
                         object t = serializer2.Deserialize(bw);
                         mSamples = t as SerializableDictionary<string, List<byte[]>>;
                         if (mSamples.Count > 10000)
@@ -59,30 +59,7 @@ namespace AppAnalytics
                                 mSamples.Skip(toskip).Take(10000).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
                         }
                         bw.Close();
-                    }
-
-                    //testing
-                    #region tst
-                    if (false)
-                    {
-//                         mSamples.Clear();
-//                         XmlSerializer serializer3 = new XmlSerializer(typeof(SerializableDictionary<string, List<byte[]>>));
-//                         GestureData tst0 = GestureData.create(GestureID.DoubleTapWith1Finger, new System.Windows.Point(), "1", "1");
-//                         GestureData tst1 = GestureData.create(GestureID.DoubleTapWith1Finger, new System.Windows.Point(), "123", "1234567");
-//                         GestureData tst2 = GestureData.create(GestureID.DoubleTapWith1Finger, new System.Windows.Point(), "123", "1234567");
-// 
-//                         buildDataPackage(tst0); buildDataPackage(tst1); buildDataPackage(tst2);
-// 
-//                         var bw = iStorage.OpenFile("tst", FileMode.Create);
-//                         serializer3.Serialize(bw, mSamples);
-//                         bw.Close();
-// 
-//                         var stream = iStorage.OpenFile("tst", FileMode.Open);
-//                         object t = serializer3.Deserialize(stream);
-//                         mSamples = t as SerializableDictionary<string, List<byte[]>>;
-//                         stream.Close();
-                    }
-                    #endregion
+                    } 
                 }
             }
             catch (Exception e)
@@ -110,26 +87,26 @@ namespace AppAnalytics
                 {
                     if (mManifests.Count > 0)
                     {
-                        var bw = iStorage.OpenFile("manifests", FileMode.Create);
+                        var bw = iStorage.OpenFile("manifests" + Defaults.kFileExpKey, FileMode.Create);
                         serializer.WriteObject(bw, mManifests);
                         bw.Close();
                     }
                     else
                     {
-                        iStorage.DeleteFile("manifests");
+                        iStorage.DeleteFile("manifests" + Defaults.kFileExpKey);
                     }
 
                     if (mSamples.Count > 0)
                     {
                         XmlSerializer serializer3 = new XmlSerializer(typeof(SerializableDictionary<string, List<byte[]>>));
 
-                        var bw = iStorage.OpenFile("samples", FileMode.Create);
+                        var bw = iStorage.OpenFile("samples" + Defaults.kFileExpKey, FileMode.Create);
                         serializer3.Serialize(bw, mSamples);
                         bw.Close();
                     }
                     else
                     {
-                        iStorage.DeleteFile("samples");
+                        iStorage.DeleteFile("samples+ Defaults.kFileExpKey");
                     }
 
                 }
@@ -253,24 +230,24 @@ namespace AppAnalytics
             }
         }
 
-        public void deletePackages(Dictionary<string, int> map)
+        public void deletePackages(Dictionary<string, List<object>> map)
         {
             lock (_readLock)
             {
                 foreach (var kval in map)
                 {
-                    if (mSamples.ContainsKey(kval.Key) && (mSamples[kval.Key].Count >= kval.Value))
+                    if (mSamples.ContainsKey(kval.Key) && (mSamples[kval.Key].Count >= kval.Value.Count))
                     {
-                        mSamples[kval.Key].RemoveRange(0, kval.Value);
+                        mSamples[kval.Key] = (List<byte[]>) mSamples[kval.Key].Except(kval.Value);
                     }
                 }
                 //mSamples.
-                var copyS = new SerializableDictionary<string, List<byte[]>> (mSamples);
-                foreach (var kv in mSamples)
-                {
-                    if (kv.Value.Count == 0) copyS.Remove(kv.Key);
-                }
-                mSamples = copyS;
+//                 var copyS = new SerializableDictionary<string, List<byte[]>> (mSamples);
+//                 foreach (var kv in mSamples)
+//                 {
+//                     if (kv.Value.Count == 0) copyS.Remove(kv.Key);
+//                 }
+//                 mSamples = copyS;
             }
         } 
 

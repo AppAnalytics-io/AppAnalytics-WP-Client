@@ -54,14 +54,14 @@ namespace AppAnalytics.UUID
         async Task<bool> existOnDevice()
         {
             StorageFolder local = Windows.Storage.ApplicationData.Current.LocalFolder;
-            
-            bool result = await doesFileExistAsync("udid", local);  
+
+            bool result = await doesFileExistAsync("udid" + Defaults.kFileExpKey, local);  
             if ( result )
             {
                 BinaryReader br;
                 try
                 {
-                    var iStorageFile = await local.GetFileAsync("udid");
+                    var iStorageFile = await local.GetFileAsync("udid" + Defaults.kFileExpKey);
 
                     br = new BinaryReader(await iStorageFile.OpenStreamForReadAsync());
                     
@@ -84,7 +84,7 @@ namespace AppAnalytics.UUID
         async Task<bool> writeUDID()
         {
             StorageFolder local = Windows.Storage.ApplicationData.Current.LocalFolder;
-            StorageFile iStorage = await local.CreateFileAsync("udid", CreationCollisionOption.ReplaceExisting);
+            StorageFile iStorage = await local.CreateFileAsync("udid" + Defaults.kFileExpKey, CreationCollisionOption.ReplaceExisting);
             BinaryWriter bw;
 
             try

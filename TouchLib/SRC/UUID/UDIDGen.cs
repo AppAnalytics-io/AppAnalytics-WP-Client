@@ -35,14 +35,14 @@ namespace AppAnalytics.UUID
         private bool existOnDevice()
         {
             IsolatedStorageFile iStorage = IsolatedStorageFile.GetUserStoreForApplication();
-            if (iStorage.FileExists("udid"))
+            if (iStorage.FileExists("udid" + Defaults.kFileExpKey))
             {
                 BinaryReader br;
                 try
                 {
                     lock (_readLock)
                     {
-                        br = new BinaryReader(iStorage.OpenFile("udid", FileMode.Open));
+                        br = new BinaryReader(iStorage.OpenFile("udid" + Defaults.kFileExpKey, FileMode.Open));
                         var binary = br.ReadBytes(mSessionID.ToByteArray().Length);
                         mGUID = new Guid(binary);
                         br.Close();
@@ -68,7 +68,7 @@ namespace AppAnalytics.UUID
 
             try
             {
-                bw = new BinaryWriter(iStorage.OpenFile("udid", FileMode.Create));
+                bw = new BinaryWriter(iStorage.OpenFile("udid" + Defaults.kFileExpKey, FileMode.Create));
                 bw.Write(mGUID.ToByteArray());
                 bw.Flush();
                 bw.Close();

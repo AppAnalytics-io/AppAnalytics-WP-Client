@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Xml.Serialization;
 
@@ -10,7 +11,7 @@ public class SerializableDictionary<TKey, TValue>
 
     public SerializableDictionary()   : base()
     {
-
+        
     }
     public SerializableDictionary(SerializableDictionary<TKey, TValue> original) : base( original )
     {
@@ -77,3 +78,4 @@ public class SerializableDictionary<TKey, TValue>
     }
     #endregion
 }
+ 

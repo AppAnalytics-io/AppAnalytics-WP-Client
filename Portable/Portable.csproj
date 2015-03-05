@@ -38,8 +38,17 @@
     <TargetPlatform Include="Windows, Version=8.1" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\SharedSRC\Defaults.cs">
+      <Link>SRC\utils\Defaults.cs</Link>
+    </Compile>
     <Compile Include="..\SharedSRC\Detector.cs">
       <Link>SRC\Detector.cs</Link>
+    </Compile>
+    <Compile Include="..\SharedSRC\events\Event.cs">
+      <Link>SRC\events\Event.cs</Link>
+    </Compile>
+    <Compile Include="..\SharedSRC\events\EventsManager.cs">
+      <Link>SRC\events\EventsManager.cs</Link>
     </Compile>
     <Compile Include="..\SharedSRC\GestureData.cs">
       <Link>SRC\GestureData.cs</Link>

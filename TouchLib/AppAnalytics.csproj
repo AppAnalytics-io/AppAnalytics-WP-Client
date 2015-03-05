@@ -83,8 +83,17 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\SharedSRC\Defaults.cs">
+      <Link>SRC\Shared\Utils\Defaults.cs</Link>
+    </Compile>
     <Compile Include="..\SharedSRC\Detector.cs">
       <Link>SRC\Shared\Detector.cs</Link>
+    </Compile>
+    <Compile Include="..\SharedSRC\events\Event.cs">
+      <Link>SRC\Shared\Event.cs</Link>
+    </Compile>
+    <Compile Include="..\SharedSRC\events\EventsManager.cs">
+      <Link>SRC\Shared\EventsManager.cs</Link>
     </Compile>
     <Compile Include="..\SharedSRC\GestureData.cs">
       <Link>SRC\Shared\GestureData.cs</Link>

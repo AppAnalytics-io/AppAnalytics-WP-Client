@@ -13,20 +13,82 @@ namespace AppAnalytics
 {
     internal static class MultipartUploader
     {
-       // private static ManualResetEvent allDone = new ManualResetEvent(false);
-        private static readonly Encoding encoding = Encoding.UTF8;
-        //private static bool mFlag = false;
+        public class FileParameter
+        {
+            public static  string typeToString(AAFileType aFT)
+            {
+                switch (aFT)
+                {
+                    case AAFileType.FTSamples:
+                        return "Samples";
+                    case AAFileType.FTManifests:
+                        return "Samples";
+                    case AAFileType.FTEvents:
+                        return "Samples";
+                    default:
+                        return "File";
+                }
+            }
+            public string typeToString()
+            {
+                return typeToString(FileType);
+            }
 
-        public static bool MultipartFormDataPost(string postUrl, string userAgent, Dictionary<string, object> postParameters, bool isManifest)
+            public AAFileType FileType { get; set; }
+            public UInt32 Count { get; set; }
+            public byte[] File { get; set; }
+            public string FileName { get; set; }
+            public string ContentType { get; set; }
+
+            public FileParameter(byte[] file, string filename, AAFileType aType) : this(file, filename, 1, aType) { }
+            public FileParameter(byte[] file, string filename, UInt32 count, AAFileType aType) : this(file, filename, "application/octet-stream", count, aType) { }
+            public FileParameter(byte[] file, string filename, string contenttype, AAFileType aType) : this(file, filename, contenttype, 1, aType) { }
+
+            public FileParameter(byte[] file, string filename, string contenttype, UInt32 count, AAFileType aType)
+            {
+                File        = file;
+                FileName    = filename;
+                ContentType = contenttype;
+                Count       = count;
+                FileType    = aType;
+            }
+        }
+
+        public class StateObject
+        {
+            public KeyValuePair<HttpWebRequest, byte[]> RequestDataPair = new KeyValuePair<HttpWebRequest,byte[]>(null, null);
+            public AAFileType FileType = AAFileType.FTManifests;
+            public StateObject(KeyValuePair<HttpWebRequest, byte[]> pair, AAFileType aType) 
+            {
+                RequestDataPair = pair;
+                FileType = aType;
+            }
+        }
+
+        private static readonly Encoding encoding = Encoding.UTF8;
+
+        public static bool MultipartFormDataPut(string postUrl, string userAgent, Dictionary<string, object> postParameters )
         {
             var d = Guid.NewGuid();
 
             string formDataBoundary = String.Format("----------{0:N}", Guid.NewGuid());
             string contentType = "multipart/form-data; boundary=" + formDataBoundary;
 
-            byte[] formData = GetMultipartFormData(postParameters, formDataBoundary, isManifest);
- 
-            return PostForm(postUrl, userAgent, contentType, formData);
+            byte[] formData = GetMultipartFormData(postParameters, formDataBoundary);
+
+            var aType = AAFileType.FTManifests;
+            var fp = postParameters.ElementAt(0).Value as FileParameter;
+            if (fp != null) 
+            { aType = fp.FileType; }
+
+            return PutForm(postUrl, userAgent, contentType, formData, aType);
+        }
+
+        public static bool MultipartFormDataPut(string postUrl, string userAgent, FileParameter postParameters)
+        {
+            var dict = new Dictionary<string, object>();
+            dict.Add("-", postParameters);
+            return MultipartFormDataPut(postUrl, userAgent, dict);
         }
 #if UNIVERSAL
         // winrt version of HttpWebRequest doesn't have UserAgent as header by default.
@@ -52,7 +114,7 @@ namespace AppAnalytics
         }
 #endif
 
-        private static bool PostForm(string postUrl, string userAgent, string contentType, byte[] formData)
+        private static bool PutForm(string postUrl, string userAgent, string contentType, byte[] formData, AAFileType aType)
         {
             HttpWebRequest request = WebRequest.Create(postUrl) as HttpWebRequest;
  
@@ -75,13 +137,14 @@ namespace AppAnalytics
             var st = request.ToString();
 
             var state = new KeyValuePair<HttpWebRequest, byte[]>(request, formData);
+            var stateObj = new StateObject(state, aType);
             var result = request.BeginGetRequestStream(GetRequestStreamCallback, state);
 
             return true;
         }
 
-        //static int _packageIndex = 0;
-        private static byte[] GetMultipartFormData(Dictionary<string, object> postParameters, string boundary, bool isManifest)
+
+        private static byte[] GetMultipartFormData(Dictionary<string, object> postParameters, string boundary)
         {
             Stream formDataStream = new System.IO.MemoryStream();
             bool needsCLRF = true;
@@ -90,41 +153,22 @@ namespace AppAnalytics
             {
                 if (needsCLRF)
                     formDataStream.Write(encoding.GetBytes("\r\n"), 0, encoding.GetByteCount("\r\n"));
-  
-//                 string fname = "";
-//                 if (isManifest)
-//                 {
-//                     fname = Detector.getSessionIDString() + ".manifest";
-//                 }
-//                 else
-//                 {
-//                     fname = string.Format("{0}_{1}.datapackage", Detector.getSessionIDString(), _packageIndex.ToString());
-//                     _packageIndex++;
-//                 }
- 
+   
                 if (param.Value is FileParameter)
                 {
                     FileParameter fileToUpload = (FileParameter)param.Value;
 
-//                     string header =
-//                       string.Format("--{0}\r\nContent-Disposition: form-data; name=\"{1}\"; filename=\"{2}\"\r\nContent-Type: {3}\r\n",// \r\n",
-//                       boundary,
-//                       isManifest ? "Manifest" : "Sample",
-//                       fname,
-//                       "application/octet-stream");
-
                     string header =
-                      string.Format("--{0}\r\nContent-Disposition: form-data; name={1}\r\nContent-Type: {2}\r\n\r\n",// \r\n",
-                      boundary,
-                      isManifest ? "Manifest" : "Sample",
-                      "application/octet-stream");
+                          string.Format("--{0}\r\nContent-Disposition: form-data; name={1}\r\nContent-Type: {2}\r\n\r\n",// \r\n",
+                          boundary,
+                          fileToUpload.typeToString(),
+                          fileToUpload.ContentType);
  
                     formDataStream.Write(encoding.GetBytes(header), 0, encoding.GetByteCount(header));
  
                     formDataStream.Write(fileToUpload.File, 0, fileToUpload.File.Length);
                 } 
             }
- 
             // Add the end of the request.  Start with a newline
             string footer = "\r\n--" + boundary + "--\r\n";
             formDataStream.Write(encoding.GetBytes(footer), 0, encoding.GetByteCount(footer));
@@ -137,25 +181,13 @@ namespace AppAnalytics
  
             return formData;
         }
- 
-        public class FileParameter
-        {
-            public byte[] File { get ; set; }
-            public string FileName { get; set; }
-            public string ContentType { get; set; }
-            public FileParameter(byte[] file) : this(file, null) { }
-            public FileParameter(byte[] file, string filename) : this(file, filename, null) { }
-            public FileParameter(byte[] file, string filename, string contenttype)
-            {
-                File = file;
-                FileName = filename;
-                ContentType = contenttype;
-            }
-        }
 
         private static void GetRequestStreamCallback(IAsyncResult asynchronousResult)
         {
-            KeyValuePair<HttpWebRequest, byte[]> state = (KeyValuePair<HttpWebRequest, byte[]>)asynchronousResult.AsyncState;
+            var stateObj = asynchronousResult.AsyncState as StateObject;
+            Debug.Assert(stateObj != null);
+
+            KeyValuePair<HttpWebRequest, byte[]> state = stateObj.RequestDataPair;
             var request = state.Key;
             var dataToSend = state.Value;
             // End the operation
@@ -170,12 +202,15 @@ namespace AppAnalytics
 #endif
 
             // Start the asynchronous operation to get the response
-            request.BeginGetResponse(new AsyncCallback(GetResponseCallback), request);
+            request.BeginGetResponse(new AsyncCallback(GetResponseCallback), stateObj);
         }
 
         private static void GetResponseCallback(IAsyncResult asynchronousResult)
         {
-            HttpWebRequest request = (HttpWebRequest)asynchronousResult.AsyncState;
+            var stateObj = asynchronousResult.AsyncState as StateObject;
+            Debug.Assert(stateObj != null);
+
+            HttpWebRequest request = stateObj.RequestDataPair.Key;
             HttpWebResponse response = null;
             Stream streamResponse = null;
             StreamReader streamRead = null;
@@ -210,15 +245,14 @@ namespace AppAnalytics
 
             if (response != null && response.StatusCode == HttpStatusCode.OK)
             {
-                Sender.success();
-                Debug.WriteLine("request succeed");
+                Sender.success(stateObj.FileType);
+                Debug.WriteLine("request succeed => " + FileParameter.typeToString(stateObj.FileType));
             }
             else
             {
                 Sender.fail();
                 Debug.WriteLine("request failed. retry");
             }
-            //allDone.Set();
         }
     }
 }

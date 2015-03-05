@@ -54,11 +54,11 @@ namespace AppAnalytics
 
             try
             {
-                if (await doesFileExistAsync("manifests", folder))
+                if (await doesFileExistAsync("manifests" + Defaults.kFileExpKey, folder))
                 {
                     DataContractSerializer serializer1 = new DataContractSerializer(typeof(Dictionary<string, byte[]>));
 
-                    var file = await folder.GetFileAsync("manifests");
+                    var file = await folder.GetFileAsync("manifests" + Defaults.kFileExpKey);
                     var stream = await file.OpenStreamForReadAsync();
                     tmpMan = (Dictionary<string, byte[]>)serializer1.ReadObject(stream);
                     if (tmpMan.Count > 100)
@@ -68,11 +68,11 @@ namespace AppAnalytics
                     }
                     stream.Dispose();
                 }
-                if (await doesFileExistAsync("samples", folder))
+                if (await doesFileExistAsync("samples" + Defaults.kFileExpKey, folder))
                 {
                     XmlSerializer serializer2 = new XmlSerializer(typeof(SerializableDictionary<string, List<byte[]>>));
 
-                    var file = await folder.GetFileAsync("samples");
+                    var file = await folder.GetFileAsync("samples" + Defaults.kFileExpKey);
                     var stream = await file.OpenStreamForReadAsync();
                     object t = serializer2.Deserialize(stream);
 
@@ -139,7 +139,7 @@ namespace AppAnalytics
                     tmpSmpl = new SerializableDictionary<string, List<byte[]>>(mSamples);
                 }
 
-                var fileManifests = await folder.CreateFileAsync("manifests", CreationCollisionOption.ReplaceExisting);
+                var fileManifests = await folder.CreateFileAsync("manifests" + Defaults.kFileExpKey, CreationCollisionOption.ReplaceExisting);
                 if (mManifests.Count > 0)
                 {
                     var bw = await fileManifests.OpenStreamForWriteAsync();
@@ -151,7 +151,7 @@ namespace AppAnalytics
                     await fileManifests.DeleteAsync(StorageDeleteOption.PermanentDelete);
                 }
 
-                var fileSamples = await folder.CreateFileAsync("samples", CreationCollisionOption.ReplaceExisting);
+                var fileSamples = await folder.CreateFileAsync("samples" + Defaults.kFileExpKey, CreationCollisionOption.ReplaceExisting);
                 if (mSamples.Count > 0)
                 {
                     XmlSerializer xmlSerial = new XmlSerializer(typeof(SerializableDictionary<string, List<byte[]>>));
