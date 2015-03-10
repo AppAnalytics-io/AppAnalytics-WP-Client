@@ -443,7 +443,7 @@ namespace AppAnalytics
             
             if ((tstDif > Recognizer.Instance.TimeForTap) && (Recognizer.Instance.TapsInRow > 0))
             {
-                Debug.WriteLine(Recognizer.Instance.TapsInRow + " < taps with > " + Recognizer.Instance.LastTapFingers);
+                //Debug.WriteLine(Recognizer.Instance.TapsInRow + " < taps with > " + Recognizer.Instance.LastTapFingers);
 
                 Recognizer.Instance.createTapGesture(Recognizer.Instance.TapsInRow, Recognizer.Instance.LastTapFingers);
                 Recognizer.Instance.TapsInRow = 0;
@@ -511,7 +511,7 @@ namespace AppAnalytics
 #endif
                 if (mNavigationOccured)
                 {
-                    Debug.WriteLine("hit");
+                    //Debug.WriteLine("hit");
                     lock (_lockObject)
                     {
                         mNavigationOccured = false;
@@ -691,9 +691,9 @@ namespace AppAnalytics
         {
             if (EventsManager.Instance.DebugLogEnabled)
             {
-                Debug.WriteLine("Order ID [{0}]", aGD.ActionOrder);
+                Debug.WriteLine("Order ID [{0}]", BitConverter.ToUInt64(aGD.ActionOrder,0) );
                 Debug.WriteLine("Type [{0} to string -> {1}]", aGD.ActionID, aGD.typeToString() );
-                Debug.WriteLine("Time [{0}", aGD.mTimeObject.ToString());
+                Debug.WriteLine("Time [{0}]", aGD.mTimeObject.ToString());
                 Debug.WriteLine("Position X|Y [{0}|{1}]", aGD.mPosX, aGD.mPosY);
                 Debug.WriteLine("Param1  [{0}]", aGD.Param1asInt32);
                 Debug.WriteLine("Page    [{0}]", Encoding.UTF8.GetString(aGD.ViewID, 0, aGD.ViewIDLenght) );

@@ -132,7 +132,7 @@ namespace AppAnalytics
         {
             if (aContainer.Contains(aNewOne))
             {
-                aNewOne = aContainer.Find(x => x == aNewOne);
+                aNewOne = aContainer.Find(x => x.Equals(aNewOne) );
                 aNewOne.addIndex(mIndex);
             }
             else

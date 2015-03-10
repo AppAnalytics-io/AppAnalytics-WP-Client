@@ -105,7 +105,8 @@ namespace AppAnalytics
         {
             get { return (UInt16)(ElementID.Length ); }
         }
-
+        // change it later. we can use Enum.GetName if with same result.
+        // make output friendly
         public string typeToString()
         {
             GestureID id = (GestureID)ActionID;
