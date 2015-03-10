@@ -52,7 +52,7 @@ namespace AppAnalytics.UUID
                 }
                 catch (Exception e)
                 {
-                    Debug.WriteLine(e.Message + "\n Cannot open file or read from it.");
+                    //Debug.WriteLine(e.Message + "\n Cannot open file or read from it.");
                     iStorage.Dispose();
                     return false;
                 }
@@ -73,9 +73,9 @@ namespace AppAnalytics.UUID
                 bw.Flush();
                 bw.Close();
             }
-            catch (Exception e)
+            catch 
             {
-                Debug.WriteLine(e.Message + "\n Cannot create file.");
+                //Debug.WriteLine(e.Message + "\n Cannot create file.");
                 return;
             }
             iStorage.Dispose();
@@ -89,7 +89,7 @@ namespace AppAnalytics.UUID
 
         public byte[] SessionID
         {
-            get 
+            get
             {
                 return mEncoding.GetBytes( mSessionID.ToString() );
             }

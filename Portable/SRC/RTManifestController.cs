@@ -84,11 +84,11 @@ namespace AppAnalytics
                             tmpSmpl.Skip(toskip).Take(10000).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
                     }
                     stream.Dispose();
-                }  
+                }
             }
             catch (Exception e)
             {
-                Debug.WriteLine(e.Message + "\n Cannot create file."); 
+                //Debug.WriteLine(e.Message + "\n Cannot create file.");
             }
 
             lock (_readLock)
@@ -126,7 +126,7 @@ namespace AppAnalytics
 
         public async void store()
         {
-            DataContractSerializer serializer = new DataContractSerializer(typeof(Dictionary<string, byte[]>)); 
+            DataContractSerializer serializer = new DataContractSerializer(typeof(Dictionary<string, byte[]>));
             StorageFolder folder = Windows.Storage.ApplicationData.Current.LocalFolder;
 
             try
@@ -167,7 +167,7 @@ namespace AppAnalytics
             }
             catch (Exception e)
             {
-                Debug.WriteLine(e.Message + "\n Cannot create file.");
+                //Debug.WriteLine(e.Message + "\n Cannot create file.");
                 return;
             }
         }
@@ -187,10 +187,10 @@ namespace AppAnalytics
         {
             mSyncEvent.WaitOne();
             ManifestBuilder.buildSessionManifest(mManifests, _readLock);
-        } 
+        }
 
         public bool sendManifest()
-        { 
+        {
             return Sender.sendManifestsAsDict(mManifests, _readLock);
         }
 
@@ -240,8 +240,8 @@ namespace AppAnalytics
                 }
                 mSamples = copyS;
             }
-        } 
+        }
 
-        private readonly object _readLock = new object();  
+        private readonly object _readLock = new object();
     }
 }

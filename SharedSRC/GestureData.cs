@@ -41,7 +41,7 @@ namespace AppAnalytics
             newOne.setCurrentTime();
             newOne.setIndex();
 
-            Detector.logSample(newOne);
+            Detector.logSampleDbg(newOne);
             return newOne;
         }
 

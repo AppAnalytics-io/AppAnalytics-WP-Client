@@ -70,9 +70,9 @@ namespace AppAnalytics
                 lock (_lockObject)
                 {
                     if (value != "")
-                        mBufferElementUri = value; 
+                        mBufferElementUri = value;
                     else
-                        mBufferElementUri = "none"; 
+                        mBufferElementUri = "none";
                 }
             }
             get
@@ -80,7 +80,7 @@ namespace AppAnalytics
                 lock (_lockObject) { return mBufferElementUri; }
             }
         }
-         
+
         static GState mState = GState.None;
         static public GState State
         {
@@ -115,7 +115,7 @@ namespace AppAnalytics
                 if (RTRecognizer.Instance.Fingers > 0)
                 {
                     createHoldGesture(RTRecognizer.Instance.Fingers);
-                    Debug.WriteLine("[hold] " + RTRecognizer.Instance.Fingers);
+                    //Debug.WriteLine("[hold] " + RTRecognizer.Instance.Fingers);
                 }
             }
             else if (!flag) mTimeMark.Reset();
@@ -126,7 +126,7 @@ namespace AppAnalytics
                 {
                     if (mTimeMark.IsRunning == false)
                     {
-                        mTimeMark.Restart(); 
+                        mTimeMark.Restart();
                     }
                 }
                 else if (!checkHoldOnly)
@@ -148,7 +148,7 @@ namespace AppAnalytics
                         if (mTimeMark.ElapsedMilliseconds > kTimeForHold * 1000)
                         {
                             createHoldGesture(RTRecognizer.Instance.Fingers);
-                            Debug.WriteLine("[-hold->] " + RTRecognizer.Instance.Fingers);
+                            //Debug.WriteLine("[-hold->] " + RTRecognizer.Instance.Fingers);
                             mTimeMark.Stop();
                             mTimeMark.Reset();
                         }
@@ -163,14 +163,14 @@ namespace AppAnalytics
             {
                 if (aScale < 0 && mState != GState.Shrink)
                 {
-                    Debug.WriteLine("[Enlarge > shrink]");
+                    //Debug.WriteLine("[Enlarge > shrink]");
                     // todo - convert
                     createGesture(GestureID.ZoomWith2Finger, BitConverter.GetBytes(aRelativeScale));
-                    mState = GState.Shrink; 
+                    mState = GState.Shrink;
                 }
                 else if (aScale > 0 && mState != GState.Enlarge)
                 {
-                    Debug.WriteLine("[Shrink > enlarge]");
+                    //Debug.WriteLine("[Shrink > enlarge]");
                     createGesture(GestureID.PinchWith2Finger, BitConverter.GetBytes(aRelativeScale));
                     mState = GState.Enlarge;
                 }
@@ -187,10 +187,10 @@ namespace AppAnalytics
         }
 
         static public void createGestureFromState(int aFingers, bool aReset, ManipulationDelta aDelta)
-        { 
+        {
             if (isZoomState())
             {
-                Debug.WriteLine("[zoom]");
+                //Debug.WriteLine("[zoom]");
                 if (GState.Enlarge == mState)
                 {
                     createGesture(GestureID.ZoomWith2Finger, BitConverter.GetBytes( aDelta.Scale) );
@@ -202,12 +202,12 @@ namespace AppAnalytics
             }
             else if (isRotateState())
             {
-                Debug.WriteLine("[rotate]");
+                //Debug.WriteLine("[rotate]");
                 createGesture(GestureID.RotateWith2Finger, BitConverter.GetBytes(aDelta.Rotation));
             }
             else if (isMovingState())
             {
-                Debug.WriteLine("[flick]" + aFingers);
+                //Debug.WriteLine("[flick]" + aFingers);
                 createFlickGesture(aFingers, mState);
             }
 
@@ -221,7 +221,7 @@ namespace AppAnalytics
         {
             if (isMovingState())
             {
-                Debug.WriteLine("[[swipe]]" + aFingers);
+                //Debug.WriteLine("[[swipe]]" + aFingers);
                 createSwipeGesture(aFingers, mState);
             }
 
@@ -252,7 +252,7 @@ namespace AppAnalytics
                     return;
                 }
                 else return;
-            } 
+            }
 
             if ((zoomMetric > rotationMetric) && (zoomMetric > moveMetric))
             {
@@ -260,7 +260,7 @@ namespace AppAnalytics
                 {
                     mTimeMark.Reset();
                 }
-                Debug.WriteLine(".zoom");
+                //Debug.WriteLine(".zoom");
                 if (aScale < 0)
                 {
                     mState = GState.Shrink;
@@ -276,7 +276,7 @@ namespace AppAnalytics
                 {
                     mTimeMark.Reset();
                 }
-                Debug.WriteLine(".rotation");
+                //Debug.WriteLine(".rotation");
                 if (aRotation > 0)
                 {
                     mState = GState.RotateC;
@@ -292,7 +292,7 @@ namespace AppAnalytics
                 {
                     mTimeMark.Reset();
                 }
-                Debug.WriteLine(".movement");
+                //Debug.WriteLine(".movement");
 
                 mState = stateByDirection(aDelta);
             }
@@ -336,7 +336,7 @@ namespace AppAnalytics
         static double checkForZoom(double distDif)
         {
             if (RTRecognizer.Instance.Fingers < 2) return 0;
-            double metric = distDif; 
+            double metric = distDif;
 
             return metric * kZoomMetricCf;
         }
@@ -345,10 +345,10 @@ namespace AppAnalytics
         {
             if (RTRecognizer.Instance.Fingers < 2) return 0;
             double metric = 0;
-             
+
             //preAngle = nowAngle;
             metric = (diff / 360.0f) * 100 * kRotateMetricCf; // 100 -> percent
-            
+
 
             return metric;
         }
@@ -422,8 +422,8 @@ namespace AppAnalytics
         }
 
         static public async void createGesture(GestureID aID, byte[] param1 = null)
-        { 
-            await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal , () => getCurrentPage()); 
+        {
+            await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal , () => getCurrentPage());
 
             Point p = new Point(RTRecognizer.Instance.StartX, RTRecognizer.Instance.StartY);
 
@@ -444,10 +444,10 @@ namespace AppAnalytics
                 lock (_lockObject)
                 {
                     mBufferPageUri = uri.ToString();
-                } 
+                }
             }
-            catch 
-            { /*Debug.WriteLine("curr.page (gp)" + e.ToString());*/ }
+            catch
+            { /*//Debug.WriteLine("curr.page (gp)" + e.ToString());*/ }
         }
 
         static private void createHoldGesture(int aNumberOfFingers)

@@ -17,7 +17,7 @@ using Windows.UI.Xaml.Input;
 
 using TouchPointCollection = System.Collections.ObjectModel.Collection<AppAnalytics.TouchPoint>;
 
-namespace AppAnalytics 
+namespace AppAnalytics
 {
     internal class RTRecognizer
     {
@@ -31,7 +31,7 @@ namespace AppAnalytics
          * First of all this class has very limited amount of supported gestures
          * and its work is not clean.
          * Second reason is that it can't track pointers that already
-         * being tracked -> 
+         * being tracked ->
          * https://social.msdn.microsoft.com/Forums/windowsapps/en-US/ceb4a3dc-05f4-4361-bbf7-039310a5d0d3/failed-to-start-tracking-the-pointer-because-it-is-already-being-tracked?forum=winappswithcsharp
          * it being used for basic manipulations
          * also it can't recognize 2-3-4 fingers taps. did it by my own.
@@ -56,11 +56,11 @@ namespace AppAnalytics
         {
             get
             {
-                lock (_lockObj) return mFingers; 
+                lock (_lockObj) return mFingers;
             }
             set
             {
-                lock (_lockObj) mFingers = value; 
+                lock (_lockObj) mFingers = value;
             }
         }
         private int mPrevFingers = 0;
@@ -85,11 +85,11 @@ namespace AppAnalytics
         public static RTRecognizer Instance
         {
             get { return mInstance ?? (mInstance = new RTRecognizer()); }
-        } 
+        }
 
         void instanceShakeGesture(object sender, ShakeGestureEventArgs e)
         {
-            Debug.WriteLine("shaking");
+            //Debug.WriteLine("shaking");
             if (e.ShakeType == ShakeType.X)
             {
                 //to-do -> set shake orientation
@@ -110,17 +110,17 @@ namespace AppAnalytics
             var currentPage = Window.Current.Content as Frame;
             CoreWindow window = CoreApplication.MainView.CoreWindow;
 
-            mRecognizer.GestureSettings = GestureSettings.Tap | GestureSettings.Hold 
+            mRecognizer.GestureSettings = GestureSettings.Tap | GestureSettings.Hold
                 | GestureSettings.ManipulationMultipleFingerPanning
-                | GestureSettings.ManipulationScale 
-                | GestureSettings.ManipulationTranslateX 
-                | GestureSettings.ManipulationTranslateY 
-                | GestureSettings.Drag 
-                | GestureSettings.ManipulationRotate 
+                | GestureSettings.ManipulationScale
+                | GestureSettings.ManipulationTranslateX
+                | GestureSettings.ManipulationTranslateY
+                | GestureSettings.Drag
+                | GestureSettings.ManipulationRotate
  //               | GestureSettings.ManipulationRotateInertia
                 | GestureSettings.ManipulationTranslateInertia;
 
-            /* 
+            /*
              * NOTE : Build-in accelerator event Shaken will NEVER be fired on WP platform.
              * I'm using custom code fro this. You can find proof on msdn (class Accelerometer, event Shaken)
              * https://msdn.microsoft.com/en-us/library/windows/apps/windows.devices.sensors.accelerometer.shaken
@@ -143,7 +143,7 @@ namespace AppAnalytics
 
             window.IsInputEnabled = true;
 
-            var view = CoreApplication.MainView; 
+            var view = CoreApplication.MainView;
             bool isMain = view.IsMain;
 //             if (!kUseRecognizer) // still waiting for MSDN staff to fix strange CoreWindow behavior.
 //             {
@@ -161,12 +161,12 @@ namespace AppAnalytics
                 currentPage.AddHandler(UIElement.PointerReleasedEvent, new PointerEventHandler(onPUP), true);
                 currentPage.AddHandler(UIElement.PointerCanceledEvent, new PointerEventHandler(onPUP), true);
                 currentPage.AddHandler(UIElement.PointerExitedEvent, new PointerEventHandler(onPUP), true);
-                currentPage.AddHandler(UIElement.PointerCaptureLostEvent, new PointerEventHandler(onPUP), true); 
+                currentPage.AddHandler(UIElement.PointerCaptureLostEvent, new PointerEventHandler(onPUP), true);
             }
         }
 
         private void onPPressed(object sender, PointerRoutedEventArgs e)
-        { 
+        {
             var ps = e.GetIntermediatePoints(null);
             var source = e.OriginalSource;
             if (ps != null && ps.Count > 0)
@@ -191,7 +191,7 @@ namespace AppAnalytics
                     this._pointerPressed(ps[0]);
                 }
                 catch { }
-                mRecognizer.ProcessDownEvent(ps[0]); 
+                mRecognizer.ProcessDownEvent(ps[0]);
             }
         }
 
@@ -206,7 +206,7 @@ namespace AppAnalytics
                     mRecognizer.ProcessMoveEvents(ps);
                 }
                 catch{}
-            } 
+            }
         }
 
         private void onPUP(object sender, PointerRoutedEventArgs e)
@@ -225,24 +225,24 @@ namespace AppAnalytics
             if (ps != null && ps.Count == 1)
             {
                 mStopWatch.Stop();
-                mStopWatch.Reset(); 
+                mStopWatch.Reset();
             }
         }
 
         void dragging(GestureRecognizer sender, DraggingEventArgs args)
-        {  
+        {
         }
 
         void tap(GestureRecognizer sender, TappedEventArgs args)
-        { 
+        {
         }
 
         void hold(GestureRecognizer sender, HoldingEventArgs args)
-        { 
+        {
         }
 
         void crossSliding(GestureRecognizer sender, CrossSlidingEventArgs args)
-        { 
+        {
         }
 
         void manipulationStarted(GestureRecognizer sender, ManipulationStartedEventArgs args)
@@ -256,7 +256,7 @@ namespace AppAnalytics
             var y = args.Velocities.Linear.Y;
             float len = (new Vector2((float)x, (float)y)).Length();
 
-            Debug.WriteLine("inertia started -> " + args.Velocities.Linear);
+            //Debug.WriteLine("inertia started -> " + args.Velocities.Linear);
             if (Fingers == 0 && kSwipeIteriaThreshold < len && GestureProcessor.isMovingState())
             {
                 GestureProcessor.createSwipeFromState(PrevFingers, true);
@@ -287,7 +287,7 @@ namespace AppAnalytics
                 {
                     Fingers = mTouches[mLastFrame].Count;
                 }
-            }           
+            }
 
            GestureProcessor.updateState(args.Delta.Expansion, args.Delta.Rotation, args.Delta.Translation, args.Delta.Scale);
         }
@@ -310,7 +310,7 @@ namespace AppAnalytics
             else
             {
                 GestureProcessor.createGestureFromState(PrevFingers, true, args.Cumulative);
-            } 
+            }
         }
 
         void pushIntoCollection(TouchPoint tp, uint pointerID, uint frameID)
@@ -343,7 +343,7 @@ namespace AppAnalytics
 
             if ( (mLastFrame != frameID && mTouches.ContainsKey(mLastFrame)))
             {
-                //Debug.WriteLine("[frame] : "+ frameID);
+                ////Debug.WriteLine("[frame] : "+ frameID);
                 foreach ( var it in mTouches[mLastFrame])
                 {
                     mTPC.Add(it.Value);
@@ -418,7 +418,7 @@ namespace AppAnalytics
         {
             if (mPointerStatus.ContainsKey(point.PointerId) && true == mPointerStatus[point.PointerId])
             {
-                var CurrentPoint = point; 
+                var CurrentPoint = point;
                 TouchPoint tp = new TouchPoint();
                 tp.Action = TouchAction.Up;
                 tp.X = (float)CurrentPoint.Position.X; tp.Y = (float)CurrentPoint.Position.Y;
@@ -436,14 +436,14 @@ namespace AppAnalytics
         // app-level handlers - working with raw data
         #region unused
         private void _pointerPressed(object sender, PointerEventArgs e)
-        {  
-            var CurrentPoint = e.CurrentPoint; 
-            
-            TouchPoint tp = new TouchPoint(); 
+        {
+            var CurrentPoint = e.CurrentPoint;
+
+            TouchPoint tp = new TouchPoint();
             tp.Action = TouchAction.Down;
             tp.X = (float)CurrentPoint.Position.X; tp.Y = (float)CurrentPoint.Position.Y;
-            
-            changeFrameInfo(tp, CurrentPoint.PointerId, CurrentPoint.FrameId); 
+
+            changeFrameInfo(tp, CurrentPoint.PointerId, CurrentPoint.FrameId);
         }
 
         private void _pointerMoved(object sender, PointerEventArgs e)
@@ -454,12 +454,12 @@ namespace AppAnalytics
             tp.Action = TouchAction.Move;
             tp.X = (float)CurrentPoint.Position.X; tp.Y = (float)CurrentPoint.Position.Y;
 
-            changeFrameInfo(tp, CurrentPoint.PointerId, CurrentPoint.FrameId); 
+            changeFrameInfo(tp, CurrentPoint.PointerId, CurrentPoint.FrameId);
         }
 
         private void _pointerReleased(object sender, PointerEventArgs e)
         {
-            var CurrentPoint = e.CurrentPoint; 
+            var CurrentPoint = e.CurrentPoint;
 
             TouchPoint tp = new TouchPoint();
             tp.Action = TouchAction.Up;

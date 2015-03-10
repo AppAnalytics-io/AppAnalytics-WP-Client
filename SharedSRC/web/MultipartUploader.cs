@@ -59,7 +59,7 @@ namespace AppAnalytics
             public KeyValuePair<HttpWebRequest, byte[]> RequestDataPair = new KeyValuePair<HttpWebRequest,byte[]>(null, null);
             public AAFileType FileType = AAFileType.FTManifests;
             public Dictionary<string, List<object>> ListToDelete = null;
-            public StateObject(KeyValuePair<HttpWebRequest, byte[]> pair, AAFileType aType, Dictionary<string, List<object>> aListToDelete) 
+            public StateObject(KeyValuePair<HttpWebRequest, byte[]> pair, AAFileType aType, Dictionary<string, List<object>> aListToDelete)
             {
                 RequestDataPair = pair;
                 FileType = aType;
@@ -80,7 +80,7 @@ namespace AppAnalytics
 
             var aType = AAFileType.FTManifests;
             var fp = postParameters.ElementAt(0).Value as FileParameter;
-            if (fp != null) 
+            if (fp != null)
             { aType = fp.FileType; }
 
             return PutForm(postUrl, userAgent, contentType, formData, aType, aListToDelete);
@@ -104,12 +104,12 @@ namespace AppAnalytics
 //                 if (PropertyInfo != null)
 //                 {
 //                     // Set the value of the header.
-//                     PropertyInfo.SetValue(Request, Value, null); 
+//                     PropertyInfo.SetValue(Request, Value, null);
 //                 }
 //                 else
                 {
                     // Set the value of the header.
-                    Request.Headers[Header] = Value; 
+                    Request.Headers[Header] = Value;
                 }
             }
             catch { }
@@ -120,7 +120,7 @@ namespace AppAnalytics
                                     byte[] formData, AAFileType aType, Dictionary<string, List<object>> ListToDelete)
         {
             HttpWebRequest request = WebRequest.Create(postUrl) as HttpWebRequest;
- 
+
             if (request == null)
             {
                 throw new NullReferenceException("not a http request");
@@ -151,12 +151,12 @@ namespace AppAnalytics
         {
             Stream formDataStream = new System.IO.MemoryStream();
             bool needsCLRF = true;
- 
+
             foreach (var param in postParameters)
             {
                 if (needsCLRF)
                     formDataStream.Write(encoding.GetBytes("\r\n"), 0, encoding.GetByteCount("\r\n"));
-   
+
                 if (param.Value is FileParameter)
                 {
                     FileParameter fileToUpload = (FileParameter)param.Value;
@@ -166,22 +166,22 @@ namespace AppAnalytics
                           boundary,
                           fileToUpload.typeToString(),
                           fileToUpload.ContentType);
- 
+
                     formDataStream.Write(encoding.GetBytes(header), 0, encoding.GetByteCount(header));
- 
+
                     formDataStream.Write(fileToUpload.File, 0, fileToUpload.File.Length);
-                } 
+                }
             }
             // Add the end of the request.  Start with a newline
             string footer = "\r\n--" + boundary + "--\r\n";
             formDataStream.Write(encoding.GetBytes(footer), 0, encoding.GetByteCount(footer));
- 
+
             // Dump the Stream into a byte[]
             formDataStream.Position = 0;
             byte[] formData = new byte[formDataStream.Length];
             formDataStream.Read(formData, 0, formData.Length);
             formDataStream.Dispose();
- 
+
             return formData;
         }
 
@@ -225,7 +225,7 @@ namespace AppAnalytics
                 streamRead = new StreamReader(streamResponse);
 
                 string responseString = streamRead.ReadToEnd();
-                Debug.WriteLine("[response:]" + responseString);
+                //Debug.WriteLine("[response:]" + responseString);
             }
             catch (Exception e)
             {
@@ -235,9 +235,9 @@ namespace AppAnalytics
                     streamRead = new StreamReader(streamResponse);
 
                     string responseString = streamRead.ReadToEnd();
-                    Debug.WriteLine("[response:]" + responseString);
+                    //Debug.WriteLine("[response:]" + responseString);
                 }
-                Debug.WriteLine("exception in response callback :" + e.ToString());
+                //Debug.WriteLine("exception in response callback :" + e.ToString());
             }
             finally
             {
@@ -249,12 +249,12 @@ namespace AppAnalytics
             if (response != null && response.StatusCode == HttpStatusCode.OK)
             {
                 Sender.success(stateObj.FileType, stateObj.ListToDelete);
-                Debug.WriteLine("request succeed => " + FileParameter.typeToString(stateObj.FileType));
+                //Debug.WriteLine("request succeed => " + FileParameter.typeToString(stateObj.FileType));
             }
             else
             {
                 Sender.fail();
-                Debug.WriteLine("request failed. retry");
+                //Debug.WriteLine("request failed. retry");
             }
         }
     }

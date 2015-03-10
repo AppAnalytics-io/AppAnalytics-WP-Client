@@ -51,7 +51,7 @@ namespace Testing
             TestRectangle.ManipulationCompleted +=
                 new EventHandler<ManipulationCompletedEventArgs>(Rectangle_ManipulationCompleted);
 
-            AppAnalytics.Detector.init("B6xBAJWQzHjLlc6V4w2Um6JU2iNt7ZS9");
+            AppAnalytics.API.init("B6xBAJWQzHjLlc6V4w2Um6JU2iNt7ZS9");
         }
 
         void Drag_ManipulationDelta(object sender, ManipulationDeltaEventArgs e)
@@ -86,6 +86,19 @@ namespace Testing
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             NavigationService.Navigate(new Uri("/Second.xaml", UriKind.Relative));
+        }
+
+        private void PhoneApplicationPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            var frame = (Application.Current.RootVisual as PhoneApplicationFrame);
+            frame.Navigating += navigating;
+        }
+        static void navigating(object sender, NavigatingCancelEventArgs e)
+        {
+            if ("" != e.Uri.ToString())
+            {
+
+            }
         }
     }
 }

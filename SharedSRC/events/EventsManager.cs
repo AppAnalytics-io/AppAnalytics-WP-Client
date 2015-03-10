@@ -14,23 +14,29 @@ using System.IO.IsolatedStorage;
 using System.Windows.Threading;
 #else
 using Windows.Storage;
-using Windows.UI.Xaml; 
+using Windows.UI.Xaml;
 #endif
 
 namespace AppAnalytics
 {
 	internal class EventsManager
 	{
-	    #region Members 
+	    #region Members
         Dictionary<string, List<AAEvent>> mEvents = new Dictionary<string,List<AAEvent>>();
 
         UInt32  mIndex = 0;
-        float   mDispatchInterval = Defaults.kDefDispatchInterval; 
+        float   mDispatchInterval = Defaults.kDefDispatchInterval;
         bool    mDebugLogEnabled = Defaults.kDbgLogEnabled;
 
         bool    mExceptionAnalyticsEnabled = Defaults.kExceptionAnalyticsEnabled;
 
-        bool    mTransactionAnaliticsEnabled = Defaults.kTransactionAnalyticsEnabled;
+        bool mTransactionAnaliticsEnabled = Defaults.kTransactionAnalyticsEnabled;
+
+        public bool TransactionAnaliticsEnabled
+        {
+            get { return mTransactionAnaliticsEnabled; }
+            set { mTransactionAnaliticsEnabled = value; }
+        }
         bool    mScreenAnalitycsEnabled = Defaults.kScreensAnalyticsEnabled;
 
 
@@ -50,12 +56,12 @@ namespace AppAnalytics
         public float DispatchInterval
         {
             get { return mDispatchInterval; }
-            set 
+            set
             {
                 var tmp =   (value > Defaults.kMaxDispatchInterval) ? Defaults.kMaxDispatchInterval : value;
                 tmp =       (value < Defaults.kMinDispatchInterval) ? Defaults.kMinDispatchInterval : value;
 
-                mDispatchInterval = tmp; 
+                mDispatchInterval = tmp;
             }
         }
         public bool ScreenAnalitycsEnabled
@@ -63,7 +69,7 @@ namespace AppAnalytics
             get { return mScreenAnalitycsEnabled; }
             set { mScreenAnalitycsEnabled = value; }
         }
-        
+
         static private readonly object _lockObject = new object();
         #endregion
 
@@ -86,18 +92,18 @@ namespace AppAnalytics
             t2.Start(); t2.Wait();
 
             mEvents.Add(Detector.getSessionIDStringWithDashes(), new List<AAEvent>());
-            
+
             mDispatchTimer = new Timer(tryToSendCallback, null,
 #if SILVERLIGHT
-                         (uint)(mDispatchInterval * 1000), 
+                         (uint)(mDispatchInterval * 1000),
                          (uint)(mDispatchInterval * 1000)
 #else
                          (int)(mDispatchInterval * 1000),
                          (int)(mDispatchInterval * 1000)
 #endif
-            ); 
+            );
 
-            mSerializationTimer = new Timer(serialize, null, (15 * 1000), (15 * 1000)); 
+            mSerializationTimer = new Timer(serialize, null, (15 * 1000), (15 * 1000));
         }
 
         #region public_methods
@@ -114,7 +120,7 @@ namespace AppAnalytics
                 aDescription = aDescription.Substring(0, (int)Defaults.kMaxLogEventStrLen);
             }
             AAEvent newOne = AAEvent.create( 0, 0, aDescription, aParams);
-            Detector.logEvent(newOne);
+            Detector.logEventDbg(newOne);
 
             lock (_lockObject)
             {
@@ -126,7 +132,7 @@ namespace AppAnalytics
         {
             if (aContainer.Contains(aNewOne))
             {
-                aNewOne = aContainer.Find(x => x == aNewOne); 
+                aNewOne = aContainer.Find(x => x == aNewOne);
                 aNewOne.addIndex(mIndex);
             }
             else
@@ -183,7 +189,7 @@ namespace AppAnalytics
 
             var session = Detector.getSessionIDStringWithDashes();
             sb.Append(string.Format("],\"SessionID\":\"{0}\"}}", session));
-            Debug.WriteLine("JSON :: :: :: \n" + sb.ToString());
+            //Debug.WriteLine("JSON :: :: :: \n" + sb.ToString());
 
             return sb.ToString();
         }
@@ -222,7 +228,7 @@ namespace AppAnalytics
                 foreach (var kval in map)
                 {
                     if (mEvents.ContainsKey(kval.Key) && (mEvents[kval.Key].Count >= kval.Value.Count))
-                    { 
+                    {
                         foreach (var it in kval.Value)
                         {
                             mEvents[kval.Key].RemoveAll( kval.Value.Contains );
@@ -245,9 +251,9 @@ namespace AppAnalytics
             stream = iStorage.OpenFile("aa_events" + Defaults.kFileExpKey, aRead ? FileMode.Open : FileMode.Create);
 #else
             StorageFolder folder = Windows.Storage.ApplicationData.Current.LocalFolder;
-            var file = aRead ? 
+            var file = aRead ?
                 await folder.GetFileAsync("aa_events" + Defaults.kFileExpKey) :
-                await folder.CreateFileAsync("aa_events" + Defaults.kFileExpKey, 
+                await folder.CreateFileAsync("aa_events" + Defaults.kFileExpKey,
                                             CreationCollisionOption.ReplaceExisting);
 
             stream = await (aRead ? file.OpenStreamForReadAsync() : file.OpenStreamForWriteAsync());
@@ -278,7 +284,7 @@ namespace AppAnalytics
                         js.WriteObject(stream, tmp);
                 }
             }
-            catch { Debug.WriteLine("Problems with Events serialization detected."); }
+            catch {  }
         }
 
         private async void deserialize()
@@ -314,7 +320,7 @@ namespace AppAnalytics
             mdict.Add("g", list);
 
             var bw = new MemoryStream();
-            
+
             js.WriteObject(bw, mdict);
             bw.Seek(0, SeekOrigin.Begin);
 
@@ -325,10 +331,10 @@ namespace AppAnalytics
             using (var streamReader = new StreamReader(bw))
             {
                 result = streamReader.ReadToEnd();
-                Debug.WriteLine( result );
+                //Debug.WriteLine( result );
             }
             Debug.Assert(mdict.Values == tmp.Values);
-            bw.Dispose(); 
+            bw.Dispose();
         }
 
         public void testSerialization()

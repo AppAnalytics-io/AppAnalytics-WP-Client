@@ -56,11 +56,11 @@ namespace AppAnalytics
             public GState state;
             public GData()
             {
-                state = GState.None; 
+                state = GState.None;
             }
             public GData(GState aState)
             {
-                state = aState; 
+                state = aState;
             }
         }
 
@@ -154,8 +154,8 @@ namespace AppAnalytics
             // singleton
             get { return mInstance ?? (mInstance = new Recognizer()); }
         }
-       
-        protected Recognizer() 
+
+        protected Recognizer()
         {
             Touch.FrameReported += new TouchFrameEventHandler(touchFrameReported);
             ShakeGesturesHelper.Instance.ShakeGesture +=
@@ -166,7 +166,7 @@ namespace AppAnalytics
 
         void instanceShakeGesture(object sender, ShakeGestureEventArgs e)
         {
-            Debug.WriteLine("shaking");
+            //Debug.WriteLine("shaking");
             if (e.ShakeType == ShakeType.X)
             {
                 //to-do -> set shake orientation
@@ -175,7 +175,7 @@ namespace AppAnalytics
             {
                 //to-do -> set shake orientation
             }
-            else 
+            else
             {
                 //to-do -> set shake orientation
             }
@@ -184,7 +184,7 @@ namespace AppAnalytics
 
         public byte Init()
         {
-            mTimeStamp = convertToUnixTimestamp(DateTime.Now); 
+            mTimeStamp = convertToUnixTimestamp(DateTime.Now);
 
             return 0;
         }
@@ -320,7 +320,7 @@ namespace AppAnalytics
         EventWaitHandle mWHanlde = new AutoResetEvent(false);
         public void createGesture(GestureID aID, byte[] param1 = null)
         {
-            //mWHanlde.Reset();\  
+            //mWHanlde.Reset();\
             var id = System.Threading.Thread.CurrentThread.ManagedThreadId;
             if (Detector.isInUITHread())//Deployment.Current.Dispatcher.CheckAccess())
             {
@@ -363,7 +363,7 @@ namespace AppAnalytics
                 for (int i = 0; i < VisualTreeHelper.GetChildrenCount(currentPage); i++)
                 {
                     DependencyObject child = VisualTreeHelper.GetChild(currentPage, i);
-                
+
                     if (child != null && child is System.Windows.Controls.Control)
                     {
                         checkChild(child, currentPage);
@@ -374,9 +374,9 @@ namespace AppAnalytics
                     }
                 }
             }
-            catch { Debug.WriteLine("uri can't be found"); }
+            catch {  }
         }
-        
+
         private bool isInBBox (System.Windows.UIElement el, System.Windows.UIElement ancestor)
         {
             GeneralTransform objGeneralTransform = el.TransformToVisual(Application.Current.RootVisual as UIElement);
@@ -385,7 +385,7 @@ namespace AppAnalytics
 
             System.Windows.Point point = objGeneralTransform.Transform(new System.Windows.Point(0, 0));
             rect = objGeneralTransform.TransformBounds(rect);
-            
+
             return (rect.Contains(new System.Windows.Point(LastPosX, LastPosY)));
         }
 
@@ -438,7 +438,7 @@ namespace AppAnalytics
             }
         }
 
-        // TODO: code conv. 
+        // TODO: code conv.
         const double rotationThreshold = 1.5f;
         const double zoomThreshold = 0.00;
         const double holdThreshold = 0.01;
@@ -643,7 +643,7 @@ namespace AppAnalytics
 
             if (d == Dir.Left)
             {
-                Debug.WriteLine("<-- " + PrevFingers);
+                //Debug.WriteLine("<-- " + PrevFingers);
                 if (isMovingState(mPrevGesture.state))
                 {
                     createFlickGesture(PrevFingers, d); // submitting PREVIOUS movement
@@ -652,7 +652,7 @@ namespace AppAnalytics
             }
             else if (d == Dir.Right)
             {
-                Debug.WriteLine("--> " + PrevFingers);
+                //Debug.WriteLine("--> " + PrevFingers);
                 if (isMovingState(mPrevGesture.state))
                 {
                     createFlickGesture(PrevFingers, d); // submitting PREVIOUS movement
@@ -661,7 +661,7 @@ namespace AppAnalytics
             }
             else if (d == Dir.Up)
             {
-                Debug.WriteLine("/\\ " + PrevFingers);
+                //Debug.WriteLine("/\\ " + PrevFingers);
                 if (isMovingState(mPrevGesture.state))
                 {
                     createFlickGesture(PrevFingers, d); // submitting PREVIOUS movement
@@ -670,12 +670,12 @@ namespace AppAnalytics
             }
             else if (d == Dir.Down)
             {
-                Debug.WriteLine("\\/ " + PrevFingers);
+                //Debug.WriteLine("\\/ " + PrevFingers);
                 if (isMovingState(mPrevGesture.state))
                 {
                     createFlickGesture(PrevFingers, d); // submitting PREVIOUS movement
                 }
-                mPrevGesture.state = GState.MovingDown; 
+                mPrevGesture.state = GState.MovingDown;
             }
         }
 
@@ -705,7 +705,7 @@ namespace AppAnalytics
             {
                 if (TapsInRow >= 2)
                 {
-                    Debug.WriteLine("[triple tap with ]" + PrevFingers + "fingers");
+                    //Debug.WriteLine("[triple tap with ]" + PrevFingers + "fingers");
                     createTapGesture(3, PrevFingers);
                     TapsInRow = 0;
                     mPrevGesture.state = GState.None;
@@ -714,11 +714,11 @@ namespace AppAnalytics
                 }
                 else
                 {
-                    lastTapFingers = tpc.Count > 4 ? 4 : tpc.Count; 
+                    lastTapFingers = tpc.Count > 4 ? 4 : tpc.Count;
 
                     mPrevTapOccured = getNow();
                     TapsInRow = TapsInRow + 1;
-                    Debug.WriteLine("                            tapsInRow=" + TapsInRow);
+                    //Debug.WriteLine("                            tapsInRow=" + TapsInRow);
                     mPrevGesture.state = GState.None;
 
                     return true;
@@ -737,7 +737,7 @@ namespace AppAnalytics
             double nowflickX = flickPoint.Position.X;
             double nowflickY = flickPoint.Position.Y;
 
-            double length = Math.Pow((nowflickX - mPreMoveX[0]), 2) 
+            double length = Math.Pow((nowflickX - mPreMoveX[0]), 2)
                             +  Math.Pow((nowflickY - mPreMoveY[0]), 2);
 
             Vector2 vec = createVec(mPreMoveX[0] - flickPoint.Position.X,
@@ -749,28 +749,28 @@ namespace AppAnalytics
             {
                 if (Dir.Down == dir)
                 {
-                    Debug.WriteLine("[SWIPE] down with " + PrevFingers);
+                    //Debug.WriteLine("[SWIPE] down with " + PrevFingers);
                     createSwipeGesture(PrevFingers, dir);
                 }
                 else if (Dir.Left == dir)
                 {
-                    Debug.WriteLine("[SWIPE] left with " + PrevFingers);
+                    //Debug.WriteLine("[SWIPE] left with " + PrevFingers);
                     createSwipeGesture(PrevFingers, dir);
                 }
                 else if (Dir.Right == dir)
                 {
-                    Debug.WriteLine("[SWIPE] right with " + PrevFingers);
+                    //Debug.WriteLine("[SWIPE] right with " + PrevFingers);
                     createSwipeGesture(PrevFingers, dir);
                 }
                 else if (Dir.Up == dir)
                 {
-                    Debug.WriteLine("[SWIPE] up with " + PrevFingers);
+                    //Debug.WriteLine("[SWIPE] up with " + PrevFingers);
                     createSwipeGesture(PrevFingers, dir);
                 }
             }
             else if ( isMovingState(mPrevGesture.state))
             {
-                Debug.WriteLine("<movement completed>");
+                //Debug.WriteLine("<movement completed>");
                 createFlickGesture(PrevFingers, mTrevDir); // submitting PREVIOUS movement
                 //send move event
             }
@@ -804,11 +804,11 @@ namespace AppAnalytics
                     return true;
                 }
                 if ( (getNow() - mTouchStarted) < (TimeForTap * 1.3) )
-                { 
+                {
                     return false;
                 }
 
-                Debug.WriteLine("[HOLD_1] " + tpc.Count);
+                //Debug.WriteLine("[HOLD_1] " + tpc.Count);
                 createHoldGesture(tpc.Count > 4 ? 4 : tpc.Count);
                 mPrevGesture.state = GState.Hold;
 
@@ -816,14 +816,14 @@ namespace AppAnalytics
             }
             else if (changes < HoldThreshold &&  PrevFingers != tpc.Count && tpc.Count <= 4)
             {
-                Debug.WriteLine("[None] " + tpc.Count);
+                //Debug.WriteLine("[None] " + tpc.Count);
                 mPrevGesture.state = GState.None;
 
                 return true;
             }
             else if (changes > (HoldThreshold * 0.7) && PrevFingers == tpc.Count)
             {
-                var move = getMoveVector(tpc); 
+                var move = getMoveVector(tpc);
                 var rv = new Vector2((float)resolutionX(), (float)resolutionY());
                 var normalized = (move.Length() / rv.Length()) * 100;
 
@@ -872,7 +872,7 @@ namespace AppAnalytics
                     mPreFlickX[i] = tpc[i].Position.X;
                     mPreFlickY[i] = tpc[i].Position.Y;
                 }
-                //Debug.WriteLine("finger - down");
+                ////Debug.WriteLine("finger - down");
                 startTap = getNow();
                 mTrevDir = Dir.None;
 
@@ -923,10 +923,10 @@ namespace AppAnalytics
             }
 
             GState st = GState.None;
-            // check for rotate, movement or scale 
+            // check for rotate, movement or scale
             var rm = checkForRotation(tpc);
             var zm = checkForZoom(tpc);
-            
+
             if ( (zm > rm) && (zm > avarageMove) )
             {
                 st = GState.Shrink;
@@ -940,7 +940,7 @@ namespace AppAnalytics
                 st = GState.MovingDown;
             }
 
-            return st; 
+            return st;
         }
 
         bool isMovingState(GState aState)
@@ -1001,7 +1001,7 @@ namespace AppAnalytics
             double metric = 0;
             if (tpc.Count != 2)
             {
-                return 0; 
+                return 0;
             }
             else
             {
@@ -1066,7 +1066,7 @@ namespace AppAnalytics
             var distance = Math.Sqrt( Math.Pow((X1 - X2), 2) + Math.Pow((Y1 - Y2), 2) );
             if ( (distance > (mPreDistance)) && (GState.Enlarge != mPrevGesture.state) )
             {
-                Debug.WriteLine("enlarge");
+                //Debug.WriteLine("enlarge");
                 // push
                 createGesture(GestureID.ZoomWith2Finger);
                 mPrevGesture.state = GState.Enlarge; // also known as zoom
@@ -1074,7 +1074,7 @@ namespace AppAnalytics
             }
             else if ( (distance < (mPreDistance)) && (GState.Shrink != mPrevGesture.state))
             {
-                Debug.WriteLine("shrink"); // also known as pinch
+                //Debug.WriteLine("shrink"); // also known as pinch
                 // push
                 createGesture(GestureID.PinchWith2Finger);
                 mPrevGesture.state = GState.Shrink;
@@ -1110,14 +1110,14 @@ namespace AppAnalytics
 
 //                 if (Math.Abs( Math.Abs(preAngle) - Math.Abs(nowAngle) ) < rotationThreshold)
 //                 {
-//                     Debug.WriteLine("...");
+//                     //Debug.WriteLine("...");
 //                     preAngle = nowAngle;
 //                     return false;
 //                 }
 //                 else
                 if ((GState.RotateC != mPrevGesture.state) && (GState.RotateAC != mPrevGesture.state))
                 {
-                    Debug.WriteLine("rotation");
+                    //Debug.WriteLine("rotation");
                     var bts = BitConverter.GetBytes((float)nowAngle);
 
                     createGesture(GestureID.RotateWith2Finger, bts);
@@ -1126,14 +1126,14 @@ namespace AppAnalytics
 
 //                 if ((nowAngle > preAngle) && (GState.RotateC != prevGesture.state))
 //                 {
-//                     Debug.WriteLine("clock wise rotation");
+//                     //Debug.WriteLine("clock wise rotation");
 //                     prevGesture.state = GState.RotateC;
 //                     preAngle = nowAngle;
 //                     return true;
 //                 }
 //                 else if (GState.RotateAC != prevGesture.state)
 //                 {
-//                     Debug.WriteLine("counter clock wise rotation");
+//                     //Debug.WriteLine("counter clock wise rotation");
 //                     prevGesture.state = GState.RotateAC;
 //                     preAngle = nowAngle;
 //                     return true;
@@ -1143,7 +1143,7 @@ namespace AppAnalytics
         }
 
 
-        public int PrevFingers 
+        public int PrevFingers
         {
             get
             {

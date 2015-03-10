@@ -1,13 +1,13 @@
-/* 
+/*
     Copyright (c) 2012 - 2013 Microsoft Corporation.  All rights reserved.
-    Use of this sample source code is subject to the terms of the Microsoft license 
+    Use of this sample source code is subject to the terms of the Microsoft license
     agreement under which you licensed this sample source code and is provided AS-IS.
-    If you did not accept the terms of the license agreement, you are not authorized 
-    to use this sample source code.  For the terms of the license, please see the 
+    If you did not accept the terms of the license agreement, you are not authorized
+    to use this sample source code.  For the terms of the license, please see the
     license agreement between you and Microsoft.
-  
+
     To see all Code Samples for Windows Phone, visit http://code.msdn.microsoft.com/wpapps
-  
+
 */
 using System;
 using System.Diagnostics;
@@ -28,7 +28,7 @@ namespace Microsoft.Phone.Applications.Common
         public Simple3DVector RawAcceleration { get; set; }
 
         /// <summary>
-        /// Filtered accelerometer data using a combination of a low-pass and threshold triggered high-pass on each axis to 
+        /// Filtered accelerometer data using a combination of a low-pass and threshold triggered high-pass on each axis to
         /// elimate the majority of the sensor low amplitude noise while trending very quickly to large offsets (not perfectly
         /// smooth signal in that case), providing a very low latency. This is ideal for quickly reacting UI updates.
         /// </summary>
@@ -41,15 +41,15 @@ namespace Microsoft.Phone.Applications.Common
         public Simple3DVector LowPassFilteredAcceleration { get; set; }
 
         /// <summary>
-        /// Filtered and temporally averaged accelerometer data using an arithmetic mean of the last 25 "optimaly filtered" 
-        /// samples (see above), so over 500ms at 50Hz on each axis, to virtually eliminate most sensor noise. 
+        /// Filtered and temporally averaged accelerometer data using an arithmetic mean of the last 25 "optimaly filtered"
+        /// samples (see above), so over 500ms at 50Hz on each axis, to virtually eliminate most sensor noise.
         /// This provides a very stable reading but it has also a very high latency and cannot be used for rapidly reacting UI.
         /// </summary>
         public Simple3DVector AverageAcceleration { get; set; }
     }
 
     /// <summary>
-    /// Accelerometer Helper Class, providing filtering and local calibration of accelerometer sensor data 
+    /// Accelerometer Helper Class, providing filtering and local calibration of accelerometer sensor data
     /// </summary>
     public sealed class AccelerometerHelper: IDisposable
     {
@@ -76,7 +76,7 @@ namespace Microsoft.Phone.Applications.Common
         private static double _maximumCalibrationOffset = Math.Sin(MaximumCalibrationTiltAngle);
 
         /// <summary>
-        /// This is the maximum inclination angle variation on any axis between the average acceleration and the filtered 
+        /// This is the maximum inclination angle variation on any axis between the average acceleration and the filtered
         /// acceleration beyond which the device cannot be calibrated on that particular axis.
         /// The calibration cannot be done until this condition is met on the last contiguous samples from the accelerometer
         /// </summary>
@@ -88,14 +88,14 @@ namespace Microsoft.Phone.Applications.Common
         private static double _maximumStabilityDeltaOffset = Math.Sin(MaximumStabilityTiltDeltaAngle);
 
         /// <summary>
-        /// Number of samples for which the accelemeter is "stable" (filtered acceleration is within Maximum Stability Tilt 
+        /// Number of samples for which the accelemeter is "stable" (filtered acceleration is within Maximum Stability Tilt
         /// Delta Angle of average acceleration)
         /// </summary>
         private int _deviceStableCount = 0;
 
         /// <summary>
-        /// Number of prior samples to keep for averaging.       
-        /// The higher this number, the larger the latency will be: 
+        /// Number of prior samples to keep for averaging.
+        /// The higher this number, the larger the latency will be:
         /// At 50Hz sampling rate: Latency = 20ms * SamplesCount
         /// </summary>
         private const int SamplesCount = 25; // averaging and checking stability on 500ms
@@ -107,7 +107,7 @@ namespace Microsoft.Phone.Applications.Common
         private const double LowPassFilterCoef = 0.1; // With a 50Hz sampling rate, this is gives a 1Hz cut-off
 
         /// <summary>
-        /// Maximum amplitude of noise from sample to sample. 
+        /// Maximum amplitude of noise from sample to sample.
         /// This is used to remove the noise selectively while allowing fast trending for larger amplitudes
         /// </summary>
         private const double NoiseMaxAmplitude = 0.05; // up to 0.05g deviation from filtered value is considered noise
@@ -263,7 +263,7 @@ namespace Microsoft.Phone.Applications.Common
         public Simple3DVector ZeroAccelerationCalibrationOffset { get; private set; }
 
         /// <summary>
-        /// Accelerometer is not present on device 
+        /// Accelerometer is not present on device
         /// </summary>
         public bool NoAccelerometer { get; private set; }
 
@@ -357,7 +357,7 @@ namespace Microsoft.Phone.Applications.Common
             {
                 if (CanCalibrate(xAxis, yAxis))
                 {
-                    ZeroAccelerationCalibrationOffset = 
+                    ZeroAccelerationCalibrationOffset =
                         new Simple3DVector(
                             xAxis ? -_averageAcceleration.X : ZeroAccelerationCalibrationOffset.X,
                             yAxis ? -_averageAcceleration.Y : ZeroAccelerationCalibrationOffset.Y,
@@ -400,7 +400,7 @@ namespace Microsoft.Phone.Applications.Common
             {
                 _active = false;
                 NoAccelerometer = true;
-                Debug.WriteLine("Exception creating Accelerometer: " + e.Message);
+                //Debug.WriteLine("Exception creating Accelerometer: " + e.Message);
             }
         }
 
@@ -462,7 +462,7 @@ namespace Microsoft.Phone.Applications.Common
         /// </summary>
         /// <param name="sender">Sender of the event.</param>
         /// <param name="e">AccelerometerReadingAsyncEventArgs</param>
-    
+
         private void sensor_CurrentValueChanged(object sender, SensorReadingEventArgs<AccelerometerReading> e)
         {
             Simple3DVector lowPassFilteredAcceleration = default(Simple3DVector);
@@ -517,7 +517,7 @@ namespace Microsoft.Phone.Applications.Common
                 // Stablity check
                 // If current low-pass filtered sample is deviating for more than 1/100 g from average (max of 0.5 deg inclination noise if device steady)
                 // then reset the stability counter.
-                // The calibration will be prevented until the counter is reaching the sample count size (calibration enabled only if entire 
+                // The calibration will be prevented until the counter is reaching the sample count size (calibration enabled only if entire
                 // sampling buffer is "stable"
                 Simple3DVector deltaAcceleration = averagedAcceleration - optimalFilteredAcceleration;
                 if ((Math.Abs(deltaAcceleration.X) > _maximumStabilityDeltaOffset) || (Math.Abs(deltaAcceleration.Y) > _maximumStabilityDeltaOffset) || (Math.Abs(deltaAcceleration.Z) > _maximumStabilityDeltaOffset))

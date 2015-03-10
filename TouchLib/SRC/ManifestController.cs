@@ -15,7 +15,7 @@ namespace AppAnalytics
 {
     class ManifestController
     {
-        private readonly object _readLock = new object();  
+        private readonly object _readLock = new object();
         private static ManifestController mInstance;
         public static ManifestController Instance
         {
@@ -58,12 +58,12 @@ namespace AppAnalytics
                                 mSamples.Skip(toskip).Take(10000).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
                         }
                         bw.Close();
-                    } 
+                    }
                 }
             }
             catch (Exception e)
             {
-                Debug.WriteLine(e.Message + "\n Cannot create file.");
+                //Debug.WriteLine(e.Message + "\n Cannot create file.");
                 return;
             }
 
@@ -109,9 +109,9 @@ namespace AppAnalytics
                     }
 
                 }
-                catch (Exception e)
+                catch 
                 {
-                    Debug.WriteLine(e.Message + "\n Cannot create file.");
+                    //Debug.WriteLine(e.Message + "\n Cannot create file.");
                     return;
                 }
             }
@@ -182,7 +182,7 @@ namespace AppAnalytics
                 }
                 mSamples = copyS;
             }
-        } 
+        }
 
     }
 }

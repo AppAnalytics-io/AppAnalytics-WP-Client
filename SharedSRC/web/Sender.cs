@@ -34,12 +34,12 @@ namespace AppAnalytics
         public static bool tryToSend(AppAnalytics.MultipartUploader.FileParameter aFiles, Dictionary<string, List<object>> aToDel)
         {
             if (NetworkInterface.GetIsNetworkAvailable() == true && aFiles.Count > 0)
-            { 
+            {
 #if DEBUG
                 if(kSimulateSending)
                 {
                     Sender.success(aFiles.FileType, aToDel);
-                    Debug.WriteLine("Sender :: Sending simulated. (only for dbg mode)");
+                    //Debug.WriteLine("Sender :: Sending simulated. (only for dbg mode)");
                     return true;
                 }
 #endif
@@ -48,11 +48,11 @@ namespace AppAnalytics
                                                                         + Detector.getUDIDString(),
                                                                         "WindowsPhone",
                                                                         aFiles,
-                                                                        aToDel);  
+                                                                        aToDel);
 
                 return true;
-            }                
-            
+            }
+
             return false;
         }
 
@@ -65,8 +65,8 @@ namespace AppAnalytics
             else
             {
                 aDict[name] = aToDel;
-            } 
-        } 
+            }
+        }
 
         public static void success(AAFileType aType, Dictionary<string, List<object> > aToDel)
         {
@@ -85,8 +85,8 @@ namespace AppAnalytics
             else if (aType == AAFileType.FTEvents)
             {
                 EventsManager.Instance.deleteEvents(aToDel);
-                //throw new NotImplementedException(); 
-            } 
+                //throw new NotImplementedException();
+            }
 
             if (kTryToSendMore && (ManifestController.Instance.SamplesCount > 10) )
             {
@@ -99,7 +99,7 @@ namespace AppAnalytics
             // should we retry immediately or in regular time
 //             lock (_lockObj)
 //             {
-// 
+//
 //             }
         }
 

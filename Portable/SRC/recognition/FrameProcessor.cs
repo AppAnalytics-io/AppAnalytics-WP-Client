@@ -3,10 +3,10 @@ using System.Windows;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks; 
+using System.Threading.Tasks;
 using System.Windows.Input;
-using System.Diagnostics; 
- 
+using System.Diagnostics;
+
 using System.Threading;
 using Windows.Foundation;
 using Windows.UI.Xaml;
@@ -24,7 +24,7 @@ namespace AppAnalytics
 {
     internal class FrameProcessor
     {
-        #region data_types 
+        #region data_types
         enum Dir
         {
             Up = 0,
@@ -33,7 +33,7 @@ namespace AppAnalytics
             Right,
             None = -1
         }
-         
+
 
         Dir getDirection(Vector2 vec)
         {
@@ -69,7 +69,7 @@ namespace AppAnalytics
         }
 
         static public DateTime getNow()
-        { 
+        {
             return DateTime.Now.ToUniversalTime();
         }
 
@@ -112,7 +112,7 @@ namespace AppAnalytics
         int tapsInRow = 0;
 
         double mTimeStamp = 0;
-        int prevFingers = 0; 
+        int prevFingers = 0;
 
         double mInsensitivity = 0;
         #endregion
@@ -227,7 +227,7 @@ namespace AppAnalytics
                 mTimeStamp = curTime;
                 return;
             }
-            
+
             int fingers = tpc.Count > 4 ? 4 : tpc.Count;
             mMaxFingersInTap = mMaxFingersInTap < fingers ? fingers : mMaxFingersInTap;
 
@@ -245,7 +245,7 @@ namespace AppAnalytics
 
         bool doesTapHappend(TouchPointCollection tpc)
         {
-            //Debug.WriteLine("Tap - up");
+            ////Debug.WriteLine("Tap - up");
             var v1 = new Vector2((float)mPositionX, (float)mPositionY);
             var v2 = new Vector2((float)tpc[0].X, (float)tpc[0].Y);
             float len = (v1 - v2).Length();
@@ -262,14 +262,14 @@ namespace AppAnalytics
                 return false;
             }
             var now = getNow();
-            //Debug.WriteLine("check " + now.Ticks);
+            ////Debug.WriteLine("check " + now.Ticks);
             double dbg = Math.Abs( (now - startTap).TotalSeconds );
 
             if (dbg < TimeForTap)
             {
                 if (TapsInRow >= 2)
                 {
-                    Debug.WriteLine("[triple tap with ]" + PrevFingers + "fingers");
+                    //Debug.WriteLine("[triple tap with ]" + PrevFingers + "fingers");
                     GestureProcessor.createTapGesture(3, PrevFingers);
                     TapsInRow = 0;
                     //mPrevGesture.state = GState.None;
@@ -279,11 +279,11 @@ namespace AppAnalytics
                 else
                 {
                     lastTapFingers = tpc.Count > 4 ? 4 : tpc.Count;
-                    
+
                     PrevTapOccured = getNow();
 
                     TapsInRow = TapsInRow + 1;
-                    Debug.WriteLine("                            tapsInRow=" + TapsInRow);
+                    //Debug.WriteLine("                            tapsInRow=" + TapsInRow);
                     //mPrevGesture.state = GState.None;
 
                     return true;
@@ -354,7 +354,7 @@ namespace AppAnalytics
                     mPreFlickY[i] = tpc[i].Y;
                 }
                 startTap = getNow();
-                //wDebug.WriteLine("now " + startTap.Ticks);
+                //w//Debug.WriteLine("now " + startTap.Ticks);
                 mTrevDir = Dir.None;
 
                 mPositionX = flickPoint.X;

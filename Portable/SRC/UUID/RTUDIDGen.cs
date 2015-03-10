@@ -21,7 +21,7 @@ namespace AppAnalytics.UUID
         protected UDIDGen()
         {
             mGUID = new Guid();
-            mSessionID = Guid.NewGuid(); 
+            mSessionID = Guid.NewGuid();
         }
 
         async Task<bool> handleUDID()
@@ -40,9 +40,9 @@ namespace AppAnalytics.UUID
             await handleUDID();
         }
 
-        async Task<bool> doesFileExistAsync(string fileName, StorageFolder folder) 
+        async Task<bool> doesFileExistAsync(string fileName, StorageFolder folder)
         {
-	        try 
+	        try
             {
                 await folder.GetFileAsync(fileName);
 		        return true;
@@ -55,7 +55,7 @@ namespace AppAnalytics.UUID
         {
             StorageFolder local = Windows.Storage.ApplicationData.Current.LocalFolder;
 
-            bool result = await doesFileExistAsync("udid" + Defaults.kFileExpKey, local);  
+            bool result = await doesFileExistAsync("udid" + Defaults.kFileExpKey, local);
             if ( result )
             {
                 BinaryReader br;
@@ -64,18 +64,18 @@ namespace AppAnalytics.UUID
                     var iStorageFile = await local.GetFileAsync("udid" + Defaults.kFileExpKey);
 
                     br = new BinaryReader(await iStorageFile.OpenStreamForReadAsync());
-                    
+
                     var binary = br.ReadBytes(mSessionID.ToByteArray().Length);
-                    mGUID = new Guid(binary); 
+                    mGUID = new Guid(binary);
                     br.Dispose();
                     return true;
                 }
                 catch (Exception e)
                 {
-                    Debug.WriteLine(e.Message + "\n *****Cannot open file or read from it.");
+                    //Debug.WriteLine(e.Message + "\n *****Cannot open file or read from it.");
                     mGUID = Guid.NewGuid();
                     return false;
-                } 
+                }
             }
 
             return false;
@@ -96,7 +96,7 @@ namespace AppAnalytics.UUID
             }
             catch (Exception e)
             {
-                Debug.WriteLine(e.Message + "\n Cannot create file.");
+                //Debug.WriteLine(e.Message + "\n Cannot create file.");
                 return false;
             }
             return true;
@@ -115,10 +115,10 @@ namespace AppAnalytics.UUID
                 return mEncoding.GetBytes(mSessionID.ToString());
             }
         }
-        
+
         public Guid SessionIDRaw
         {
-            get 
+            get
             {
                 return mSessionID;
             }
@@ -127,14 +127,14 @@ namespace AppAnalytics.UUID
         public byte[] UDID
         {
             get
-            { 
+            {
                 return mEncoding.GetBytes( mGUID.ToString() );
             }
         }
         public Guid UDIDRaw
         {
             get
-            { 
+            {
                 return mGUID ;
             }
         }
