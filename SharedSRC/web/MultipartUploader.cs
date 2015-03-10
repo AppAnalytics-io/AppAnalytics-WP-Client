@@ -20,11 +20,11 @@ namespace AppAnalytics
                 switch (aFT)
                 {
                     case AAFileType.FTSamples:
-                        return "Samples";
+                        return "Sample";
                     case AAFileType.FTManifests:
-                        return "Samples";
+                        return "Manifest";
                     case AAFileType.FTEvents:
-                        return "Samples";
+                        return "Events";
                     default:
                         return "File";
                 }
@@ -141,7 +141,7 @@ namespace AppAnalytics
 
             var state = new KeyValuePair<HttpWebRequest, byte[]>(request, formData);
             var stateObj = new StateObject(state, aType, ListToDelete);
-            var result = request.BeginGetRequestStream(GetRequestStreamCallback, state);
+            var result = request.BeginGetRequestStream(GetRequestStreamCallback, stateObj);
 
             return true;
         }
@@ -234,7 +234,7 @@ namespace AppAnalytics
                     streamResponse = response.GetResponseStream();
                     streamRead = new StreamReader(streamResponse);
 
-                    string responseString = streamRead.ReadToEnd();
+                    string responseString = streamRead.ReadToEnd() + e.ToString();
                     //Debug.WriteLine("[response:]" + responseString);
                 }
                 //Debug.WriteLine("exception in response callback :" + e.ToString());

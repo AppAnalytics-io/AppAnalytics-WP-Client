@@ -19,14 +19,13 @@ using Microsoft.Phone.Controls;
 using Microsoft.Xna.Framework.Input.Touch;
 using System.Windows.Navigation;
 using Windows.ApplicationModel;
-using System.Threading;
+using Microsoft.Phone.Shell; 
 #else
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.Globalization;
 using Windows.ApplicationModel;
-using System.Windows.Navigation;
-using Microsoft.Phone.Controls;
+using Windows.UI.Xaml.Navigation;
 #endif
 
 
@@ -119,6 +118,7 @@ namespace AppAnalytics
         private static double mSessionStartTime = 0;
 
         private static string mPreviousUri = "";
+        private static string mPreviousType = "";
 
         private static byte[] mApiKey = null;
 
@@ -270,7 +270,10 @@ namespace AppAnalytics
             //Frame.
             if (null != currentPage) return;
             var uri = currentPage.BaseUri;
+            var pageType = (Window.Current.Content as Frame).Content.GetType();
+            mPreviousType = pageType.Name;
 #endif
+
             string nUri = uri.ToString();
             lock (_lockObject)
             {
@@ -311,20 +314,6 @@ namespace AppAnalytics
         {
             return mUIThreadID == System.Threading.Thread.CurrentThread.ManagedThreadId;
         }
-#else
-        static internal void exceptionsLogger(object sender, UnhandledExceptionEventArgs e)
-        {
-            Dictionary<string, string> info = new Dictionary<string, string>(); 
-           
-            info.Add("Сall stack", e.Exception.StackTrace);
-            info.Add("Exception", e.Exception.ToString());
-            info.Add("Type", e.Exception.GetType().Name);
-
-            EventsManager.Instance.pushEvent("UnhandledException", info);
-            EventsManager.Instance.store();
-            Debug.WriteLine("Unhanded exception.");
-        }
-#endif
         static void navigating(object sender, NavigatingCancelEventArgs e)
         {
             Dictionary<string, string> info = new Dictionary<string, string>();
@@ -345,7 +334,6 @@ namespace AppAnalytics
                 EventsManager.Instance.store();
             }
         }
-        
         static async void initNavigationEvent()
         {
             PhoneApplicationFrame frame = null;
@@ -357,6 +345,40 @@ namespace AppAnalytics
             }
             frame.Navigating += navigating;
         }
+#else
+        static internal void exceptionsLogger(object sender, UnhandledExceptionEventArgs e)
+        {
+            Dictionary<string, string> info = new Dictionary<string, string>(); 
+           
+            info.Add("Сall stack", e.Exception.StackTrace);
+            info.Add("Exception", e.Exception.ToString());
+            info.Add("Type", e.Exception.GetType().Name);
+
+            EventsManager.Instance.pushEvent("UnhandledException", info);
+            EventsManager.Instance.store();
+            Debug.WriteLine("Unhanded exception.");
+        }
+
+        static void navigating(object sender, NavigationEventArgs e)
+        {
+            Dictionary<string, string> info = new Dictionary<string, string>();
+
+            string prev = "";
+            lock (_lockObject)
+            {
+                prev = mPreviousType;
+            }
+            
+            {
+                var t = System.Enum.GetName(typeof(NavigationMode), e.NavigationMode);
+                info.Add("Navigation Mode", t);
+                info.Add("Destination Type", e.SourcePageType.Name);
+                info.Add("Source Type", prev);
+
+                EventsManager.Instance.pushEvent("Navigation", info); 
+            }
+        } 
+#endif
 
         static internal void init(string aApiKey)
         {
@@ -365,25 +387,31 @@ namespace AppAnalytics
             mUIThreadID = System.Threading.Thread.CurrentThread.ManagedThreadId;
             Recognizer.Instance.Init();
             current.UnhandledException += exceptionsLogger;
-#else
-            RTRecognizer.Instance.init();
-            current.UnhandledException += exceptionsLogger;
-#endif
-            EventsManager.Instance.init(); 
-            
-            // < TESTING. temporary
-
-            //EventsManager.Instance.testSerialization();
-            //EventsManager.Instance.testSerializationUsingMemoryStream();
-
-            EventsManager.Instance.testSending(); 
-            EventsManager.Instance.DebugLogEnabled = true;
-
-            //var tmr = new Timer(testException, null, 10, Timeout.Infinite); 
-            // TESTING >
 
             var navigationTask = new Task(initNavigationEvent);
             navigationTask.Start();
+            PhoneApplicationService.Current.Deactivated += onAppSuspend;
+#else
+            RTRecognizer.Instance.init();
+            current.UnhandledException += exceptionsLogger; ; 
+            var view = Window.Current.Content as Frame;
+            view.Navigated += navigating; 
+#endif 
+            EventsManager.Instance.init();
+            CoreApplication.Exiting += onAppExit;
+            CoreApplication.Suspending += onAppSuspend;
+
+            // < TESTING. temporary
+
+            //EventsManager.Instance.testSerialization();
+            //EventsManager.Instance.testSerializationUsingMemoryStream()
+
+            //EventsManager.Instance.testSending(); 
+            EventsManager.Instance.DebugLogEnabled = true;
+            EventsManager.Instance.DispatchInterval = 11;
+
+            //var tmr = new Timer(testException, null, 10, Timeout.Infinite); 
+            // TESTING >
 
             var tsk = new Task(mIDGen.init);
             tsk.Start();
@@ -514,8 +542,7 @@ namespace AppAnalytics
                     //Debug.WriteLine("hit");
                     lock (_lockObject)
                     {
-                        mNavigationOccured = false;
-                        //todo
+                        mNavigationOccured = false; 
                         //Recognizer.Instance.createGesture(GestureID.Navigation);
                     }
                 }
@@ -528,11 +555,7 @@ namespace AppAnalytics
         }
 
         internal static byte[] getSessionEndDate()
-        {
-//             var date = DateTime.Now;
-// 
-//             DateTime origin = new DateTime(1970, 1, 1, 0, 0, 0, 0);
-//             TimeSpan diff = date.ToUniversalTime() - origin;
+        { 
             double sec = 0;//Math.Floor(diff.TotalSeconds);
 
             return BitConverter.GetBytes(sec);
@@ -686,6 +709,25 @@ namespace AppAnalytics
             }
         }
 
+        static void onAppExit(object obj, object e)
+        {
+            storeAll();
+        }
+
+        static void onAppSuspend(object obj, object e)
+        {
+            storeAll();
+        }
+
+        static public void storeAll()
+        {
+            var tmp = new Task(ManifestController.Instance.store);
+            tmp.Start();
+            tmp.Wait();
+
+            EventsManager.Instance.store();
+        }
+
         #region debug_info_logging
         internal static void logSampleDbg(GestureData aGD)
         {
@@ -707,7 +749,8 @@ namespace AppAnalytics
             if (EventsManager.Instance.DebugLogEnabled)
             {
                 string eventToStr = aEvent.ToString();
-                Debug.WriteLine(eventToStr); 
+                Debug.WriteLine(eventToStr);
+                Debug.WriteLine(":::::::::::::::::::::::::::::::::");
             }
         }
         #endregion

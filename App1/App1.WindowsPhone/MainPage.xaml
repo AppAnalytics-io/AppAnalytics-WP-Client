@@ -14,6 +14,7 @@
             <ContentControl Content="ContentControl" HorizontalAlignment="Left" Margin="140,10,0,0" VerticalAlignment="Top" Height="95" Width="93"/>
             <Canvas Name="test1" HorizontalAlignment="Left" Height="254" Margin="10,195,0,0" VerticalAlignment="Top" Width="267" Background="{ThemeResource ListBoxBackgroundThemeBrush}" PointerPressed="Canvas_PointerPressed"/>
         </Grid>
+        <Button Content="Button" HorizontalAlignment="Left" Margin="207,537,0,0" VerticalAlignment="Top" Height="84" Width="183" Background="#FF9B0A0A" Click="Button_Click"/>
 
     </Grid>
 </Page>

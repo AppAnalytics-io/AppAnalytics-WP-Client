@@ -86,7 +86,7 @@ namespace AppAnalytics
                     stream.Dispose();
                 }
             }
-            catch (Exception e)
+            catch 
             {
                 //Debug.WriteLine(e.Message + "\n Cannot create file.");
             }
@@ -165,7 +165,7 @@ namespace AppAnalytics
                     await fileSamples.DeleteAsync(StorageDeleteOption.PermanentDelete);
                 }
             }
-            catch (Exception e)
+            catch 
             {
                 //Debug.WriteLine(e.Message + "\n Cannot create file.");
                 return;

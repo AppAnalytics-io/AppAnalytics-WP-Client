@@ -117,8 +117,8 @@ namespace AppAnalytics
 //             w.ScriptNotify += h;
 //             w.InvokeScript("execScript", new[] { "window.external.notify(navigator.appVersion); " });
 //             return t.Task;
- //       }
-
+        //       }
+#pragma warning disable 1998
         static public async Task<int> GetOSVersion()
         {
             Version v = new Version("0.0.0.0"); 

@@ -70,7 +70,7 @@ namespace AppAnalytics.UUID
                     br.Dispose();
                     return true;
                 }
-                catch (Exception e)
+                catch 
                 {
                     //Debug.WriteLine(e.Message + "\n *****Cannot open file or read from it.");
                     mGUID = Guid.NewGuid();
@@ -96,7 +96,7 @@ namespace AppAnalytics.UUID
             }
             catch (Exception e)
             {
-                //Debug.WriteLine(e.Message + "\n Cannot create file.");
+                Debug.WriteLine(e.Message + "\n Cannot create file.");
                 return false;
             }
             return true;

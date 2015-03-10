@@ -105,14 +105,14 @@ namespace AppAnalytics
         double mPositionX = 0;
         double mPositionY = 0; // where the gesture begun
 
-        Dir mTrevDir = Dir.None;
+        //Dir mTrevDir = Dir.None;
 
         // about taps
         DateTime mPrevTapOccured;
         int tapsInRow = 0;
 
         double mTimeStamp = 0;
-        int prevFingers = 0;
+        //int prevFingers = 0;
 
         double mInsensitivity = 0;
         #endregion
@@ -354,8 +354,7 @@ namespace AppAnalytics
                     mPreFlickY[i] = tpc[i].Y;
                 }
                 startTap = getNow();
-                //w//Debug.WriteLine("now " + startTap.Ticks);
-                mTrevDir = Dir.None;
+                //w//Debug.WriteLine("now " + startTap.Ticks); 
 
                 mPositionX = flickPoint.X;
                 mPositionY = flickPoint.Y;

@@ -19,7 +19,7 @@ using Windows.UI.Xaml;
 
 namespace AppAnalytics
 {
-	internal class EventsManager
+    internal class EventsManager  
 	{
 	    #region Members
         Dictionary<string, List<AAEvent>> mEvents = new Dictionary<string,List<AAEvent>>();
@@ -79,7 +79,7 @@ namespace AppAnalytics
         ~EventsManager()
         {
             serialize(null);
-        }
+        } 
 
         public void store()
         {
@@ -88,10 +88,10 @@ namespace AppAnalytics
 
         EventsManager()
         {
-            var t2 = new Task(deserialize);
-            t2.Start(); t2.Wait();
+            deserialize().ConfigureAwait(false);
 
-            mEvents.Add(Detector.getSessionIDStringWithDashes(), new List<AAEvent>());
+            var tmp = Detector.getSessionIDStringWithDashes();
+            mEvents.Add(tmp, new List<AAEvent>());
 
             mDispatchTimer = new Timer(tryToSendCallback, null,
 #if SILVERLIGHT
@@ -119,12 +119,21 @@ namespace AppAnalytics
             {
                 aDescription = aDescription.Substring(0, (int)Defaults.kMaxLogEventStrLen);
             }
-            AAEvent newOne = AAEvent.create( 0, 0, aDescription, aParams);
+            AAEvent newOne = AAEvent.create(mIndex, Detector.getCurrentDouble(), aDescription, aParams);
             Detector.logEventDbg(newOne);
 
+            var session = Detector.getSessionIDStringWithDashes();
             lock (_lockObject)
             {
-                pushNewOrUpdateExisted(mEvents[Detector.getSessionIDStringWithDashes()], newOne);
+                if (mEvents.ContainsKey(session))
+                {
+                    pushNewOrUpdateExisted(mEvents[session], newOne);
+                }
+                else
+                {
+                    mEvents.Add(Detector.getSessionIDStringWithDashes(), new List<AAEvent>());
+                    pushNewOrUpdateExisted(mEvents[session], newOne);
+                }
             }
         }
 
@@ -134,14 +143,13 @@ namespace AppAnalytics
             {
                 aNewOne = aContainer.Find(x => x.Equals(aNewOne) );
                 aNewOne.addIndex(mIndex);
+                aNewOne.addTimestamp(Detector.getCurrentDouble());
             }
             else
             {
-                mEvents[Detector.getSessionIDStringWithDashes()].Add(aNewOne);
+                mEvents[Detector.getSessionIDStringWithDashes()].Add(aNewOne); 
             }
-
-            aNewOne.addTimestamp(Detector.getCurrentDouble());
-            aNewOne.addIndex(mIndex++);
+            mIndex++;
         }
 
         public void pushEvent(string aDescription)
@@ -213,7 +221,7 @@ namespace AppAnalytics
                 if (count > 0)
                 {
                     byte[] damp = Encoding.UTF8.GetBytes(buf);
-                    var param = new MultipartUploader.FileParameter(damp, kval.Key, "application/json", (uint)count, AAFileType.FTEvents);
+                    var param = new MultipartUploader.FileParameter(damp, kval.Key, "application/jsonrequest", (uint)count, AAFileType.FTEvents);
                     wrapper.Add(kval.Key, toDel);
                     Sender.tryToSend(param, wrapper);
                 }
@@ -266,7 +274,7 @@ namespace AppAnalytics
             var js = new DataContractJsonSerializer(typeof(Dictionary<string, List<AAEvent>>));
             try
             {
-                using (var stream = await getFileStream(false))
+                using (var stream = await getFileStream(false).ConfigureAwait(false))
                 {
                     var tmp = new Dictionary<string, List<AAEvent>>();
                     // unable to use linq selector via silverlight
@@ -287,21 +295,33 @@ namespace AppAnalytics
             catch {  }
         }
 
-        private async void deserialize()
+        private async Task<bool> deserialize()
         {
             var js = new DataContractJsonSerializer(typeof(Dictionary<string, List<AAEvent>>));
             try
-            {
+            {  
                 using (var stream = await getFileStream(true))
                 {
                     lock (_lockObject)
-                        mEvents = (Dictionary<string, List<AAEvent>>)js.ReadObject(stream);
-                    if (mEvents == null)
-                        mEvents = new Dictionary<string, List<AAEvent>>();
+                    {
+                        var tmp = (Dictionary<string, List<AAEvent>>)js.ReadObject(stream); 
+                        if (tmp != null && mEvents.Count == 0)
+                        {
+                            mEvents = tmp;
+                        }
+                        else if (tmp != null)
+                        {
+                            foreach (var kval in tmp)
+                            {
+                                mEvents.Add(kval.Key, kval.Value);
+                            }
+                        }
+                    }
                 }
             }
             catch { }   // occurs when aa_events does not exist, it is ok.
-                        // it is way to check if file exist with winrt btw :)
+                        // it is way to check if file exist with winrt btw :) 
+            return true;
         }
 
 #if DEBUG
@@ -347,7 +367,7 @@ namespace AppAnalytics
 
             pushEvent("test");
             var t1 = new Task(() => serialize(null) );
-            var t2 = new Task(deserialize);
+            var t2 = new Task(async () => await deserialize());
             t1.Start(); t1.Wait();
             t2.Start(); t2.Wait();
             Debug.Assert(mEvents[session].Contains( AAEvent.create(0,0,"test", null) ) );

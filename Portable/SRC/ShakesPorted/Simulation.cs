@@ -21,7 +21,7 @@ namespace AppAnalytics.ShakeGestures
     {
         private static AccelerometerHelperReadingEventArgs args = new AccelerometerHelperReadingEventArgs();
 
-        public static EventHandler<AccelerometerHelperReadingEventArgs> CallTo;
+        public static EventHandler<AccelerometerHelperReadingEventArgs> CallTo = null;
 
         private static void ReportVector(double x, double y, double z)
         {

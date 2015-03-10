@@ -50,7 +50,7 @@ namespace AppAnalytics.UUID
                     iStorage.Dispose();
                     return true;
                 }
-                catch (Exception e)
+                catch  
                 {
                     //Debug.WriteLine(e.Message + "\n Cannot open file or read from it.");
                     iStorage.Dispose();

@@ -28,7 +28,7 @@ namespace App1
         {
             this.InitializeComponent();
             this.AddHandler(UIElement.PointerMovedEvent, new PointerEventHandler(pointerMoved), true);
-            AppAnalytics.Detector.init("aunax1tKfUkuySLKkqaDAZxLEL1k5TpF");
+            AppAnalytics.API.init("aunax1tKfUkuySLKkqaDAZxLEL1k5TpF");
             this.NavigationCacheMode = NavigationCacheMode.Required;
         }
 
@@ -57,6 +57,12 @@ namespace App1
         {
             var ui = sender as UIElement;
             ui.CapturePointer(e.Pointer);
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            //Navigation
+            this.Frame.Navigate(typeof(SecondRT));
         }
     }
 }

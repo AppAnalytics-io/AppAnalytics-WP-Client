@@ -401,7 +401,7 @@ namespace Microsoft.Phone.Applications.Common
             {
                 _active = false;
                 NoAccelerometer = true;
-                //Debug.WriteLine("Exception creating Accelerometer: " + e.Message);
+                Debug.WriteLine("Exception creating Accelerometer: " + e.Message);
             }
         }
 
@@ -425,7 +425,7 @@ namespace Microsoft.Phone.Applications.Common
             {
                 _active = false;
                 NoAccelerometer = true;
-                //Debug.WriteLine("Exception deleting Accelerometer: " + e.Message);
+                Debug.WriteLine("Exception deleting Accelerometer: " + e.Message);
             }
         }
 

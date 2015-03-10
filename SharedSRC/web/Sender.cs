@@ -25,7 +25,7 @@ namespace AppAnalytics
 
         public static readonly object _lockObj = new object();
 
-        private const bool kSimulateSending = true;
+        private const bool kSimulateSending = false;
 //         static List<string> mManifestToDel = new List<string>();
 //         static Dictionary<string, List<object>> mPackagesToDel = new Dictionary<string, List<object>>();
 //         static Dictionary<string, List<object>> mEventsToDel = new Dictionary<string, List<object>>();

@@ -61,7 +61,7 @@ namespace AppAnalytics
                     }
                 }
             }
-            catch (Exception e)
+            catch 
             {
                 //Debug.WriteLine(e.Message + "\n Cannot create file.");
                 return;
