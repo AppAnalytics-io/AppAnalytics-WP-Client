@@ -35,7 +35,7 @@ namespace AppAnalytics.UUID
             return f;
         }
 
-        public async void Init()
+        public async void init()
         {
             await handleUDID();
         }

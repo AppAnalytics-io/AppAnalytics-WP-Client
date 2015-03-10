@@ -30,7 +30,7 @@ namespace AppAnalytics.UUID
             }
         }
 
-        public void Init(){}
+        public void init(){}
 
         private bool existOnDevice()
         {

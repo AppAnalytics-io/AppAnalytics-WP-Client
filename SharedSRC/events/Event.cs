@@ -16,7 +16,7 @@ namespace AppAnalytics
     internal class AAEvent : IEquatable<object>/*, IXmlSerializable*/
     {
         #region Members
-        static private readonly object _lockObj = new object(); // it should be static, otherwise it will be null after deserialize
+        // private object _lockObj = new object();  
 
         [DataMember(Name = "indices", IsRequired = true)]
         private List<UInt32> mIndices = new List<UInt32>();
@@ -38,8 +38,11 @@ namespace AppAnalytics
             newOne.mIndices.Add(aIndex);
             newOne.mTimeStamps.Add(aTimeStamp);
             newOne.mDescription = aDescription;
-            newOne.mParameters = aParameters.ToDictionary(entry => entry.Key,
-                                                          entry => entry.Value);
+            if (aParameters != null)
+            {
+                newOne.mParameters = aParameters.ToDictionary(entry => entry.Key,
+                                                              entry => entry.Value);
+            }
 
             return newOne;
         }
@@ -53,10 +56,29 @@ namespace AppAnalytics
             newOne.mIndices = aIndeces.ToList();
             newOne.mTimeStamps = aTimeStamps.ToList();
             newOne.mDescription = aDescription;
-            newOne.mParameters = aParameters.ToDictionary(entry => entry.Key,
-                                                          entry => entry.Value);
+            if (aParameters != null)
+            {
+                newOne.mParameters = aParameters.ToDictionary(entry => entry.Key,
+                                                              entry => entry.Value);
+            }
 
             return newOne;
+        }
+
+        public void addIndex(UInt32 aIndex)
+        {
+//             lock (_lockObj)
+//             {
+            mIndices.Add(aIndex);
+/*            }*/
+        }
+
+        public void addTimestamp(Double aTimestamp)
+        {
+//             lock(_lockObj)
+//             {
+            mTimeStamps.Add(aTimestamp);
+/*            }*/
         }
 
         AAEvent() { }
@@ -66,17 +88,28 @@ namespace AppAnalytics
         {
             StringBuilder sb = new StringBuilder(1024);
             sb.Append('{');
-            sb.Append(this.indicesToJSON(mIndices));
+
+            if (mIndices.Count > 0)
+            {
+                sb.Append(this.indicesToJSON(mIndices));
+            }
+            if (mParameters.Count > 0)
+            {
+                sb.Append(this.getJSONFromDict(mParameters));
+            }
             if (mDescription.Length > 0)
             {
-
+                sb.Append(string.Format("\"EventName\":\"{0}\",", mDescription));
             }
-            sb.Append(this.timestampsToJSON(mTimeStamps));
-            sb.Append(this.getJSONFromDict(mParameters));
+            if (mTimeStamps.Count > 0)
+            {
+                sb.Append(this.timestampsToJSON(mTimeStamps));
+            }
+
             sb.Append('}');
             return sb.ToString();
         }
-        // I've decided not to use generic in this case
+
         private string indicesToJSON(List<UInt32> aList)
         {
             //there may be performance issues
@@ -106,14 +139,14 @@ namespace AppAnalytics
                 else
                     dump.Append("," + it.ToString(CultureInfo.InvariantCulture));
             }
-            return string.Format("\"ActionTime\":[{0}],", dump.ToString());
+            return string.Format("\"ActionTime\":[{0}]", dump.ToString());
         }
         private string getJSONFromDict(Dictionary<string,string> dict)
         {
             var entries = dict.Select(d =>
                 string.Format("\"{0}\": \"{1}\"", d.Key, d.Value));
 
-            return " \"EventParameters\":{" + string.Join(",", entries) + "}";
+            return " \"EventParameters\":{" + string.Join(",", entries) + "},";
         }
 
         #region IEquatable Members
@@ -142,7 +175,8 @@ namespace AppAnalytics
                 return true;
             }
             bool descriptionFlag = mDescription.Equals(obj.mDescription);
-            bool paramsFlag = mParameters.Equals(obj.mParameters);
+            bool paramsFlag = (mParameters.Count == obj.mParameters.Count
+                                && !mParameters.Except(obj.mParameters).Any());
 
             return descriptionFlag && paramsFlag;
         }
@@ -152,8 +186,18 @@ namespace AppAnalytics
         {
             return string.Format("{0}_{1}", mDescription.GetHashCode(), mParameters.GetHashCode()).GetHashCode();
         }
-
         #endregion
+
+        public override string ToString()
+        {
+            if (mParameters.Count > 0)
+            {
+                string s = string.Join(";", mParameters.Select(x => x.Key + "=" + x.Value).ToArray());
+                return String.Format("AA: Event [{0}] recorded;\n->Parameters: {1}",
+                                    mDescription, s);
+            }
+            return String.Format("AA: Event [{0}] recorded.", mDescription);;
+        }
 
 //         #region IXmlSerializable Members
 //         public System.Xml.Schema.XmlSchema GetSchema()

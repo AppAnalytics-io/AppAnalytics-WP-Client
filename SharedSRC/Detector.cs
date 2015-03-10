@@ -32,12 +32,8 @@ namespace AppAnalytics
     public static class Detector
     { 
         static readonly object _lockObject = new object();
-         
-
-        // Concurent.ConcurrentQueue<GestureData> mToSend = new ConcurrentQueue<GestureData>();
-        //private static Queue<GestureData> mToSend = new Queue<GestureData>();
         
-        //private section /////////////////////////////////////////////////
+        //members & properties /////////////////////////////////////////////////
         private static UUID.UDIDGen mIDGen = UUID.UDIDGen.Instance;
         private static int mUIThreadID = -1;
         private static bool mKeepWorking = true;
@@ -66,6 +62,7 @@ namespace AppAnalytics
                 return mUIThreadID;
             }
         }
+
         #region resolution_getters
 #if SILVERLIGHT
         public static byte[] getResolutionX()
@@ -217,33 +214,70 @@ namespace AppAnalytics
                 mPreviousUri = nUri;
             }
         }
-        
+
+
+        static private void testException(object o)
+        {
+            throw new AccessViolationException();
+        }
+
 #if SILVERLIGHT
+        static public void exceptionsLogger(object sender, ApplicationUnhandledExceptionEventArgs e)
+        {
+            Dictionary<string, string> info = new Dictionary<string, string>(); 
+           
+            info.Add("Сall stack", e.ExceptionObject.StackTrace);
+            info.Add("Exception", e.ExceptionObject.ToString());
+            info.Add("Type", e.ExceptionObject.GetType().Name);
+
+            EventsManager.Instance.pushEvent("UnhandledException", info);
+            EventsManager.Instance.store();
+            Debug.WriteLine("Unhanded exception.");
+        }
+
         static public bool isInUITHread()
         {
             return mUIThreadID == System.Threading.Thread.CurrentThread.ManagedThreadId;
         }
+#else
+
+        static public void exceptionsLogger(object sender, UnhandledExceptionEventArgs e)
+        {
+            Dictionary<string, string> info = new Dictionary<string, string>(); 
+           
+            info.Add("Сall stack", e.Exception.StackTrace);
+            info.Add("Exception", e.Exception.ToString());
+            info.Add("Type", e.Exception.GetType().Name);
+
+            EventsManager.Instance.pushEvent("UnhandledException", info);
+            EventsManager.Instance.store();
+            Debug.WriteLine("Unhanded exception.");
+        }
 #endif
         static public void init(string aApiKey)
         {
-            // < TESTING
-            EventsManager.Instance.testSerialization();
-            return;
-            // TESTING >
+            var current = Application.Current;
 #if SILVERLIGHT
             mUIThreadID = System.Threading.Thread.CurrentThread.ManagedThreadId;
             Recognizer.Instance.Init();
+            current.UnhandledException += exceptionsLogger;
 #else
             RTRecognizer.Instance.init();
+            current.UnhandledException += exceptionsLogger;
 #endif
-            var tsk = new Task(mIDGen.Init);
+            EventsManager.Instance.init();
+            // < TESTING
+            //EventsManager.Instance.testSerialization();
+            //EventsManager.Instance.testSerializationUsingMemoryStream();
+            EventsManager.Instance.testSending();
+            var tmr = new Timer(testException, null, 10, Timeout.Infinite);
+            
+            // TESTING >
+            var tsk = new Task(mIDGen.init);
             tsk.Start();
-            tsk.Wait();
+            tsk.Wait(); 
 
-//             var check = mIDGen.UDID;
-//             var check2 = mIDGen.UDIDRaw;
-
-            mApiKey = getBytes(aApiKey);
+            mApiKey = Encoding.UTF8.GetBytes(aApiKey);
             if (mApiKey.Length != 32)
             {
                 Debug.WriteLine("API key length is not equal 32");
@@ -472,21 +506,31 @@ namespace AppAnalytics
         }
 
         // converting char for 2bytes approach to 1byte
-        public static byte[] getBytes(string str)
-        {
-            byte[] bytes = new byte[str.Length ];
-
-            for (int i = 0; i < str.Length; ++i )
-            {
-                bytes[i] = (byte)str[i];
-            }
-
-            return bytes;
-        }
+//         public static byte[] getBytes(string str)
+//         {
+//             byte[] bytes = new byte[str.Length ];
+// 
+//             for (int i = 0; i < str.Length; ++i )
+//             {
+//                 bytes[i] = (byte)str[i];
+//             }
+// 
+//             return bytes;
+//         }
 
         private static byte[] toBytes(int val)
         {
             return BitConverter.GetBytes(val);
+        }
+
+        public static double getCurrentDouble()
+        {
+            var date = DateTime.Now;
+
+            DateTime origin = new DateTime(1970, 1, 1, 0, 0, 0, 0);
+            TimeSpan diff = date.ToUniversalTime() - origin;
+            double sec =  Math.Floor(diff.TotalSeconds);
+            return sec;
         }
 
         public static byte[] OSVersion 
@@ -522,8 +566,6 @@ namespace AppAnalytics
 #else
                 try
                 {
-                    // this statement may probably generate wrong data, 
-                    // at least it is not as stable as silverlight version
                     GeographicRegion userRegion = new GeographicRegion();
                     lt3 = userRegion.CodeThreeLetter; 
                 }
@@ -532,5 +574,32 @@ namespace AppAnalytics
                 return new byte[3] { (byte)lt3[0], (byte)lt3[1], (byte)lt3[2] };
             }
         }
+        #region debug_info_logging
+
+        internal static void logSample(GestureData aGD)
+        {
+            if (EventsManager.Instance.DebugLogEnabled)
+            {
+                Debug.WriteLine("Order ID [{0}]", aGD.ActionOrder);
+                Debug.WriteLine("Type [{0} to string -> {1}]", aGD.ActionID, aGD.typeToString() );
+                Debug.WriteLine("Time [{0}", aGD.mTimeObject.ToString());
+                Debug.WriteLine("Position X|Y [{0}|{1}]", aGD.mPosX, aGD.mPosY);
+                Debug.WriteLine("Param1  [{0}]", aGD.Param1asInt32);
+                Debug.WriteLine("Page    [{0}]", Encoding.UTF8.GetString(aGD.ViewID, 0, aGD.ViewIDLenght) );
+                Debug.WriteLine("Element [{0}]", Encoding.UTF8.GetString(aGD.ElementID, 0, aGD.ElementIDLenght));
+                Debug.WriteLine(":::::::::::::::::::::::::::::::::");
+            }
+        }
+
+        internal static void logEvent(AAEvent aEvent)
+        {
+            if (EventsManager.Instance.DebugLogEnabled)
+            {
+                string eventToStr = aEvent.ToString();
+                Debug.WriteLine(eventToStr); 
+            }
+        }
+       
+        #endregion
     }
 }

@@ -446,7 +446,7 @@ namespace AppAnalytics
                     mBufferPageUri = uri.ToString();
                 } 
             }
-            catch (Exception e)
+            catch 
             { /*Debug.WriteLine("curr.page (gp)" + e.ToString());*/ }
         }
 

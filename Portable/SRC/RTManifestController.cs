@@ -187,116 +187,16 @@ namespace AppAnalytics
         {
             mSyncEvent.WaitOne();
             ManifestBuilder.buildSessionManifest(mManifests, _readLock);
-        }
-
-        public async void TryToSendManifestLeter(Dictionary<string,object> list)
-        {
-            await Task.Delay(5000);
-            Sender.tryToSend(list, true);
-        }
-        public async void TryToSendSamplesLeter(Dictionary<string, object> list)
-        {
-            await Task.Delay(5000);
-            Sender.tryToSend(list, false);
-        }
-
+        } 
 
         public bool sendManifest()
-        {
-            Dictionary<string, object> wrapper = new Dictionary<string, object>();
-            var tst = Detector.getSessionID();
-            lock (_readLock)
-            {
-                int counter = 0;
-                foreach ( var kval in mManifests)
-                {
-                    if (counter == 0)
-                    {
-                        wrapper.Add(kval.Key, new MultipartUploader.FileParameter(kval.Value));
-                    }
-                    // temporary solution. it will be changed 
-                    else if (counter < (kMaxTasks+1) && NetworkInterface.GetIsNetworkAvailable())
-                    {
-                        mManifestTaskPool[counter-1] = new Task(() => TryToSendManifestLeter(wrapper));
-                        mManifestTaskPool[counter - 1].Start();
-                    }
-                    counter++;
-                }
-            }
-
-            bool flag = Sender.tryToSend(wrapper, true);
-
-            return flag;
+        { 
+            return Sender.sendManifestsAsDict(mManifests, _readLock);
         }
 
         public bool sendSamples()
         {
-            Dictionary<string, object> wrapper = new Dictionary<string, object>();
-            List<int> count = new List<int>();
-
-            const int kMaxAtOnce = 1024 * 100; // 900 * 17
-            int bts = 0;
-            lock (_readLock)
-            {
-                int counter = 0; // temporary.
-                int index = 0;
-                foreach (var kval in mSamples)
-                {
-
-                    var ms = new MemoryStream();
-
-                    ms.WriteByte((byte)'H');
-                    ms.WriteByte((byte)'A');
-                    ms.WriteByte(ManifestBuilder.kDataPackageFileVersion);
-
-                    var session = Encoding.UTF8.GetBytes(kval.Key);
-                    Debug.Assert(session.Length == 36);
-                    var tst = Detector.getSessionID();
-                    ms.Write(session, 0, Detector.getSessionID().Length);
-
-                    wrapper.Add(kval.Key, new MultipartUploader.FileParameter(ms.ToArray()));
-                    ms.Dispose();
-
-                    foreach (var gst in kval.Value)
-                    {
-                        bts += gst.Length;
-                        if (bts > kMaxAtOnce)
-                        {
-                            break;
-                        }
-                        if (wrapper.ContainsKey(kval.Key))
-                        {
-                            var arr = wrapper[kval.Key] as MultipartUploader.FileParameter;
-                            if (arr != null)
-                            {
-                                arr.File = arr.File.Concat(gst).ToArray();
-                            }
-                            else Debug.WriteLine("logical error: MC sendSamples()");
-                        }
-
-
-                        index++;
-                    }
-                    count.Add(index);
-                    
-                    // temporary solution. it will be changed 
-                    if (counter == 0)
-                    {
-                        bool flag = Sender.tryToSend(wrapper, false, count);
-                    }
-                    else if (counter < (kMaxTasks+1) && NetworkInterface.GetIsNetworkAvailable())
-                    {
-                        mSamplesTaskPool[counter - 1] = new Task(() => TryToSendSamplesLeter(wrapper));
-                        mSamplesTaskPool[counter - 1].Start();
-                    }
-                    counter++;
-                
-                    wrapper.Clear(); 
-                }
-            }
-
-
-            return true;
+            return Sender.sendSamplesDictAsBinary(mSamples, _readLock);
         }
 
         public void deleteManifests(List<string> list)
@@ -321,15 +221,15 @@ namespace AppAnalytics
             }
         }
 
-        public void deletePackages(Dictionary<string, int> map)
+        public void deletePackages(Dictionary< string, List<object> > map)
         {
             lock (_readLock)
             {
                 foreach (var kval in map)
                 {
-                    if (mSamples.ContainsKey(kval.Key) && (mSamples[kval.Key].Count >= kval.Value))
+                    if (mSamples.ContainsKey(kval.Key) && (mSamples[kval.Key].Count >= kval.Value.Count))
                     {
-                        mSamples[kval.Key].RemoveRange(0, kval.Value);
+                        mSamples[kval.Key] = (List<byte[]>)mSamples[kval.Key].Except(kval.Value);
                     }
                 }
                 //mSamples.

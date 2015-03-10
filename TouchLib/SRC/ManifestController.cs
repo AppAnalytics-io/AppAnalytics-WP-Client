@@ -25,7 +25,6 @@ namespace AppAnalytics
 
         protected ManifestController()
         {
-            //
             IsolatedStorageFile iStorage = IsolatedStorageFile.GetUserStoreForApplication();
 
             try
@@ -106,7 +105,7 @@ namespace AppAnalytics
                     }
                     else
                     {
-                        iStorage.DeleteFile("samples+ Defaults.kFileExpKey");
+                        iStorage.DeleteFile("samples" + Defaults.kFileExpKey);
                     }
 
                 }
@@ -135,77 +134,11 @@ namespace AppAnalytics
 
         public bool sendManifest()
         {
-            Dictionary<string, object> wrapper = new Dictionary<string,object>(); 
-
-            lock (_readLock)
-            {
-                foreach ( var kval in mManifests)
-                {
-                    wrapper.Add(kval.Key, new MultipartUploader.FileParameter( kval.Value ));
-                }
-            }
-
-            bool flag = Sender.tryToSend(wrapper, true);
-
-            return flag;
+           return Sender.sendManifestsAsDict(mManifests, _readLock);
         }
         public bool sendSamples()
         {
-            Dictionary<string, object> wrapper = new Dictionary<string, object>();
-            List<int> count = new List<int>();
-
-            const int kMaxAtOnce = 1024*100; // 900 * 17
-            int bts = 0;
-            lock (_readLock)
-            {
-                foreach (var kval in mSamples)
-                {
-                    int index  = 0;
-
-                    var ms = new MemoryStream();
-
-                    ms.WriteByte((byte)'H');
-                    ms.WriteByte((byte)'A');
-                    ms.WriteByte(ManifestBuilder.kDataPackageFileVersion);
-
-                    var session = Encoding.UTF8.GetBytes(kval.Key);
-                    Debug.Assert(session.Length == 36);
-
-                    ms.Write(session, 0, session.Length);
-                    
-                    wrapper.Add( kval.Key, new MultipartUploader.FileParameter(ms.ToArray()) );
-                    ms.Close();
-
-                    foreach (var gst in kval.Value)
-                    {
-                        bts += gst.Length;
-                        if (bts > kMaxAtOnce)
-                        {
-                            break;
-                        }
-                        if (wrapper.ContainsKey(kval.Key))
-                        {
-                            var arr = wrapper[kval.Key] as MultipartUploader.FileParameter;
-                            if (arr != null)
-                            {
-                                arr.File = arr.File.Concat(gst).ToArray();
-                            }
-                            else Debug.WriteLine("logical error: MC sendSamples()");
-                        }
-
-
-                        index ++;
-                    }
-                    count.Add(index);
-
-                    // just for sending ONE session at once. Ill keep old code
-                    // in case if logic changes
-                    break;
-                }
-            }
-            bool flag = Sender.tryToSend(wrapper, false, count);
-
-            return flag;
+            return Sender.sendSamplesDictAsBinary(mSamples, _readLock);
         }
 
         public void deleteManifests(List<string> list)
@@ -242,12 +175,12 @@ namespace AppAnalytics
                     }
                 }
                 //mSamples.
-//                 var copyS = new SerializableDictionary<string, List<byte[]>> (mSamples);
-//                 foreach (var kv in mSamples)
-//                 {
-//                     if (kv.Value.Count == 0) copyS.Remove(kv.Key);
-//                 }
-//                 mSamples = copyS;
+                var copyS = new SerializableDictionary<string, List<byte[]>>(mSamples);
+                foreach (var kv in mSamples)
+                {
+                    if (kv.Value.Count == 0) copyS.Remove(kv.Key);
+                }
+                mSamples = copyS;
             }
         } 
 

@@ -58,16 +58,18 @@ namespace AppAnalytics
         {
             public KeyValuePair<HttpWebRequest, byte[]> RequestDataPair = new KeyValuePair<HttpWebRequest,byte[]>(null, null);
             public AAFileType FileType = AAFileType.FTManifests;
-            public StateObject(KeyValuePair<HttpWebRequest, byte[]> pair, AAFileType aType) 
+            public Dictionary<string, List<object>> ListToDelete = null;
+            public StateObject(KeyValuePair<HttpWebRequest, byte[]> pair, AAFileType aType, Dictionary<string, List<object>> aListToDelete) 
             {
                 RequestDataPair = pair;
                 FileType = aType;
+                ListToDelete = aListToDelete;
             }
         }
 
         private static readonly Encoding encoding = Encoding.UTF8;
 
-        public static bool MultipartFormDataPut(string postUrl, string userAgent, Dictionary<string, object> postParameters )
+        public static bool MultipartFormDataPut(string postUrl, string userAgent, Dictionary<string, object> postParameters, Dictionary<string, List<object>> aListToDelete)
         {
             var d = Guid.NewGuid();
 
@@ -81,14 +83,14 @@ namespace AppAnalytics
             if (fp != null) 
             { aType = fp.FileType; }
 
-            return PutForm(postUrl, userAgent, contentType, formData, aType);
+            return PutForm(postUrl, userAgent, contentType, formData, aType, aListToDelete);
         }
 
-        public static bool MultipartFormDataPut(string postUrl, string userAgent, FileParameter postParameters)
+        public static bool MultipartFormDataPut(string postUrl, string userAgent, FileParameter postParameters, Dictionary<string, List<object>> ListToDelete)
         {
             var dict = new Dictionary<string, object>();
             dict.Add("-", postParameters);
-            return MultipartFormDataPut(postUrl, userAgent, dict);
+            return MultipartFormDataPut(postUrl, userAgent, dict, ListToDelete);
         }
 #if UNIVERSAL
         // winrt version of HttpWebRequest doesn't have UserAgent as header by default.
@@ -114,7 +116,8 @@ namespace AppAnalytics
         }
 #endif
 
-        private static bool PutForm(string postUrl, string userAgent, string contentType, byte[] formData, AAFileType aType)
+        private static bool PutForm(string postUrl, string userAgent, string contentType,
+                                    byte[] formData, AAFileType aType, Dictionary<string, List<object>> ListToDelete)
         {
             HttpWebRequest request = WebRequest.Create(postUrl) as HttpWebRequest;
  
@@ -137,7 +140,7 @@ namespace AppAnalytics
             var st = request.ToString();
 
             var state = new KeyValuePair<HttpWebRequest, byte[]>(request, formData);
-            var stateObj = new StateObject(state, aType);
+            var stateObj = new StateObject(state, aType, ListToDelete);
             var result = request.BeginGetRequestStream(GetRequestStreamCallback, state);
 
             return true;
@@ -245,7 +248,7 @@ namespace AppAnalytics
 
             if (response != null && response.StatusCode == HttpStatusCode.OK)
             {
-                Sender.success(stateObj.FileType);
+                Sender.success(stateObj.FileType, stateObj.ListToDelete);
                 Debug.WriteLine("request succeed => " + FileParameter.typeToString(stateObj.FileType));
             }
             else

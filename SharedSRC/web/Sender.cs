@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Text;
@@ -23,34 +25,30 @@ namespace AppAnalytics
 
         public static readonly object _lockObj = new object();
 
-        static List<string> mManifestToDel = new List<string>();
-        static Dictionary<string, List<object>> mPackagesToDel = new Dictionary<string, List<object>>();
-        static Dictionary<string, List<object>> mEventsToDel = new Dictionary<string, List<object>>();
+        private const bool kSimulateSending = true;
+//         static List<string> mManifestToDel = new List<string>();
+//         static Dictionary<string, List<object>> mPackagesToDel = new Dictionary<string, List<object>>();
+//         static Dictionary<string, List<object>> mEventsToDel = new Dictionary<string, List<object>>();
 
 
-        public static bool tryToSend(AppAnalytics.MultipartUploader.FileParameter aFiles, List<object> aToDel)
+        public static bool tryToSend(AppAnalytics.MultipartUploader.FileParameter aFiles, Dictionary<string, List<object>> aToDel)
         {
             if (NetworkInterface.GetIsNetworkAvailable() == true && aFiles.Count > 0)
             { 
+#if DEBUG
+                if(kSimulateSending)
+                {
+                    Sender.success(aFiles.FileType, aToDel);
+                    Debug.WriteLine("Sender :: Sending simulated. (only for dbg mode)");
+                    return true;
+                }
+#endif
                 bool success = MultipartUploader.MultipartFormDataPut(kGTBaseURL +
                                                                         kGTManifestsURL
                                                                         + Detector.getUDIDString(),
                                                                         "WindowsPhone",
-                                                                        aFiles
-                                                                        );
-                // handling recycle  
-                if (AAFileType.FTManifests != aFiles.FileType)
-                {
-                    mManifestToDel.Add(aFiles.FileName);
-                }
-                else if (AAFileType.FTSamples != aFiles.FileType)
-                {
-                    addRangeToDelList(aFiles.FileName, aToDel, mPackagesToDel); 
-                }
-                else if (AAFileType.FTEvents != aFiles.FileType)
-                { 
-                    addRangeToDelList(aFiles.FileName, aToDel, mEventsToDel); 
-                }  
+                                                                        aFiles,
+                                                                        aToDel);  
 
                 return true;
             }                
@@ -68,35 +66,28 @@ namespace AppAnalytics
             {
                 aDict[name] = aToDel;
             } 
-        }
+        } 
 
-        static public bool IsPreviousOperationComplete
+        public static void success(AAFileType aType, Dictionary<string, List<object> > aToDel)
         {
-            get { return (mManifestToDel.Count + mPackagesToDel.Count) == 0; }
-        }
-
-        public static void success(AAFileType aType)
-        {
+            Debug.Assert (aToDel != null && aToDel.Count != 0, "assertion failed, Sender.success method") ;
+            if (aToDel == null || aToDel.Count == 0) return;
+            // to be tested
             if (aType == AAFileType.FTManifests)
             {
-                ManifestController.Instance.deleteManifests(mManifestToDel);
+                List<string> tmp = aToDel.Keys.ToList();
+                ManifestController.Instance.deleteManifests(tmp);
             }
             else if (aType == AAFileType.FTSamples)
             {
-                ManifestController.Instance.deletePackages(mPackagesToDel);
+                ManifestController.Instance.deletePackages(aToDel);
             }
             else if (aType == AAFileType.FTEvents)
             {
-                EventsManager.Instance.deleteEvents(mEventsToDel);
-                //throw new NotImplementedException();
-                //ManifestController.Instance.dele
-            }
+                EventsManager.Instance.deleteEvents(aToDel);
+                //throw new NotImplementedException(); 
+            } 
 
-            lock (_lockObj)
-            {
-                mManifestToDel.Clear();
-                mPackagesToDel.Clear();
-            }
             if (kTryToSendMore && (ManifestController.Instance.SamplesCount > 10) )
             {
                 ManifestController.Instance.sendSamples();
@@ -105,11 +96,89 @@ namespace AppAnalytics
 
         public static void fail()
         {
-            lock (_lockObj)
+            // should we retry immediately or in regular time
+//             lock (_lockObj)
+//             {
+// 
+//             }
+        }
+
+        #region sending
+
+        public static bool sendSamplesDictAsBinary(Dictionary<string, List<byte[]>> aSamples, object _readLock)
+        {
+            Dictionary<string, object> wrapper = new Dictionary<string, object>();
+            List<object> toDel = new List<object>();
+
+            const int kMaxAtOnce = 1024 * 100; // 900 * 17
+            int bts = 0;
+            lock (_readLock)
             {
-                mManifestToDel.Clear();
-                mPackagesToDel.Clear();
+                foreach (var kval in aSamples)
+                {
+                    toDel.Add(kval.Value);
+
+                    var ms = new MemoryStream();
+
+                    ms.WriteByte((byte)'H');
+                    ms.WriteByte((byte)'A');
+                    ms.WriteByte(ManifestBuilder.kDataPackageFileVersion);
+
+                    var session = Encoding.UTF8.GetBytes(kval.Key);
+                    Debug.Assert(session.Length == 36);
+
+                    ms.Write(session, 0, session.Length);
+
+                    wrapper.Add(kval.Key, new MultipartUploader.FileParameter(ms.ToArray(), kval.Key, AAFileType.FTSamples));
+                    ms.Dispose();
+
+                    foreach (var gst in kval.Value)
+                    {
+                        bts += gst.Length;
+                        if (bts > kMaxAtOnce)
+                        {
+                            break;
+                        }
+
+                        if (wrapper.ContainsKey(kval.Key))
+                        {
+                            var arr = wrapper[kval.Key] as MultipartUploader.FileParameter;
+                            if (arr != null)
+                            {
+                                arr.File = arr.File.Concat(gst).ToArray();
+                            }
+                            else Debug.WriteLine("logical error: MC sendSamples()");
+                        }
+                    }
+
+                }
+                return true;
             }
         }
+
+        public static bool sendManifestsAsDict(Dictionary<string, byte[]> aManifests, object _readLock)
+        {
+            List<object> wrapper = new List<object>();
+
+            lock (_readLock)
+            {
+                foreach (var kval in aManifests)
+                {
+                    wrapper.Add(new MultipartUploader.FileParameter(kval.Value, kval.Key, AAFileType.FTManifests));
+                }
+            }
+
+            foreach (var it in wrapper)
+            {
+                var mpf = it as MultipartUploader.FileParameter;
+                Sender.tryToSend( mpf,
+                    new Dictionary<string, List<object>> { {mpf.FileName, null} });
+            }
+
+            return true;
+        }
+
+        #endregion
+
     }
 }
