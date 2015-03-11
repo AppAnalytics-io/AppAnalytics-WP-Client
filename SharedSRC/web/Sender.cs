@@ -13,23 +13,28 @@ namespace AppAnalytics
 {
     internal static class Sender
     {
-#if DEBUG
-        public const string kGTBaseURL      = "http://www.appanalytics.io/api/v1/"; // @"http://192.168.1.36:6249/api/v1";
-#else
+// #if DEBUG
+//         public const string kGTBaseURL      = "http://www.appanalytics.io/api/v1/"; // @"http://192.168.1.36:6249/api/v1";
+// #else
         public const string kGTBaseURL      = "http://wa-api-cent-us-1.cloudapp.net/api/v1/"; //
-#endif
+/*#endif*/
         public const string kGTManifestsURL = "manifests?UDID=";
         public const string kGTSamplesURL = "samples?UDID=";
+        public const string kGTEventsURL = "events?UDID=";
 
-        private const bool kTryToSendMore = true;
+        private const bool kTryToSendMore = true; 
 
-        public static readonly object _lockObj = new object();
+        private const bool kSimulateSending = false; 
 
-        private const bool kSimulateSending = false;
-//         static List<string> mManifestToDel = new List<string>();
-//         static Dictionary<string, List<object>> mPackagesToDel = new Dictionary<string, List<object>>();
-//         static Dictionary<string, List<object>> mEventsToDel = new Dictionary<string, List<object>>();
-
+        static string typeToURL(AAFileType ft)
+        {
+            if (AAFileType.FTManifests == ft)
+                return kGTManifestsURL;
+            else if (AAFileType.FTSamples == ft)
+                return kGTSamplesURL;
+            else
+                return kGTEventsURL;
+        }
 
         public static bool tryToSend(AppAnalytics.MultipartUploader.FileParameter aFiles, Dictionary<string, List<object>> aToDel)
         {
@@ -44,7 +49,7 @@ namespace AppAnalytics
                 }
 #endif
                 bool success = MultipartUploader.MultipartFormDataPut(kGTBaseURL +
-                                                                        kGTManifestsURL
+                                                                        typeToURL(aFiles.FileType)
                                                                         + Detector.getUDIDString(),
                                                                         "WindowsPhone",
                                                                         aFiles,
@@ -69,7 +74,7 @@ namespace AppAnalytics
         }
 
         public static void success(AAFileType aType, Dictionary<string, List<object> > aToDel)
-        {
+        { 
             Debug.Assert (aToDel != null && aToDel.Count != 0, "assertion failed, Sender.success method") ;
             if (aToDel == null || aToDel.Count == 0) return;
             // to be tested
@@ -80,7 +85,12 @@ namespace AppAnalytics
             }
             else if (aType == AAFileType.FTSamples)
             {
-                ManifestController.Instance.deletePackages(aToDel);
+                try
+                {
+                    ManifestController.Instance.deletePackages(aToDel);
+                }
+                catch (Exception e)
+                { Debug.WriteLine("handled " + e.ToString()); }
             }
             else if (aType == AAFileType.FTEvents)
             {
@@ -95,29 +105,24 @@ namespace AppAnalytics
         }
 
         public static void fail()
-        {
-            // should we retry immediately or in regular time
-//             lock (_lockObj)
-//             {
-//
-//             }
+        { 
         }
 
         #region sending
 
         public static bool sendSamplesDictAsBinary(Dictionary<string, List<byte[]>> aSamples, object _readLock)
-        {
-            Dictionary<string, object> wrapper = new Dictionary<string, object>();
+        { 
             List<object> toDel = new List<object>();
 
             const int kMaxAtOnce = 1024 * 100; // 900 * 17
             int bts = 0;
+
+            var files = new Dictionary<List<object>, MultipartUploader.FileParameter>();
+
             lock (_readLock)
             {
                 foreach (var kval in aSamples)
                 {
-                    toDel.Add(kval.Value);
-
                     var ms = new MemoryStream();
 
                     ms.WriteByte((byte)'H');
@@ -125,35 +130,37 @@ namespace AppAnalytics
                     ms.WriteByte(ManifestBuilder.kDataPackageFileVersion);
 
                     var session = Encoding.UTF8.GetBytes(kval.Key);
-                    Debug.Assert(session.Length == 36);
+                    Debug.Assert(session.Length == 36); 
 
                     ms.Write(session, 0, session.Length);
 
-                    wrapper.Add(kval.Key, new MultipartUploader.FileParameter(ms.ToArray(), kval.Key, AAFileType.FTSamples));
-                    ms.Dispose();
+                    var file = new MultipartUploader.FileParameter(ms.ToArray(), kval.Key, AAFileType.FTSamples);
+                    ms.Dispose(); 
 
-                    foreach (var gst in kval.Value)
+                    foreach (var byteArr in kval.Value)
                     {
-                        bts += gst.Length;
+                        bts += byteArr.Length;
+                        toDel.Add(byteArr);
+
                         if (bts > kMaxAtOnce)
                         {
                             break;
-                        }
-
-                        if (wrapper.ContainsKey(kval.Key))
-                        {
-                            var arr = wrapper[kval.Key] as MultipartUploader.FileParameter;
-                            if (arr != null)
-                            {
-                                arr.File = arr.File.Concat(gst).ToArray();
-                            }
-                            else Debug.WriteLine("logical error: MC sendSamples()");
-                        }
+                        } 
+                        file.File = file.File.Concat(byteArr).ToArray(); 
                     }
 
+                    files.Add(toDel ,file);
+                    
+                    toDel = new List<object>(); 
                 }
-                return true;
             }
+
+            foreach (var f in files)
+            {
+                Sender.tryToSend(f.Value, new Dictionary<string, List<object>> { { f.Value.FileName, f.Key } });
+            }
+
+            return true;
         }
 
         public static bool sendManifestsAsDict(Dictionary<string, byte[]> aManifests, object _readLock)

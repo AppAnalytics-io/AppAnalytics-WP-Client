@@ -20,7 +20,7 @@ namespace AppAnalytics
     {
         public const UInt32 kMaxLogEventStrLen   = 512;
         public const UInt32 kMaxDispatchInterval = 3600;
-        public const UInt32 kMinDispatchInterval = 3600;
+        public const UInt32 kMinDispatchInterval = 10;
         public const UInt32 kDefDispatchInterval = 120;
 
         public const UInt32 kMaxPacketSize = 1024*100;

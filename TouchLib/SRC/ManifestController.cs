@@ -111,7 +111,6 @@ namespace AppAnalytics
                 }
                 catch 
                 {
-                    //Debug.WriteLine(e.Message + "\n Cannot create file.");
                     return;
                 }
             }
@@ -137,8 +136,8 @@ namespace AppAnalytics
            return Sender.sendManifestsAsDict(mManifests, _readLock);
         }
         public bool sendSamples()
-        {
-            return Sender.sendSamplesDictAsBinary(mSamples, _readLock);
+        { 
+            return Sender.sendSamplesDictAsBinary( mSamples, _readLock);
         }
 
         public void deleteManifests(List<string> list)
@@ -167,18 +166,23 @@ namespace AppAnalytics
         {
             lock (_readLock)
             {
+                var tmp = new SerializableDictionary<string, List<byte[]>>();
+                List<byte[]> tmp2 = new List<byte[]>(); 
                 foreach (var kval in map)
                 {
                     if (mSamples.ContainsKey(kval.Key) && (mSamples[kval.Key].Count >= kval.Value.Count))
                     {
-                        mSamples[kval.Key] = (List<byte[]>) mSamples[kval.Key].Except(kval.Value);
+                        mSamples[kval.Key] = mSamples[kval.Key].Except(kval.Value).Cast<byte[]>().ToList();
+                       // g = kval.Key;
                     }
-                }
+                } 
+                //mSamples[g] = tmp2;
                 //mSamples.
                 var copyS = new SerializableDictionary<string, List<byte[]>>(mSamples);
                 foreach (var kv in mSamples)
                 {
-                    if (kv.Value.Count == 0) copyS.Remove(kv.Key);
+                    if (kv.Value.Count == 0) 
+                        copyS.Remove(kv.Key);
                 }
                 mSamples = copyS;
             }

@@ -330,8 +330,7 @@ namespace AppAnalytics
                 info.Add("Destination URI", e.Uri.ToString());
                 info.Add("Source URI", uri);
 
-                EventsManager.Instance.pushEvent("Navigation", info);
-                EventsManager.Instance.store();
+                EventsManager.Instance.pushEvent("Navigation", info); 
             }
         }
         static async void initNavigationEvent()
@@ -408,7 +407,7 @@ namespace AppAnalytics
 
             //EventsManager.Instance.testSending();
             EventsManager.Instance.DebugLogEnabled = true;
-            EventsManager.Instance.DispatchInterval = 11;
+            EventsManager.Instance.DispatchInterval = 10;
 
             //var tmr = new Timer(testException, null, 10, Timeout.Infinite);
             // TESTING >
@@ -425,6 +424,7 @@ namespace AppAnalytics
                 mApiKey.Initialize();
             }
 
+
             if (null == mWorker)
             {
                 var date = DateTime.Now;
@@ -432,7 +432,12 @@ namespace AppAnalytics
                 DateTime origin = new DateTime(1970, 1, 1, 0, 0, 0, 0);
                 TimeSpan diff = date.ToUniversalTime() - origin;
                 mSessionStartTime = Math.Floor(diff.TotalSeconds);
+
                 sendManifest();
+//                 if (ManifestController.Instance.SamplesCount > 0)
+//                 {
+//                     ManifestController.Instance.sendSamples();
+//                 }
 #if SILVERLIGHT
                 mWorker = new Thread(updateLoop);
                 mWorker.IsBackground = true;

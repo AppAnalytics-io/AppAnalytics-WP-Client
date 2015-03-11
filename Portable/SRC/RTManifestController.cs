@@ -221,7 +221,7 @@ namespace AppAnalytics
             }
         }
 
-        public void deletePackages(Dictionary< string, List<object> > map)
+        public void deletePackages(Dictionary<string, List<object>> map)
         {
             lock (_readLock)
             {
@@ -229,11 +229,14 @@ namespace AppAnalytics
                 {
                     if (mSamples.ContainsKey(kval.Key) && (mSamples[kval.Key].Count >= kval.Value.Count))
                     {
-                        mSamples[kval.Key] = (List<byte[]>)mSamples[kval.Key].Except(kval.Value);
+                        //mSamples[kval.Key] = (List<byte[]>)
+                        var tmp = kval.Value.Cast<byte[]>().ToList();
+
+                        mSamples[kval.Key] = (List<byte[]>)mSamples[kval.Key].Except(tmp).Cast<byte[]>().ToList();
                     }
                 }
                 //mSamples.
-                var copyS = new SerializableDictionary<string, List<byte[]>> (mSamples);
+                var copyS = new SerializableDictionary<string, List<byte[]>>(mSamples);
                 foreach (var kv in mSamples)
                 {
                     if (kv.Value.Count == 0) copyS.Remove(kv.Key);

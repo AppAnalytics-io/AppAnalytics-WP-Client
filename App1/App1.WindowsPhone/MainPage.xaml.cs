@@ -28,7 +28,7 @@ namespace App1
         {
             this.InitializeComponent();
             this.AddHandler(UIElement.PointerMovedEvent, new PointerEventHandler(pointerMoved), true);
-            AppAnalytics.API.init("aunax1tKfUkuySLKkqaDAZxLEL1k5TpF");
+            AppAnalytics.API.init("2miKqKyeGhoQgvIImX9UfAf17fuwnyvP");
             this.NavigationCacheMode = NavigationCacheMode.Required;
         }
 

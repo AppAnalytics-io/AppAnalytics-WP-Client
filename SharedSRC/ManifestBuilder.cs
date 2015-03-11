@@ -9,6 +9,7 @@ namespace AppAnalytics
 {
     using ManifestsDict = Dictionary<string, byte[]>;
     using SamplesDIct = SerializableDictionary<string, List<byte[]>>;
+    using System.Diagnostics;
 
     static class ManifestBuilder
     {
@@ -25,24 +26,27 @@ namespace AppAnalytics
 
         static public void buildDataPackage(GestureData aData, SamplesDIct mSamples, object _lock)
         {
-            mPackage.WriteByte((byte)'<');
-
-            writeArray(mPackage, aData.ActionOrder);
-            mPackage.WriteByte(aData.ActionID);
-            writeArray(mPackage, aData.ActionTime);
-            writeArray(mPackage, aData.PosX);
-            writeArray(mPackage, aData.PosY);
-            writeArray(mPackage, aData.Param1);
-
-            writeArray(mPackage, BitConverter.GetBytes(aData.ViewIDLenght));
-            writeArray(mPackage, aData.ViewID);
-            writeArray(mPackage, BitConverter.GetBytes(aData.ElementIDLenght));
-            writeArray(mPackage, aData.ElementID);
-
-            mPackage.WriteByte((byte)'>');
-
             lock (_lock)
             {
+                mPackage.WriteByte((byte)'<');
+
+                writeArray(mPackage, aData.ActionOrder);
+                mPackage.WriteByte(aData.ActionID);
+                writeArray(mPackage, aData.ActionTime);
+                writeArray(mPackage, aData.PosX);
+                writeArray(mPackage, aData.PosY);
+                writeArray(mPackage, aData.Param1);
+                Debug.Assert(aData.Param1.Length == 4);
+
+                writeArray(mPackage, BitConverter.GetBytes(aData.ViewIDLenght));
+                var str = Encoding.UTF8.GetString(aData.ViewID, 0, aData.ViewIDLenght);
+                writeArray(mPackage, aData.ViewID);
+                writeArray(mPackage, BitConverter.GetBytes(aData.ElementIDLenght));
+                var str2 = Encoding.UTF8.GetString(aData.ElementID, 0, aData.ElementIDLenght);
+                writeArray(mPackage, aData.ElementID);
+
+                mPackage.WriteByte((byte)'>');
+
                 var tst = Detector.getSessionIDStringWithDashes();
                 if (mSamples.ContainsKey(Detector.getSessionIDStringWithDashes()))
                 {
@@ -53,43 +57,44 @@ namespace AppAnalytics
                     mSamples[Detector.getSessionIDStringWithDashes()] = new List<byte[]>();
                     mSamples[Detector.getSessionIDStringWithDashes()].Add(mPackage.ToArray());
                 }
-            } 
-            mPackage.Dispose(); 
+                mPackage.Dispose();
 
-            mPackage = new MemoryStream();
+                mPackage = new MemoryStream();
+            } 
         }
 
         static public void buildSessionManifest(ManifestsDict mManifests, object _lock)
         {
-            mManifestStream.WriteByte((byte)'<');
-            mManifestStream.WriteByte(kSessionManifestFileVersion);
-            var tst = Detector.getSessionID();
-            writeArray(mManifestStream, Detector.getSessionID());
-
-            writeArray(mManifestStream, Detector.getSessionStartDate());
-
-            writeArray(mManifestStream, Detector.getSessionEndDate());
-
-            writeArray(mManifestStream, Detector.getUDID32()); // 90 != 85 => cropping
-
-            writeArray(mManifestStream, Detector.getResolutionX());
-            writeArray(mManifestStream, Detector.getResolutionY());
-
-            mManifestStream.WriteByte(Detector.ApiVersion);
-
-            writeArray(mManifestStream, Detector.ApiKey);
-            writeArray(mManifestStream, Detector.AppVersion);
-            writeArray(mManifestStream, Detector.OSVersion);
-            writeArray(mManifestStream, Detector.SystemLocale);
-
-            mManifestStream.WriteByte((byte)'>');
             lock (_lock)
             {
+                mManifestStream.WriteByte((byte)'<');
+                mManifestStream.WriteByte(kSessionManifestFileVersion);
+                var tst = Detector.getSessionID();
+                writeArray(mManifestStream, Detector.getSessionID());
+
+                writeArray(mManifestStream, Detector.getSessionStartDate());
+
+                writeArray(mManifestStream, Detector.getSessionEndDate());
+
+                writeArray(mManifestStream, Detector.getUDID32()); // 90 != 85 => cropping
+
+                writeArray(mManifestStream, Detector.getResolutionX());
+                writeArray(mManifestStream, Detector.getResolutionY());
+
+                mManifestStream.WriteByte(Detector.ApiVersion);
+
+                writeArray(mManifestStream, Detector.ApiKey);
+                writeArray(mManifestStream, Detector.AppVersion);
+                writeArray(mManifestStream, Detector.OSVersion);
+                writeArray(mManifestStream, Detector.SystemLocale);
+
+                mManifestStream.WriteByte((byte)'>');
                 mManifests[Detector.getSessionIDString()] = mManifestStream.ToArray();
+
+                var t = mManifestStream.ToArray();
+                mManifestStream.Dispose();
+                mManifestStream = new MemoryStream();
             }
-            var t = mManifestStream.ToArray();
-            mManifestStream.Dispose();
-            mManifestStream = new MemoryStream();
         }
     }
 }

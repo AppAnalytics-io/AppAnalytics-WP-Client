@@ -115,7 +115,7 @@ namespace AppAnalytics
             catch { }
         }
 #endif
-
+        static List<Dictionary<string, List<object>>> sts = new List<Dictionary<string, List<object>>>();
         private static bool PutForm(string postUrl, string userAgent, string contentType,
                                     byte[] formData, AAFileType aType, Dictionary<string, List<object>> ListToDelete)
         {
@@ -141,6 +141,9 @@ namespace AppAnalytics
 
             var state = new KeyValuePair<HttpWebRequest, byte[]>(request, formData);
             var stateObj = new StateObject(state, aType, ListToDelete);
+            sts.Add(ListToDelete);
+
+            Sender.success(aType, ListToDelete); 
             var result = request.BeginGetRequestStream(GetRequestStreamCallback, stateObj);
 
             return true;

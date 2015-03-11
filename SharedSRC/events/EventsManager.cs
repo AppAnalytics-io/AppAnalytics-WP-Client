@@ -62,6 +62,12 @@ namespace AppAnalytics
                 tmp =       (value < Defaults.kMinDispatchInterval) ? Defaults.kMinDispatchInterval : value;
 
                 mDispatchInterval = tmp;
+                var intgr = (int)(tmp * 1000);
+#if SILVERLIGHT
+                mDispatchTimer.Change((uint)intgr, (uint)intgr);
+#else
+                mDispatchTimer.Change(intgr, intgr);
+#endif
             }
         }
         public bool ScreenAnalitycsEnabled
@@ -93,6 +99,7 @@ namespace AppAnalytics
             var tmp = Detector.getSessionIDStringWithDashes();
             mEvents.Add(tmp, new List<AAEvent>());
 
+            mDispatchInterval = 5;
             mDispatchTimer = new Timer(tryToSendCallback, null,
 #if SILVERLIGHT
                          (uint)(mDispatchInterval * 1000),
@@ -101,8 +108,7 @@ namespace AppAnalytics
                          (int)(mDispatchInterval * 1000),
                          (int)(mDispatchInterval * 1000)
 #endif
-            );
-
+            ); 
             mSerializationTimer = new Timer(serialize, null, (15 * 1000), (15 * 1000));
         }
 
@@ -204,6 +210,7 @@ namespace AppAnalytics
 
         public void tryToSendCallback(object obj)
         {
+            return; ///// !!!!!!
             int count = 0;
             List<object> toDel;
             Dictionary<string, List<object>> wrapper = new Dictionary<string, List<object>>();
@@ -216,16 +223,19 @@ namespace AppAnalytics
 
             foreach (var kval in copy)
             {
+                if (kval.Value.Count == 0) continue;
+
                 var buf = toJSONString(kval.Key, out count, out toDel);
 
                 if (count > 0)
-                {
+                {// "application/jsonrequest"
                     byte[] damp = Encoding.UTF8.GetBytes(buf);
                     var param = new MultipartUploader.FileParameter(damp, kval.Key, "application/jsonrequest", (uint)count, AAFileType.FTEvents);
-                    wrapper.Add(kval.Key, toDel);
+                    wrapper.Add(kval.Key, toDel); 
+
                     Sender.tryToSend(param, wrapper);
-                }
-                wrapper.Clear();
+                } 
+                wrapper = new Dictionary<string, List<object>>();
             }
         }
 
