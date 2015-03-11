@@ -19,7 +19,7 @@ using Microsoft.Phone.Controls;
 using Microsoft.Xna.Framework.Input.Touch;
 using System.Windows.Navigation;
 using Windows.ApplicationModel;
-using Microsoft.Phone.Shell; 
+using Microsoft.Phone.Shell;
 #else
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -97,13 +97,13 @@ namespace AppAnalytics
         {
             set { EventsManager.Instance.TransactionAnaliticsEnabled = value; }
             get { return EventsManager.Instance.TransactionAnaliticsEnabled; }
-        }    
+        }
     }
 
     internal static class Detector
-    { 
+    {
         static readonly object _lockObject = new object();
-        
+
         //members & properties /////////////////////////////////////////////////
         private static UUID.UDIDGen mIDGen = UUID.UDIDGen.Instance;
         private static int mUIThreadID = -1;
@@ -144,7 +144,7 @@ namespace AppAnalytics
 
             //double h = (int)Math.Ceiling(content.ActualHeight * scale);
             double w = (int)Math.Ceiling(content.ActualWidth * scale);
-            
+
             return BitConverter.GetBytes( w );
         }
 
@@ -250,7 +250,7 @@ namespace AppAnalytics
         static internal string getSessionIDString()
         {
             var raw = mIDGen.SessionIDRaw;
-            
+
             return raw.ToString("N");
         }
 
@@ -261,7 +261,7 @@ namespace AppAnalytics
 
         static private bool mFirstLaunch = true;
         static private void getCurent()
-        { 
+        {
 #if SILVERLIGHT
             var currentPage = ((PhoneApplicationFrame)Application.Current.RootVisual).Content as PhoneApplicationPage;
             var uri = currentPage.NavigationService.CurrentSource;
@@ -299,9 +299,9 @@ namespace AppAnalytics
 #if SILVERLIGHT
         static internal void exceptionsLogger(object sender, ApplicationUnhandledExceptionEventArgs e)
         {
-            Dictionary<string, string> info = new Dictionary<string, string>(); 
-           
-            info.Add("Сall stack", e.ExceptionObject.StackTrace);
+            Dictionary<string, string> info = new Dictionary<string, string>();
+
+            info.Add("Call stack", e.ExceptionObject.StackTrace);
             info.Add("Exception", e.ExceptionObject.ToString());
             info.Add("Type", e.ExceptionObject.GetType().Name);
 
@@ -348,8 +348,8 @@ namespace AppAnalytics
 #else
         static internal void exceptionsLogger(object sender, UnhandledExceptionEventArgs e)
         {
-            Dictionary<string, string> info = new Dictionary<string, string>(); 
-           
+            Dictionary<string, string> info = new Dictionary<string, string>();
+
             info.Add("Сall stack", e.Exception.StackTrace);
             info.Add("Exception", e.Exception.ToString());
             info.Add("Type", e.Exception.GetType().Name);
@@ -368,16 +368,16 @@ namespace AppAnalytics
             {
                 prev = mPreviousType;
             }
-            
+
             {
                 var t = System.Enum.GetName(typeof(NavigationMode), e.NavigationMode);
                 info.Add("Navigation Mode", t);
                 info.Add("Destination Type", e.SourcePageType.Name);
                 info.Add("Source Type", prev);
 
-                EventsManager.Instance.pushEvent("Navigation", info); 
+                EventsManager.Instance.pushEvent("Navigation", info);
             }
-        } 
+        }
 #endif
 
         static internal void init(string aApiKey)
@@ -393,10 +393,10 @@ namespace AppAnalytics
             PhoneApplicationService.Current.Deactivated += onAppSuspend;
 #else
             RTRecognizer.Instance.init();
-            current.UnhandledException += exceptionsLogger; ; 
+            current.UnhandledException += exceptionsLogger; ;
             var view = Window.Current.Content as Frame;
-            view.Navigated += navigating; 
-#endif 
+            view.Navigated += navigating;
+#endif
             EventsManager.Instance.init();
             CoreApplication.Exiting += onAppExit;
             CoreApplication.Suspending += onAppSuspend;
@@ -406,16 +406,16 @@ namespace AppAnalytics
             //EventsManager.Instance.testSerialization();
             //EventsManager.Instance.testSerializationUsingMemoryStream()
 
-            //EventsManager.Instance.testSending(); 
+            //EventsManager.Instance.testSending();
             EventsManager.Instance.DebugLogEnabled = true;
             EventsManager.Instance.DispatchInterval = 11;
 
-            //var tmr = new Timer(testException, null, 10, Timeout.Infinite); 
+            //var tmr = new Timer(testException, null, 10, Timeout.Infinite);
             // TESTING >
 
             var tsk = new Task(mIDGen.init);
             tsk.Start();
-            tsk.Wait(); 
+            tsk.Wait();
 
             mApiKey = Encoding.UTF8.GetBytes(aApiKey);
             if (mApiKey.Length != 32)
@@ -468,7 +468,7 @@ namespace AppAnalytics
         {
 #if SILVERLIGHT
             double tstDif = Recognizer.getNow() - Recognizer.Instance.PrevTapOccured;
-            
+
             if ((tstDif > Recognizer.Instance.TimeForTap) && (Recognizer.Instance.TapsInRow > 0))
             {
                 //Debug.WriteLine(Recognizer.Instance.TapsInRow + " < taps with > " + Recognizer.Instance.LastTapFingers);
@@ -542,7 +542,7 @@ namespace AppAnalytics
                     //Debug.WriteLine("hit");
                     lock (_lockObject)
                     {
-                        mNavigationOccured = false; 
+                        mNavigationOccured = false;
                         //Recognizer.Instance.createGesture(GestureID.Navigation);
                     }
                 }
@@ -555,7 +555,7 @@ namespace AppAnalytics
         }
 
         internal static byte[] getSessionEndDate()
-        { 
+        {
             double sec = 0;//Math.Floor(diff.TotalSeconds);
 
             return BitConverter.GetBytes(sec);
@@ -600,7 +600,7 @@ namespace AppAnalytics
                 {
                     return "";
                 }
-            } 
+            }
 #else
             try
             {
@@ -612,16 +612,16 @@ namespace AppAnalytics
 #endif
         }
 
-        internal static byte[] AppVersion 
+        internal static byte[] AppVersion
         {
-            get 
+            get
             {
                 byte[] bts = new byte[16];
                 bts.Initialize();
 
                 string[] v4 = getAppVersion().Split('.');
 
-                if (v4.Length != 4) 
+                if (v4.Length != 4)
                 {
                     return bts; //16*0
                 }
@@ -643,12 +643,12 @@ namespace AppAnalytics
 //         internal static byte[] getBytes(string str)
 //         {
 //             byte[] bytes = new byte[str.Length ];
-// 
+//
 //             for (int i = 0; i < str.Length; ++i )
 //             {
 //                 bytes[i] = (byte)str[i];
 //             }
-// 
+//
 //             return bytes;
 //         }
 
@@ -667,9 +667,9 @@ namespace AppAnalytics
             return sec;
         }
 
-        internal static byte[] OSVersion 
+        internal static byte[] OSVersion
         {
-            get 
+            get
             {
                 StringBuilder sb = new StringBuilder();
 #if SILVERLIGHT
@@ -684,27 +684,27 @@ namespace AppAnalytics
                 System.Buffer.BlockCopy(toBytes(vs.Build), 0, buffer, 8, toBytes(vs.Build).Length);
                 System.Buffer.BlockCopy(toBytes(vs.Revision), 0, buffer, 12, toBytes(vs.Revision).Length);
 
-                return buffer;  
+                return buffer;
             }
         }
 
-        internal static byte[] SystemLocale 
+        internal static byte[] SystemLocale
         {
             get
             {
-                string lt3 = "USA"; 
+                string lt3 = "USA";
 #if SILVERLIGHT
                 CultureInfo cult = Thread.CurrentThread.CurrentCulture;
-                RegionInfo rf = new RegionInfo(cult.ToString());   
+                RegionInfo rf = new RegionInfo(cult.ToString());
                 lt3 = Converter.convertToThreeLetterCode( rf.TwoLetterISORegionName );
 #else
                 try
                 {
                     GeographicRegion userRegion = new GeographicRegion();
-                    lt3 = userRegion.CodeThreeLetter; 
+                    lt3 = userRegion.CodeThreeLetter;
                 }
                 catch { }
-#endif          
+#endif
                 return new byte[3] { (byte)lt3[0], (byte)lt3[1], (byte)lt3[2] };
             }
         }

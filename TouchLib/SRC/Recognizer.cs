@@ -15,6 +15,7 @@ using System.Windows.Media;
 using Microsoft.Xna.Framework;
 using AppAnalytics.ShakeGestures;
 using System.Threading;
+using System.Windows.Controls;
 
 namespace AppAnalytics
 {
@@ -162,6 +163,19 @@ namespace AppAnalytics
                 new EventHandler<ShakeGestureEventArgs>(instanceShakeGesture);
             ShakeGesturesHelper.Instance.MinimumRequiredMovesForShake = 4;
             ShakeGesturesHelper.Instance.Active = true;
+        }
+
+        void buttonDown(object obj, MouseButtonEventArgs e)
+        {
+            lock (_lockObject)
+            {
+                var ctrl = e.OriginalSource as Control;
+                var framework = e.OriginalSource as FrameworkElement;
+                if (null != ctrl)
+                    mBufferElementUri = ctrl.Name;
+                else if (null != framework)
+                    mBufferElementUri = framework.Name;
+            }
         }
 
         void instanceShakeGesture(object sender, ShakeGestureEventArgs e)
@@ -356,10 +370,7 @@ namespace AppAnalytics
             try
             {
                 var currentPage = ((PhoneApplicationFrame)Application.Current.RootVisual).Content as PhoneApplicationPage;
-               // PhoneApplicationFrame g; g.con
-               // currentPage.Content
-                //var uri = currentPage.
-                //currentPage.Children;
+               
                 for (int i = 0; i < VisualTreeHelper.GetChildrenCount(currentPage); i++)
                 {
                     DependencyObject child = VisualTreeHelper.GetChild(currentPage, i);
@@ -604,9 +615,22 @@ namespace AppAnalytics
 
             return h;
         }
+
+        //tmp
+        bool handlerAdded = false;
         // MAIN CALLBACK //////////////////////////////////////////////////////////////////////////////////////////
         void touchFrameReported(object sender, TouchFrameEventArgs e)
         {
+            var content = ((PhoneApplicationFrame)Application.Current.RootVisual).Content as PhoneApplicationPage;
+            TouchPointCollection tpc = e.GetTouchPoints(content);
+            int fingers = tpc.Count;
+
+            if (!handlerAdded)
+            {
+                var currentPage = content;
+                currentPage.Content.MouseLeftButtonDown += buttonDown;
+                handlerAdded = true;
+            }
             // insens. processing
             // writing gesture
             double curTime = convertToUnixTimestamp(DateTime.Now);
@@ -616,10 +640,7 @@ namespace AppAnalytics
                 mTimeStamp = curTime;
                 return;
             }
-
-            var content = ((PhoneApplicationFrame)Application.Current.RootVisual).Content as PhoneApplicationPage;
-            TouchPointCollection tpc = e.GetTouchPoints(content);
-            int fingers = tpc.Count;
+;
 
             handleMovement(tpc);
             updateStoredValues(tpc);
@@ -879,7 +900,7 @@ namespace AppAnalytics
                 mPositionX = flickPoint.Position.X;
                 mPositionY = flickPoint.Position.Y;
 
-                Deployment.Current.Dispatcher.BeginInvoke(() => getElementUri());
+                //Deployment.Current.Dispatcher.BeginInvoke(() => getElementUri());
                 mTouchStarted = getNow();
             }
 

@@ -132,8 +132,8 @@ namespace AppAnalytics
             request.UserAgent = userAgent;
             request.ContentLength = formData.Length;
 #else
-            SetHeader(request, "UserAgent", userAgent);
-            SetHeader(request, "ContentLength", formData.Length.ToString());
+//             SetHeader(request, "UserAgent", userAgent);
+//             SetHeader(request, "ContentLength", formData.Length.ToString());
 #endif
             request.CookieContainer = new CookieContainer();
 
@@ -225,7 +225,7 @@ namespace AppAnalytics
                 streamRead = new StreamReader(streamResponse);
 
                 string responseString = streamRead.ReadToEnd();
-                //Debug.WriteLine("[response:]" + responseString);
+                Debug.WriteLine("[response:]" + responseString);
             }
             catch (Exception e)
             {
