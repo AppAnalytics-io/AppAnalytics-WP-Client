@@ -121,6 +121,12 @@ namespace AppAnalytics
 
         public void pushEvent(string aDescription, Dictionary<string, string> aParams)
         {
+            lock (_lockObject)
+            {
+                if (mEvents.Count > 20000)
+                    return;
+            }
+
             if (aDescription.Length > Defaults.kMaxLogEventStrLen)
             {
                 aDescription = aDescription.Substring(0, (int)Defaults.kMaxLogEventStrLen);
@@ -210,7 +216,6 @@ namespace AppAnalytics
 
         public void tryToSendCallback(object obj)
         {
-            return; ///// !!!!!!
             int count = 0;
             List<object> toDel;
             Dictionary<string, List<object>> wrapper = new Dictionary<string, List<object>>();
@@ -230,7 +235,7 @@ namespace AppAnalytics
                 if (count > 0)
                 {// "application/jsonrequest"
                     byte[] damp = Encoding.UTF8.GetBytes(buf);
-                    var param = new MultipartUploader.FileParameter(damp, kval.Key, "application/jsonrequest", (uint)count, AAFileType.FTEvents);
+                    var param = new MultipartUploader.FileParameter(damp, kval.Key, "application/json", (uint)count, AAFileType.FTEvents);
                     wrapper.Add(kval.Key, toDel); 
 
                     Sender.tryToSend(param, wrapper);

@@ -123,6 +123,12 @@ namespace AppAnalytics
 
         public void buildDataPackage(GestureData aData)
         {
+            int count = 0;
+            lock (_readLock)
+            {
+                count = mSamples.Count;
+            }
+            if (count > 10000) return;
             ManifestBuilder.buildDataPackage(aData, mSamples, _readLock);
         }
 
@@ -136,7 +142,7 @@ namespace AppAnalytics
            return Sender.sendManifestsAsDict(mManifests, _readLock);
         }
         public bool sendSamples()
-        { 
+        {
             return Sender.sendSamplesDictAsBinary( mSamples, _readLock);
         }
 
@@ -172,12 +178,9 @@ namespace AppAnalytics
                 {
                     if (mSamples.ContainsKey(kval.Key) && (mSamples[kval.Key].Count >= kval.Value.Count))
                     {
-                        mSamples[kval.Key] = mSamples[kval.Key].Except(kval.Value).Cast<byte[]>().ToList();
-                       // g = kval.Key;
+                        mSamples[kval.Key] = mSamples[kval.Key].Except(kval.Value).Cast<byte[]>().ToList(); 
                     }
-                } 
-                //mSamples[g] = tmp2;
-                //mSamples.
+                }  
                 var copyS = new SerializableDictionary<string, List<byte[]>>(mSamples);
                 foreach (var kv in mSamples)
                 {

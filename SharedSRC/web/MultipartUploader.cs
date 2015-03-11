@@ -142,8 +142,10 @@ namespace AppAnalytics
             var state = new KeyValuePair<HttpWebRequest, byte[]>(request, formData);
             var stateObj = new StateObject(state, aType, ListToDelete);
             sts.Add(ListToDelete);
-
-            Sender.success(aType, ListToDelete); 
+            //
+            Sender.success(aType, ListToDelete);
+            return true;
+            //
             var result = request.BeginGetRequestStream(GetRequestStreamCallback, stateObj);
 
             return true;
