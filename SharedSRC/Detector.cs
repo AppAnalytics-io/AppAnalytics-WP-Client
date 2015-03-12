@@ -75,7 +75,7 @@ namespace AppAnalytics
             get { return EventsManager.Instance.ExceptionAnalyticsEnabled; }
         }
         /// <summary>
-        /// Enable or disable exception analytics
+        /// Enable or disable screen analytics
         /// </summary>
         public static bool ScreenAnaluticsEnabled
         {
@@ -300,12 +300,11 @@ namespace AppAnalytics
         static internal void exceptionsLogger(object sender, ApplicationUnhandledExceptionEventArgs e)
         {
             Dictionary<string, string> info = new Dictionary<string, string>();
-
-            info.Add("Call stack", e.ExceptionObject.StackTrace);
-            info.Add("Exception", e.ExceptionObject.ToString());
-            info.Add("Type", e.ExceptionObject.GetType().Name);
-
-            EventsManager.Instance.pushEvent("UnhandledException", info);
+        
+            info.Add(Defaults.ExceptionTxt.kStrCallStack, e.ExceptionObject.StackTrace);
+            info.Add(Defaults.ExceptionTxt.kStrReason, e.ExceptionObject.ToString());
+            info.Add(Defaults.ExceptionTxt.kStrType, e.ExceptionObject.GetType().Name); 
+            EventsManager.Instance.pushEvent(Defaults.ExceptionTxt.kStrEventName, info);
             EventsManager.Instance.store();
             Debug.WriteLine("Unhanded exception.");
         }
@@ -349,11 +348,11 @@ namespace AppAnalytics
         {
             Dictionary<string, string> info = new Dictionary<string, string>();
 
-            info.Add("Call Stack Trace", e.Exception.StackTrace);
-            info.Add("Reason", e.Exception.ToString());
-            info.Add("Name", e.Exception.GetType().Name);
+            info.Add(Defaults.ExceptionTxt.kStrCallStack, e.Exception.StackTrace);
+            info.Add(Defaults.ExceptionTxt.kStrReason, e.Exception.ToString());
+            info.Add(Defaults.ExceptionTxt.kStrType, e.Exception.GetType().Name);
 
-            EventsManager.Instance.pushEvent("Uncaught Exception", info);
+            EventsManager.Instance.pushEvent(Defaults.ExceptionTxt.kStrEventName, info);
             EventsManager.Instance.store();
             Debug.WriteLine("Unhanded exception.");
         }
@@ -377,6 +376,14 @@ namespace AppAnalytics
 
                 EventsManager.Instance.pushEvent(Defaults.NavigationTxt.kStrEventName, info);
             }
+        }
+#endif
+
+#if DEBUG
+        static async void pushTestEvents()
+        {
+            await Task.Delay(3000);
+            EventsManager.Instance.pushEvent("some equal events");
         }
 #endif
 
@@ -407,8 +414,16 @@ namespace AppAnalytics
             //EventsManager.Instance.testSerializationUsingMemoryStream()
 
             //EventsManager.Instance.testSending();
+#if DEBUG //Temporary
             EventsManager.Instance.DebugLogEnabled = true;
             EventsManager.Instance.DispatchInterval = 10;
+            EventsManager.Instance.pushEvent("custom event 1");
+            EventsManager.Instance.pushEvent("custom event 2");
+            EventsManager.Instance.pushEvent("some equal events");
+            EventsManager.Instance.pushEvent("some equal events");
+            var navigationTask = new Task(pushTestEvents);
+            navigationTask.Start();
+#endif
 
             //var tmr = new Timer(testException, null, 10, Timeout.Infinite);
             // TESTING >

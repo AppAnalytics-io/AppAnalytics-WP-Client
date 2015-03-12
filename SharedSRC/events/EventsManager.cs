@@ -209,7 +209,6 @@ namespace AppAnalytics
 
             var session = Detector.getSessionIDStringWithDashes();
             sb.Append(string.Format("],\"SessionID\":\"{0}\"}}", session));
-            //Debug.WriteLine("JSON :: :: :: \n" + sb.ToString());
 
             return sb.ToString();
         }
@@ -365,8 +364,7 @@ namespace AppAnalytics
             string result = "";
             using (var streamReader = new StreamReader(bw))
             {
-                result = streamReader.ReadToEnd();
-                //Debug.WriteLine( result );
+                result = streamReader.ReadToEnd(); 
             }
             Debug.Assert(mdict.Values == tmp.Values);
             bw.Dispose();

@@ -119,7 +119,10 @@ namespace AppAnalytics
             foreach (var it in aList)
             {
                 if (first)
+                {
                     dump.Append(it.ToString());
+                    first = false;
+                }
                 else
                     dump.Append("," + it.ToString());
             }
