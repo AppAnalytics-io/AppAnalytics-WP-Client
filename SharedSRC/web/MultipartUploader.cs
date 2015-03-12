@@ -92,6 +92,7 @@ namespace AppAnalytics
             dict.Add("-", postParameters);
             return MultipartFormDataPut(postUrl, userAgent, dict, ListToDelete);
         }
+
 #if UNIVERSAL
         // winrt version of HttpWebRequest doesn't have UserAgent as header by default.
         static private void SetHeader(HttpWebRequest Request, string Header, string Value)
@@ -141,7 +142,18 @@ namespace AppAnalytics
 
             var state = new KeyValuePair<HttpWebRequest, byte[]>(request, formData);
             var stateObj = new StateObject(state, aType, ListToDelete);
-            sts.Add(ListToDelete); 
+            sts.Add(ListToDelete);
+
+
+#if DEBUG
+            if (Sender.kSimulateSending)
+            {
+                Sender.success(aType, ListToDelete);
+                //Debug.WriteLine("Sender :: Sending simulated. (only for dbg mode)");
+                return true;
+            }
+#endif
+
             var result = request.BeginGetRequestStream(GetRequestStreamCallback, stateObj);
 
             return true;
@@ -151,12 +163,13 @@ namespace AppAnalytics
         private static byte[] GetMultipartFormData(Dictionary<string, object> postParameters, string boundary)
         {
             Stream formDataStream = new System.IO.MemoryStream();
-            bool needsCLRF = true;
+            bool needsCLRF = false;
 
             foreach (var param in postParameters)
             {
                 if (needsCLRF)
                     formDataStream.Write(encoding.GetBytes("\r\n"), 0, encoding.GetByteCount("\r\n"));
+                needsCLRF = true;
 
                 if (param.Value is FileParameter)
                 {
@@ -226,7 +239,7 @@ namespace AppAnalytics
                 streamRead = new StreamReader(streamResponse);
 
                 string responseString = streamRead.ReadToEnd();
-                Debug.WriteLine("[response:]" + responseString);
+                Debug.WriteLine("[sending.. response:]" + responseString);
             }
             catch (Exception e)
             {
@@ -235,10 +248,8 @@ namespace AppAnalytics
                     streamResponse = response.GetResponseStream();
                     streamRead = new StreamReader(streamResponse);
 
-                    string responseString = streamRead.ReadToEnd() + e.ToString();
-                    //Debug.WriteLine("[response:]" + responseString);
-                }
-                //Debug.WriteLine("exception in response callback :" + e.ToString());
+                    string responseString = streamRead.ReadToEnd() + e.ToString(); 
+                } 
             }
             finally
             {
@@ -249,13 +260,11 @@ namespace AppAnalytics
 
             if (response != null && response.StatusCode == HttpStatusCode.OK)
             {
-                Sender.success(stateObj.FileType, stateObj.ListToDelete);
-                //Debug.WriteLine("request succeed => " + FileParameter.typeToString(stateObj.FileType));
+                Sender.success(stateObj.FileType, stateObj.ListToDelete); 
             }
             else
             {
-                Sender.fail();
-                //Debug.WriteLine("request failed. retry");
+                Sender.fail(); 
             }
         }
     }

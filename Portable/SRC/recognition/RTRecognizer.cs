@@ -47,7 +47,7 @@ namespace AppAnalytics
         const float kTimeToUpdateFingersCount = 50; //ms
         bool        mIsIteriaSubmited = false;
         int         mStepsWaiting = 0;
-        const int   kStepsBeforeStart = 5; // temporary solution. may be changed any time soon.
+        const int   kStepsBeforeStart = 4; // temporary solution. may be changed any time soon.
                                           // added 'cause of specific manipulationUpdated firing mechanism
         const float kSwipeIteriaThreshold = 1.0f;
 
@@ -289,7 +289,7 @@ namespace AppAnalytics
                 }
             }
 
-           GestureProcessor.updateState(args.Delta.Expansion, args.Delta.Rotation, args.Delta.Translation, args.Delta.Scale);
+           GestureProcessor.updateState(args.Delta, args.Cumulative);
         }
 
         void manipulationCompleted(GestureRecognizer sender, ManipulationCompletedEventArgs args)
@@ -358,7 +358,7 @@ namespace AppAnalytics
                 Fingers = counter <= 4 ? counter : 4;
 
                 FrameProcessor.Instance.manipulationFrame(mTPC);
-                GestureProcessor.updateState(0, 0, new Point(0, 0), 0, true);
+                GestureProcessor.updateState(new ManipulationDelta(), new ManipulationDelta(), true);
 
                 mTPC.Clear();
                 lock (_lockObj)

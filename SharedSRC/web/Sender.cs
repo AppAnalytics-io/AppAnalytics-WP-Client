@@ -24,7 +24,7 @@ namespace AppAnalytics
 
         private const bool kTryToSendMore = true; 
 
-        private const bool kSimulateSending = false; 
+        public const bool kSimulateSending = true; 
 
         static string typeToURL(AAFileType ft)
         {
@@ -40,14 +40,6 @@ namespace AppAnalytics
         {
             if (NetworkInterface.GetIsNetworkAvailable() == true && aFiles.Count > 0)
             {
-#if DEBUG
-                if(kSimulateSending)
-                {
-                    Sender.success(aFiles.FileType, aToDel);
-                    //Debug.WriteLine("Sender :: Sending simulated. (only for dbg mode)");
-                    return true;
-                }
-#endif
                 bool success = MultipartUploader.MultipartFormDataPut(kGTBaseURL +
                                                                         typeToURL(aFiles.FileType)
                                                                         + Detector.getUDIDString(),

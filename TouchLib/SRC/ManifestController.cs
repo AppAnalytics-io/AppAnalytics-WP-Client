@@ -25,10 +25,9 @@ namespace AppAnalytics
 
         protected ManifestController()
         {
-            IsolatedStorageFile iStorage = IsolatedStorageFile.GetUserStoreForApplication();
-
             try
             {
+                IsolatedStorageFile iStorage = IsolatedStorageFile.GetUserStoreForApplication();
                 lock (_readLock)
                 {
                     if (iStorage.FileExists("manifests" + Defaults.kFileExpKey))
@@ -59,15 +58,11 @@ namespace AppAnalytics
                         }
                         bw.Close();
                     }
-                }
+                } 
+                iStorage.Dispose();
             }
             catch 
-            {
-                //Debug.WriteLine(e.Message + "\n Cannot create file.");
-                return;
-            }
-
-            iStorage.Dispose();
+            {  }
         }
 
         ~ManifestController()
@@ -78,7 +73,12 @@ namespace AppAnalytics
         public void store()
         {
             DataContractSerializer serializer = new DataContractSerializer(typeof(Dictionary<string, byte[]>));
-            IsolatedStorageFile iStorage = IsolatedStorageFile.GetUserStoreForApplication();
+            IsolatedStorageFile iStorage = null;
+            try
+            {
+                iStorage = IsolatedStorageFile.GetUserStoreForApplication();
+            }
+            catch { return; }
 
             lock (_readLock)
             {

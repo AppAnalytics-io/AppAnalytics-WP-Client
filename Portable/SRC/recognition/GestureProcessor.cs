@@ -35,9 +35,10 @@ namespace AppAnalytics
             None
         }
 
-        const double kTimeForHold = 0.48f;
+        const double kTimeForHold = 0.78f;
 
         const double kHoldThreshold = 0.42;
+        const double kHoldThresholdTotal = 1.42;
         const double kSwipeThreshold = 1.7;
 
         static Stopwatch mTimeMark = new Stopwatch();
@@ -103,11 +104,23 @@ namespace AppAnalytics
             return (mState == GState.Shrink) || (mState == GState.Enlarge);
         }
 
+
+
         static int mPrevFingersCnt = 0;
-        static public void updateState(float aScale, float aRotation, Point aDelta, float aRelativeScale, bool checkHoldOnly = false)
+        static public void updateState(ManipulationDelta aMDelta, ManipulationDelta aTotal, bool checkHoldOnly = false)
         {
+            var aScale = aMDelta.Expansion;
+            var aRotation = aMDelta.Rotation;
+            var aDelta = aMDelta.Translation;
+            var aRelativeScale = aMDelta.Scale;
+
+            var normalized = moveNormalized(aTotal.Translation);
+            var scaleTotal = aTotal.Expansion; 
+
             bool flag = !isMovingState() && !isRotateState() && !isZoomState();
-            if ((checkHoldOnly && flag) && mTimeMark.IsRunning && mTimeMark.ElapsedMilliseconds > kTimeForHold * 1000)
+
+            if ((checkHoldOnly && flag) && mTimeMark.IsRunning && (normalized < kHoldThresholdTotal)
+                && (mTimeMark.ElapsedMilliseconds > kTimeForHold * 1000))
             {
                 mTimeMark.Reset();
                 mState = GState.Hold;
@@ -131,7 +144,7 @@ namespace AppAnalytics
                 }
                 else if (!checkHoldOnly)
                 {
-                    selectState(aScale, aRotation, aDelta, aRelativeScale);
+                    selectState(scaleTotal, aRotation, aDelta, aRelativeScale, aTotal);
                 }
             }
             else if (GState.Hold == mState)
@@ -156,21 +169,19 @@ namespace AppAnalytics
                 }
                 else
                 {
-                    selectState(aScale, aRotation, aDelta, aRelativeScale);
+                    selectState(scaleTotal, aRotation, aDelta, aRelativeScale, aTotal);
                 }
             }
             else if (isZoomState())
             {
                 if (aScale < 0 && mState != GState.Shrink)
                 {
-                    //Debug.WriteLine("[Enlarge > shrink]");
                     // todo - convert
                     createGesture(GestureID.ZoomWith2Finger, BitConverter.GetBytes(aRelativeScale));
                     mState = GState.Shrink;
                 }
                 else if (aScale > 0 && mState != GState.Enlarge)
                 {
-                    //Debug.WriteLine("[Shrink > enlarge]");
                     createGesture(GestureID.PinchWith2Finger, BitConverter.GetBytes(aRelativeScale));
                     mState = GState.Enlarge;
                 }
@@ -231,17 +242,20 @@ namespace AppAnalytics
             }
         }
 
-        const float    kZoomMetricCf   = 1.5f;
+        const float     kZoomMetricCf   = 1.5f;
         const UInt16    kRotateMetricCf = 8;
         const float     kMovingMetricCf = 1;
+        const float     kMoveTotalThreshold = 14.5f;
 
-        static public void selectState(float aScale, float aRotation, Point aDelta, float aRelative)
+        static public void selectState(float aScale, float aRotation, Point aDelta, float aRelative, ManipulationDelta aTotal)
         {
             var dbg = RTRecognizer.Instance.Fingers;
 
             var moveMetric      = moveNormalized(aDelta);
-            var zoomMetric      = checkForZoom(aScale);
-            var rotationMetric  = checkForRotation(aRotation);
+            var zoomMetric      = Math.Abs(checkForZoom(aScale));
+            var rotationMetric  = Math.Abs(checkForRotation(aRotation));
+
+            var moveTotal = moveNormalized(aTotal.Translation);
 
             var tmp = Math.Max(moveMetric, zoomMetric);
             if (HoldThreshold > Math.Max(tmp, rotationMetric))
@@ -252,6 +266,14 @@ namespace AppAnalytics
                     return;
                 }
                 else return;
+            }
+
+            if (moveTotal < kMoveTotalThreshold && /*rotationMetric < 0.5 &&*/ zoomMetric == 0)
+            {
+                // do not change this statement
+                // first several updates is with no zoom delta, so we should skip it.
+                // thats a hidden logic, we have no option
+                return;
             }
 
             if ((zoomMetric > rotationMetric) && (zoomMetric > moveMetric))
