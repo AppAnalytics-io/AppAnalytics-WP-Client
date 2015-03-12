@@ -144,15 +144,14 @@ namespace AppAnalytics
             var stateObj = new StateObject(state, aType, ListToDelete);
             sts.Add(ListToDelete);
 
-
-#if DEBUG
-            if (Sender.kSimulateSending)
-            {
-                Sender.success(aType, ListToDelete);
-                //Debug.WriteLine("Sender :: Sending simulated. (only for dbg mode)");
-                return true;
-            }
-#endif
+// #if DEBUG
+//             if (Sender.kSimulateSending)
+//             {
+//                 Sender.success(aType, ListToDelete);
+//                 //Debug.WriteLine("Sender :: Sending simulated. (only for dbg mode)");
+//                 return true;
+//             }
+// #endif
 
             var result = request.BeginGetRequestStream(GetRequestStreamCallback, stateObj);
 
