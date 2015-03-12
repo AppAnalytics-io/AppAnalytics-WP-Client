@@ -98,6 +98,15 @@ namespace AppAnalytics
             set { EventsManager.Instance.TransactionAnaliticsEnabled = value; }
             get { return EventsManager.Instance.TransactionAnaliticsEnabled; }
         }
+        /// <summary>
+        /// Tracking purchases. Use this function in your transaction callbacks. 
+        /// </summary>
+        /// <param name="aProductID">product identifier as string</param>
+        /// <param name="aState">current state of transaction</param>
+        public static void trackTransaction(string aProductID, TransactionState aState)
+        {
+            TransactionAPI.handleTransaction(aProductID, aState);
+        }
     }
 
     internal static class Detector
@@ -281,6 +290,11 @@ namespace AppAnalytics
                 {
                     mNavigationOccured = true;
                     mPreviousUri = nUri;
+#if SILVERLIGHT
+                    Recognizer.Instance.createGesture(GestureID.Navigation);
+#else
+                    GestureProcessor.createGesture(GestureID.Navigation);
+#endif
                 }
                 else
                 {
@@ -441,10 +455,10 @@ namespace AppAnalytics
                 mSessionStartTime = Math.Floor(diff.TotalSeconds);
 
                 sendManifest();
-//                 if (ManifestController.Instance.SamplesCount > 0)
-//                 {
-//                     ManifestController.Instance.sendSamples();
-//                 }
+                if (ManifestController.Instance.SamplesCount > 0)
+                {
+                    ManifestController.Instance.sendSamples();
+                }
 #if SILVERLIGHT
                 mWorker = new Thread(updateLoop);
                 mWorker.IsBackground = true;

@@ -50,6 +50,9 @@
     <Compile Include="..\SharedSRC\events\EventsManager.cs">
       <Link>SRC\events\EventsManager.cs</Link>
     </Compile>
+    <Compile Include="..\SharedSRC\events\TransactionAPI.cs">
+      <Link>SRC\events\TransactionAPI.cs</Link>
+    </Compile>
     <Compile Include="..\SharedSRC\GestureData.cs">
       <Link>SRC\GestureData.cs</Link>
     </Compile>

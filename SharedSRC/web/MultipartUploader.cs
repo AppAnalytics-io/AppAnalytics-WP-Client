@@ -133,7 +133,7 @@ namespace AppAnalytics
             request.UserAgent = userAgent;
             request.ContentLength = formData.Length;
 #else
-//             SetHeader(request, "UserAgent", userAgent);
+            SetHeader(request, "UserAgent", userAgent);
 //             SetHeader(request, "ContentLength", formData.Length.ToString());
 #endif
             request.CookieContainer = new CookieContainer();

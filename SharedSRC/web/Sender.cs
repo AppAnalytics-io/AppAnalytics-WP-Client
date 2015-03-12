@@ -24,7 +24,7 @@ namespace AppAnalytics
 
         private const bool kTryToSendMore = true; 
 
-        public const bool kSimulateSending = true; 
+//        public const bool kSimulateSending = false; 
 
         static string typeToURL(AAFileType ft)
         {

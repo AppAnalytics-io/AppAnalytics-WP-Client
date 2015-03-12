@@ -95,6 +95,9 @@
     <Compile Include="..\SharedSRC\events\EventsManager.cs">
       <Link>SRC\Shared\EventsManager.cs</Link>
     </Compile>
+    <Compile Include="..\SharedSRC\events\TransactionAPI.cs">
+      <Link>SRC\Shared\TransactionAPI.cs</Link>
+    </Compile>
     <Compile Include="..\SharedSRC\GestureData.cs">
       <Link>SRC\Shared\GestureData.cs</Link>
     </Compile>

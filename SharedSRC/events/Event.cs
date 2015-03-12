@@ -198,7 +198,7 @@ namespace AppAnalytics
         {
             if (mParameters.Count > 0)
             {
-                string s = string.Join(";", mParameters.Select(x => x.Key + "=" + x.Value).ToArray());
+                string s = string.Join("; ", mParameters.Select(x => x.Key + "=" + x.Value).ToArray());
                 return String.Format("AA: Event [{0}] recorded;\n->Parameters: {1}",
                                     mDescription, s);
             }

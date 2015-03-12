@@ -10,7 +10,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing", "Testing\Testing.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppAnalytics", "TouchLib\AppAnalytics.csproj", "{245EC73C-E7FF-4ABC-8410-CAB8DFC2DE8F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Portable", "Portable\Portable.csproj", "{7797539F-E6D3-4630-9BE0-C12DC5E38C38}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppAnalyticsRT", "Portable\AppAnalyticsRT.csproj", "{7797539F-E6D3-4630-9BE0-C12DC5E38C38}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Hub", "Hub", "{7D333754-7D4A-4474-AEE7-0006734D11E4}"
 EndProject
