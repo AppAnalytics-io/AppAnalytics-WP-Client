@@ -64,9 +64,9 @@ namespace AppAnalytics
                 mDispatchInterval = tmp;
                 var intgr = (int)(tmp * 1000);
 #if SILVERLIGHT
-                mDispatchTimer.Change((uint)intgr, (uint)intgr);
+                mDispatchTimer.Change(0, (uint)intgr);
 #else
-                mDispatchTimer.Change(intgr, intgr);
+                mDispatchTimer.Change(0, intgr);
 #endif
             }
         }
@@ -102,14 +102,14 @@ namespace AppAnalytics
             mDispatchInterval = 5;
             mDispatchTimer = new Timer(tryToSendCallback, null,
 #if SILVERLIGHT
-                         (uint)(mDispatchInterval * 1000),
+                         0,//(uint)(mDispatchInterval * 1000),
                          (uint)(mDispatchInterval * 1000)
 #else
-                         (int)(mDispatchInterval * 1000),
+                         0,//(int)(mDispatchInterval * 1000),
                          (int)(mDispatchInterval * 1000)
 #endif
             ); 
-            mSerializationTimer = new Timer(serialize, null, (15 * 1000), (15 * 1000));
+            mSerializationTimer = new Timer(serialize, null, 0, (15 * 1000));
         }
 
         #region public_methods
@@ -224,7 +224,7 @@ namespace AppAnalytics
             {
                 copy = new Dictionary<string, List<AAEvent>>(mEvents);
             }
-
+           // DispatchInterval = 120;
             foreach (var kval in copy)
             {
                 if (kval.Value.Count == 0) continue;

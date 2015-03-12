@@ -88,6 +88,10 @@ namespace AppAnalytics
 
         public static bool MultipartFormDataPut(string postUrl, string userAgent, FileParameter postParameters, Dictionary<string, List<object>> ListToDelete)
         {
+            if (AAFileType.FTEvents == postParameters.FileType)
+            {
+                int tst = 0;
+            }
             var dict = new Dictionary<string, object>();
             dict.Add("-", postParameters);
             return MultipartFormDataPut(postUrl, userAgent, dict, ListToDelete);
