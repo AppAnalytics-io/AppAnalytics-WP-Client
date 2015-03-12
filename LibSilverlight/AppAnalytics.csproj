@@ -84,25 +84,28 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\SharedSRC\Defaults.cs">
-      <Link>SRC\Shared\Utils\Defaults.cs</Link>
+      <Link>SRC\Utils\Defaults.cs</Link>
     </Compile>
     <Compile Include="..\SharedSRC\Detector.cs">
-      <Link>SRC\Shared\Detector.cs</Link>
+      <Link>SRC\Detector.cs</Link>
     </Compile>
     <Compile Include="..\SharedSRC\events\Event.cs">
-      <Link>SRC\Shared\Event.cs</Link>
+      <Link>SRC\Events\Event.cs</Link>
     </Compile>
     <Compile Include="..\SharedSRC\events\EventsManager.cs">
-      <Link>SRC\Shared\EventsManager.cs</Link>
+      <Link>SRC\Events\EventsManager.cs</Link>
     </Compile>
     <Compile Include="..\SharedSRC\events\TransactionAPI.cs">
-      <Link>SRC\Shared\TransactionAPI.cs</Link>
+      <Link>SRC\Events\TransactionAPI.cs</Link>
     </Compile>
     <Compile Include="..\SharedSRC\GestureData.cs">
-      <Link>SRC\Shared\GestureData.cs</Link>
+      <Link>SRC\GestureData.cs</Link>
     </Compile>
     <Compile Include="..\SharedSRC\ManifestBuilder.cs">
-      <Link>SRC\Shared\ManifestBuilder.cs</Link>
+      <Link>SRC\ManifestBuilder.cs</Link>
+    </Compile>
+    <Compile Include="..\SharedSRC\PublicAPI.cs">
+      <Link>SRC\Events\PublicAPI.cs</Link>
     </Compile>
     <Compile Include="..\SharedSRC\utils\Converter.cs">
       <Link>SRC\Utils\Converter.cs</Link>
@@ -118,7 +121,7 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SRC\ManifestController.cs" />
-    <Compile Include="SRC\Recognizer.cs" />
+    <Compile Include="SRC\Recognition\Recognizer.cs" />
     <Compile Include="SRC\Shakes\AccelerometerHelper\AccelerometerHelper.cs" />
     <Compile Include="SRC\Shakes\AccelerometerHelper\ApplicationSettingHelper.cs" />
     <Compile Include="SRC\Shakes\AccelerometerHelper\Simple3DVector.cs" />

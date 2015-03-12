@@ -88,10 +88,6 @@ namespace AppAnalytics
 
         public static bool MultipartFormDataPut(string postUrl, string userAgent, FileParameter postParameters, Dictionary<string, List<object>> ListToDelete)
         {
-            if (AAFileType.FTEvents == postParameters.FileType)
-            {
-                int tst = 0;
-            }
             var dict = new Dictionary<string, object>();
             dict.Add("-", postParameters);
             return MultipartFormDataPut(postUrl, userAgent, dict, ListToDelete);
@@ -108,12 +104,10 @@ namespace AppAnalytics
             {
 //                 if (PropertyInfo != null)
 //                 {
-//                     // Set the value of the header.
 //                     PropertyInfo.SetValue(Request, Value, null);
 //                 }
 //                 else
                 {
-                    // Set the value of the header.
                     Request.Headers[Header] = Value;
                 }
             }
@@ -148,14 +142,14 @@ namespace AppAnalytics
             var stateObj = new StateObject(state, aType, ListToDelete);
             sts.Add(ListToDelete);
 
-// #if DEBUG
-//             if (Sender.kSimulateSending)
+            #region simulation
+            // #if DEBUG 
 //             {
 //                 Sender.success(aType, ListToDelete);
 //                 //Debug.WriteLine("Sender :: Sending simulated. (only for dbg mode)");
 //                 return true;
-//             }
-// #endif
+            //             }
+            #endregion
 
             var result = request.BeginGetRequestStream(GetRequestStreamCallback, stateObj);
 

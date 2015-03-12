@@ -11,9 +11,8 @@ using System.Xml.Serialization;
  
 namespace AppAnalytics
 {
-    [DataContract]
-    //[XmlRoot("AAEvent")]
-    internal class AAEvent : IEquatable<object>/*, IXmlSerializable*/
+    [DataContract] 
+    internal class AAEvent : IEquatable<object> 
     {
         #region Members
         // private object _lockObj = new object();  
@@ -66,19 +65,13 @@ namespace AppAnalytics
         }
 
         public void addIndex(UInt32 aIndex)
-        {
-//             lock (_lockObj)
-//             {
-            mIndices.Add(aIndex);
-/*            }*/
+        { 
+            mIndices.Add(aIndex); 
         }
 
         public void addTimestamp(Double aTimestamp)
-        {
-//             lock(_lockObj)
-//             {
-            mTimeStamps.Add(aTimestamp);
-/*            }*/
+        { 
+            mTimeStamps.Add(aTimestamp); 
         }
 
         AAEvent() { }
@@ -111,8 +104,7 @@ namespace AppAnalytics
         }
 
         private string indicesToJSON(List<UInt32> aList)
-        {
-            //there may be performance issues
+        { 
             StringBuilder dump = new StringBuilder();
 
             bool first = true;
@@ -203,97 +195,6 @@ namespace AppAnalytics
                                     mDescription, s);
             }
             return String.Format("AA: Event [{0}] recorded.", mDescription);;
-        }
-
-//         #region IXmlSerializable Members
-//         public System.Xml.Schema.XmlSchema GetSchema()
-//         {
-//             return null;
-//         }
-//    
-//         public void ReadXml(System.Xml.XmlReader reader)
-//         {
-//             XmlSerializer indicesSerializer = new XmlSerializer(typeof(List<UInt32>));
-//             XmlSerializer timeStampsSerializer = new XmlSerializer(typeof(List<Double>));
-// 
-//             XmlSerializer stringSerializer = new XmlSerializer(typeof(string));
-// 
-//             bool wasEmpty = reader.IsEmptyElement;
-//             reader.Read();
-// 
-//             if (wasEmpty)
-//                 return;
-//             
-//             reader.ReadStartElement("indices");
-//             mIndices = (List<UInt32>)indicesSerializer.Deserialize(reader);
-//             reader.ReadEndElement();
-// 
-//             reader.ReadStartElement("descr");
-//             mDescription = (string)stringSerializer.Deserialize(reader);
-//             reader.ReadEndElement();
-// 
-//             reader.ReadStartElement("timestamps");
-//             mTimeStamps = (List<Double>)timeStampsSerializer.Deserialize(reader);
-//             reader.ReadEndElement();
-// 
-//             reader.ReadStartElement("params");
-//             while (reader.NodeType != System.Xml.XmlNodeType.EndElement)
-//             {
-//                 reader.ReadStartElement("item");
-// 
-//                 reader.ReadStartElement("key");
-//                 string key = (string)stringSerializer.Deserialize(reader);
-//                 reader.ReadEndElement();
-// 
-//                 reader.ReadStartElement("value");
-//                 string value = (string)stringSerializer.Deserialize(reader);
-//                 reader.ReadEndElement();
-// 
-//                 mParameters.Add(key, value);
-// 
-//                 reader.ReadEndElement();
-//                 reader.MoveToContent();
-//             } 
-//             reader.ReadEndElement();
-//         }
-// 
-//         public void WriteXml(System.Xml.XmlWriter writer)
-//         {
-//             XmlSerializer indicesSerializer = new XmlSerializer(typeof(List<UInt32>));
-//             XmlSerializer timeStampsSerializer = new XmlSerializer(typeof(List<Double>));
-// 
-//             XmlSerializer stringSerializer = new XmlSerializer(typeof(string));
-// 
-//             writer.WriteStartElement("indices");
-//             indicesSerializer.Serialize(writer, mIndices);
-//             writer.WriteEndElement();
-// 
-//             writer.WriteStartElement("descr");
-//             stringSerializer.Serialize(writer, mDescription);
-//             writer.WriteEndElement();
-// 
-//             writer.WriteStartElement("timestamps");
-//             timeStampsSerializer.Serialize(writer, mTimeStamps);
-//             writer.WriteEndElement();
-// 
-//             writer.WriteStartElement("params");
-//             foreach (string key in mParameters.Keys)
-//             {
-//                 writer.WriteStartElement("item");
-// 
-//                 writer.WriteStartElement("key");
-//                 stringSerializer.Serialize(writer, key);
-//                 writer.WriteEndElement();
-// 
-//                 writer.WriteStartElement("value");
-//                 string value = mParameters[key];
-//                 stringSerializer.Serialize(writer, value);
-//                 writer.WriteEndElement();
-// 
-//                 writer.WriteEndElement();
-//             }
-//             writer.WriteEndElement();
-//         }
-//         #endregion
+        } 
     }
 }

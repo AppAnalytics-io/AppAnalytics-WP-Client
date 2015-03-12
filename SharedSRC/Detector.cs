@@ -31,89 +31,12 @@ using Windows.UI.Xaml.Navigation;
 
 namespace AppAnalytics
 {
-    public static class API
-    {
-        /// <summary>
-        /// Init API with your application key (Length == 32)
-        /// </summary>
-        /// <param name="aApiKey"></param>
-        public static void init(string aApiKey)
-        {
-            Detector.init(aApiKey);
-        }
-        /// <summary>
-        /// Register an event
-        /// </summary>
-        /// <param name="aDescription">Name/description of an event</param>
-        public static void logEvent(String aDescription)
-        {
-            EventsManager.Instance.pushEvent(aDescription);
-        }
-        /// <summary>
-        /// Register an event
-        /// </summary>
-        /// <param name="aDescription">Name/description of an event</param>
-        /// <param name="aParameters">Additional parameters as key/value pair</param>
-        public static void logEvent(String aDescription, Dictionary<string, string> aParameters)
-        {
-            EventsManager.Instance.pushEvent(aDescription, aParameters);
-        }
-        /// <summary>
-        /// Enable or disable debug log output
-        /// </summary>
-        public static bool DebugLogEnabled
-        {
-            set { EventsManager.Instance.DebugLogEnabled = value; }
-            get { return EventsManager.Instance.DebugLogEnabled; }
-        }
-        /// <summary>
-        /// Enable or disable exception analytics
-        /// </summary>
-        public static bool ExceptionAnaluticsEnabled
-        {
-            set { EventsManager.Instance.ExceptionAnalyticsEnabled = value; }
-            get { return EventsManager.Instance.ExceptionAnalyticsEnabled; }
-        }
-        /// <summary>
-        /// Enable or disable screen analytics
-        /// </summary>
-        public static bool ScreenAnaluticsEnabled
-        {
-            set { EventsManager.Instance.ScreenAnalitycsEnabled = value; }
-            get { return EventsManager.Instance.ScreenAnalitycsEnabled; }
-        }
-        /// <summary>
-        /// Gets or sets event dispatch interval in seconds (max - 3600, min - 10, def - 120)
-        /// </summary>
-        public static float DispatchInterval
-        {
-            set { EventsManager.Instance.DispatchInterval = value; }
-            get { return EventsManager.Instance.DispatchInterval; }
-        }
-        /// <summary>
-        /// Enable or disable transactions analytics (currently unavailable)
-        /// </summary>
-        public static bool TransactionAnalyticsEnabled
-        {
-            set { EventsManager.Instance.TransactionAnaliticsEnabled = value; }
-            get { return EventsManager.Instance.TransactionAnaliticsEnabled; }
-        }
-        /// <summary>
-        /// Tracking purchases. Use this function in your transaction callbacks. 
-        /// </summary>
-        /// <param name="aProductID">product identifier as string</param>
-        /// <param name="aState">current state of transaction</param>
-        public static void trackTransaction(string aProductID, TransactionState aState)
-        {
-            TransactionAPI.handleTransaction(aProductID, aState);
-        }
-    }
-
     internal static class Detector
     {
+
+        #region members_and_props
         static readonly object _lockObject = new object();
 
-        //members & properties /////////////////////////////////////////////////
         private static UUID.UDIDGen mIDGen = UUID.UDIDGen.Instance;
         private static int mUIThreadID = -1;
         private static bool mKeepWorking = true;
@@ -135,6 +58,8 @@ namespace AppAnalytics
         {
             get { return mApiKey; }
         }
+        #endregion
+
         // only needed on Silverlight
         internal static int UIThreadID
         {
@@ -382,10 +307,7 @@ namespace AppAnalytics
             }
 
             {
-                var t = System.Enum.GetName(typeof(NavigationMode), e.NavigationMode);
-//                 info.Add("Navigation Mode", t);
-//                 info.Add("Destination Type", e.SourcePageType.Name);
-//                 info.Add("Source Type", prev);
+                var t = System.Enum.GetName(typeof(NavigationMode), e.NavigationMode); 
                 info.Add(Defaults.NavigationTxt.kStrType, e.SourcePageType.Name);
 
                 EventsManager.Instance.pushEvent(Defaults.NavigationTxt.kStrEventName, info);
@@ -421,16 +343,11 @@ namespace AppAnalytics
             EventsManager.Instance.init();
             CoreApplication.Exiting += onAppExit;
             CoreApplication.Suspending += onAppSuspend;
-
-            // < TESTING. temporary
-
-            //EventsManager.Instance.testSerialization();
-            //EventsManager.Instance.testSerializationUsingMemoryStream()
-
-            //EventsManager.Instance.testSending();
+             
 #if DEBUG //Temporary
             EventsManager.Instance.DebugLogEnabled = true;
-            EventsManager.Instance.DispatchInterval = 10; 
+            EventsManager.Instance.DispatchInterval = 10;
+            EventsManager.Instance.pushEvent("check", new Dictionary<string, string> { { "p1", "v1" } });
 #endif 
 
             var tsk = new Task(mIDGen.init);
@@ -547,8 +464,7 @@ namespace AppAnalytics
                     toSendMark = 0;
                 }
 
-                handleTaps(sec);
-                // test it more
+                handleTaps(sec); 
 #if SILVERLIGHT
                 Deployment.Current.Dispatcher.BeginInvoke(() => getCurent());
 #else
@@ -564,12 +480,15 @@ namespace AppAnalytics
                 }
 #endif
                 if (mNavigationOccured)
-                {
-                    //Debug.WriteLine("hit");
+                { 
                     lock (_lockObject)
                     {
                         mNavigationOccured = false;
-                        //Recognizer.Instance.createGesture(GestureID.Navigation);
+#if SILVERLIGHT
+                        Recognizer.Instance.createGesture(GestureID.Navigation);
+#else
+                        GestureProcessor.createGesture(GestureID.Navigation);
+#endif
                     }
                 }
             }
@@ -579,10 +498,10 @@ namespace AppAnalytics
         {
             return BitConverter.GetBytes(mSessionStartTime);
         }
-
+        // unused
         internal static byte[] getSessionEndDate()
         {
-            double sec = 0;//Math.Floor(diff.TotalSeconds);
+            double sec = 0; 
 
             return BitConverter.GetBytes(sec);
         }
@@ -654,8 +573,7 @@ namespace AppAnalytics
 
                 int i = 0;
                 foreach (var v in v4)
-                {
-                    //bts[i] = (byte) v[0];
+                { 
                     var parsed = BitConverter.GetBytes(UInt32.Parse(v));
                     System.Buffer.BlockCopy( parsed, 0, bts, i*4, parsed.Length);
                     ++i;
@@ -663,20 +581,7 @@ namespace AppAnalytics
 
                 return bts;
             }
-        }
-
-        // converting char for 2bytes approach to 1byte
-//         internal static byte[] getBytes(string str)
-//         {
-//             byte[] bytes = new byte[str.Length ];
-//
-//             for (int i = 0; i < str.Length; ++i )
-//             {
-//                 bytes[i] = (byte)str[i];
-//             }
-//
-//             return bytes;
-//         }
+        } 
 
         private static byte[] toBytes(int val)
         {

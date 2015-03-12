@@ -59,6 +59,9 @@
     <Compile Include="..\SharedSRC\ManifestBuilder.cs">
       <Link>SRC\ManifestBuilder.cs</Link>
     </Compile>
+    <Compile Include="..\SharedSRC\PublicAPI.cs">
+      <Link>SRC\PublicAPI.cs</Link>
+    </Compile>
     <Compile Include="..\SharedSRC\utils\Converter.cs">
       <Link>SRC\utils\Converter.cs</Link>
     </Compile>
