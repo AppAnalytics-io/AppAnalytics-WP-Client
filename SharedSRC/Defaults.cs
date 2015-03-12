@@ -30,6 +30,42 @@ namespace AppAnalytics
         public const bool kTransactionAnalyticsEnabled = true;
         public const bool kScreensAnalyticsEnabled = false;
 
-        public const string kFileExpKey = "aa_sff";
+        // use it to avoid possible name conflict
+        // (if client app have same names)
+        // just add like this @file_name
+        public const string kFileExpKey = ".aa_sff";
+
+        public const string kStrNull = "Null";
+
+        public struct ExceptionTxt
+        {
+            public const string kStrEventName = "Uncaught Exception";
+            public const string kStrReason = "Reason";
+            public const string kStrType = "Name";
+            public const string kStrCallStack = "Call Stack Trace";
+        }
+
+        public struct NavigationTxt
+        {
+            public const string kStrEventName = "Navigation";
+            public const string kStrType = "Screen Class Name";
+            public const string kStrMode = "Navigation Mode";
+            public const string kStrSource = "Source";
+            public const string kStrDestination = "Destination";
+        }
+
+        public struct PaymentTxt
+        { 
+            public const string kTransactionEventType = "Type";
+            public const string kTransactionEventId = "Identifier";
+            public const string kTransactionStatePurchasing = "Transaction Initiated";
+            public const string kTransactionStateSucceeded = "Transaction Succeeded";
+            public const string kTransactionStateFailed = "Transaction Failed";
+            public const string kTransactionStateRestored = "Transaction Restored";
+            public const string kTransactionStateDeferred = "Transaction Deferred";
+
+            public const string kStrEventName = "Transaction";
+
+        }
     }
 }

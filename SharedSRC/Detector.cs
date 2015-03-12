@@ -326,11 +326,11 @@ namespace AppAnalytics
             if (uri != e.Uri.ToString())
             {
                 var t = System.Enum.GetName(typeof(NavigationMode), e.NavigationMode);
-                info.Add("Navigation Mode", t);
-                info.Add("Destination URI", e.Uri.ToString());
-                info.Add("Source URI", uri);
+                info.Add(Defaults.NavigationTxt.kStrType, t);
+//                 info.Add("Destination URI", e.Uri.ToString());
+//                 info.Add("Source URI", uri);
 
-                EventsManager.Instance.pushEvent("Navigation", info); 
+                EventsManager.Instance.pushEvent(Defaults.NavigationTxt.kStrEventName, info); 
             }
         }
         static async void initNavigationEvent()
@@ -349,11 +349,11 @@ namespace AppAnalytics
         {
             Dictionary<string, string> info = new Dictionary<string, string>();
 
-            info.Add("Сall stack", e.Exception.StackTrace);
-            info.Add("Exception", e.Exception.ToString());
-            info.Add("Type", e.Exception.GetType().Name);
+            info.Add("Call Stack Trace", e.Exception.StackTrace);
+            info.Add("Reason", e.Exception.ToString());
+            info.Add("Name", e.Exception.GetType().Name);
 
-            EventsManager.Instance.pushEvent("UnhandledException", info);
+            EventsManager.Instance.pushEvent("Uncaught Exception", info);
             EventsManager.Instance.store();
             Debug.WriteLine("Unhanded exception.");
         }
@@ -370,11 +370,12 @@ namespace AppAnalytics
 
             {
                 var t = System.Enum.GetName(typeof(NavigationMode), e.NavigationMode);
-                info.Add("Navigation Mode", t);
-                info.Add("Destination Type", e.SourcePageType.Name);
-                info.Add("Source Type", prev);
+//                 info.Add("Navigation Mode", t);
+//                 info.Add("Destination Type", e.SourcePageType.Name);
+//                 info.Add("Source Type", prev);
+                info.Add(Defaults.NavigationTxt.kStrType, e.SourcePageType.Name);
 
-                EventsManager.Instance.pushEvent("Navigation", info);
+                EventsManager.Instance.pushEvent(Defaults.NavigationTxt.kStrEventName, info);
             }
         }
 #endif

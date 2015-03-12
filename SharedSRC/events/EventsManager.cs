@@ -304,7 +304,7 @@ namespace AppAnalytics
                         }
                     }
                     if (tmp.Count > 0)
-                        js.WriteObject(stream, tmp);
+                        js.WriteObject(stream, tmp); 
                 }
             }
             catch {  }
