@@ -416,17 +416,8 @@ namespace AppAnalytics
             //EventsManager.Instance.testSending();
 #if DEBUG //Temporary
             EventsManager.Instance.DebugLogEnabled = true;
-            EventsManager.Instance.DispatchInterval = 10;
-            EventsManager.Instance.pushEvent("custom event 1");
-            EventsManager.Instance.pushEvent("custom event 2");
-            EventsManager.Instance.pushEvent("some equal events");
-            EventsManager.Instance.pushEvent("some equal events");
-            var navigationTask = new Task(pushTestEvents);
-            navigationTask.Start();
-#endif
-
-            //var tmr = new Timer(testException, null, 10, Timeout.Infinite);
-            // TESTING >
+            EventsManager.Instance.DispatchInterval = 10; 
+#endif 
 
             var tsk = new Task(mIDGen.init);
             tsk.Start();
