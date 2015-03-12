@@ -81,9 +81,9 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
-    <ProjectReference Include="..\..\Portable\Portable.csproj">
+    <ProjectReference Include="..\..\..\LibUniversal\AppAnalyticsRT.csproj">
       <Project>{7797539f-e6d3-4630-9be0-c12dc5e38c38}</Project>
-      <Name>Portable</Name>
+      <Name>AppAnalyticsRT</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

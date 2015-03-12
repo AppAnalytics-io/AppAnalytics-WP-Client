@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>AppAnalytics</RootNamespace>
-    <AssemblyName>Portable</AssemblyName>
+    <AssemblyName>AppAnalyticsRT</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -72,17 +72,17 @@
       <Link>SRC\web\Sender.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SRC\recognition\GestureProcessor.cs" />
-    <Compile Include="SRC\recognition\FrameProcessor.cs" />
+    <Compile Include="SRC\Recognition\GestureProcessor.cs" />
+    <Compile Include="SRC\Recognition\FrameProcessor.cs" />
     <Compile Include="SRC\RTManifestController.cs" />
-    <Compile Include="SRC\recognition\RTRecognizer.cs" />
+    <Compile Include="SRC\Recognition\RTRecognizer.cs" />
     <Compile Include="SRC\ShakesPorted\AccelerometerHelper\AccelerometerHelper.cs" />
     <Compile Include="SRC\ShakesPorted\AccelerometerHelper\Simple3DVector.cs" />
     <Compile Include="SRC\ShakesPorted\ShakeGestureEventArgs.cs" />
     <Compile Include="SRC\ShakesPorted\ShakeGesturesHelper.cs" />
     <Compile Include="SRC\ShakesPorted\ShakeType.cs" />
     <Compile Include="SRC\ShakesPorted\Simulation.cs" />
-    <Compile Include="SRC\utils\Utils.cs" />
+    <Compile Include="SRC\Utils\Utils.cs" />
     <Compile Include="SRC\UUID\RTUDIDGen.cs" />
   </ItemGroup>
   <ItemGroup />

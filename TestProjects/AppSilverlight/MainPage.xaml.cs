@@ -33,11 +33,6 @@ namespace Testing
         {
             InitializeComponent();
 
-           // TouchPanel.GetState().
-
-            //Thread workerThread = new Thread(updateLoop);
-            //workerThread.Start();
-
             rectangleTransforms.Children.Add(move);
             rectangleTransforms.Children.Add(resize);
             TestRectangle.RenderTransform = rectangleTransforms;
