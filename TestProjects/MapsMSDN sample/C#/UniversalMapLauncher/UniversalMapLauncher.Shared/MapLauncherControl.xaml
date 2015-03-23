@@ -1,0 +1,97 @@
+﻿<UserControl
+    x:Class="UniversalMapLauncher.MapLauncherControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:UniversalMapLauncher"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="700"
+    d:DesignWidth="400">
+    
+    <UserControl.Resources>
+        <Style TargetType="TextBlock">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,0,10,0"/>
+        </Style>
+    </UserControl.Resources>
+
+    <StackPanel>
+        <TextBlock Text="Map Launcher" Margin="10" 
+                   HorizontalAlignment="Center" 
+                   FontSize="20" FontWeight="Bold"/>
+        
+        <ItemsControl>
+            <ItemsControl.Template>
+                <ControlTemplate>
+                    <ScrollViewer VerticalScrollBarVisibility="Disabled" 
+                                  HorizontalScrollBarVisibility="Auto">
+                        <ItemsPresenter/>
+                    </ScrollViewer>
+                </ControlTemplate>
+            </ItemsControl.Template>
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+
+            <ItemsControl.Items>
+                <StackPanel Width="300">
+                    <TextBlock Text="Using Center &amp; Zoom:" FontWeight="Bold"/>
+
+                    <StackPanel Orientation="Horizontal" Margin="10">
+                        <TextBlock Text="Latitude:"/>
+                        <TextBox Name="LatitudeTbx" InputScope="Number" Width="150" Text="51.5"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Margin="10">
+                        <TextBlock Text="Longitude:"/>
+                        <TextBox Name="LongitudeTbx" InputScope="Number" Width="150" Text="-0.1"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Margin="10">
+                        <TextBlock Text="Zoom:"/>
+                        <TextBox Name="ZoomTbx" InputScope="Number" Text="15"/>
+                    </StackPanel>
+
+                    <Button Content="Launch Map"
+                            HorizontalAlignment="Center" 
+                            Tapped="LaunchCenterZoom_Tapped"/>
+                </StackPanel>
+
+                <StackPanel Width="300">
+                    <TextBlock Text="Using What &amp; Where:" FontWeight="Bold"/>
+
+                    <StackPanel Orientation="Horizontal" Margin="10">
+                        <TextBlock Text="Query:"/>
+                        <TextBox Name="QueryTbx" Width="250" Text="Pizza in New York"/>
+                    </StackPanel>
+
+                    <Button Content="Launch Map" 
+                            HorizontalAlignment="Center" 
+                            Tapped="LaunchWhatWhere_Tapped"/>
+                </StackPanel>
+
+                <StackPanel Width="300">
+                    <TextBlock Text="Using Route:" FontWeight="Bold"/>
+
+                    <StackPanel Orientation="Horizontal" Margin="10">
+                        <TextBlock Text="Start:"/>
+                        <TextBox Name="StartTbx" Width="250" Text="Portland, OR"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Margin="10">
+                        <TextBlock Text="End:"/>
+                        <TextBox Name="EndTbx" Width="250" Text="Seattle, WA"/>
+                    </StackPanel>
+
+                    <Button Content="Launch Map"
+                            HorizontalAlignment="Center" 
+                            Tapped="LaunchRoute_Tapped"/>
+                </StackPanel>
+            </ItemsControl.Items>
+        </ItemsControl>
+    </StackPanel>
+</UserControl>

@@ -21,7 +21,7 @@ namespace PivotApp1
             // Set the data context of the listbox control to the sample data
             DataContext = App.ViewModel;
 
-            AppAnalytics.Detector.init("B6xBAJWQzHjLlc6V4w2Um6JU2iNt7ZS9");
+            AppAnalytics.API.init("B6xBAJWQzHjLlc6V4w2Um6JU2iNt7ZS9");
             // Sample code to localize the ApplicationBar
             //BuildLocalizedApplicationBar();
         }

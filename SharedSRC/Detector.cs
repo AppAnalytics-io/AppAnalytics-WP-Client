@@ -19,7 +19,7 @@ using Microsoft.Phone.Controls;
 using Microsoft.Xna.Framework.Input.Touch;
 using System.Windows.Navigation;
 using Windows.ApplicationModel;
-using Microsoft.Phone.Shell;
+using Microsoft.Phone.Shell; 
 #else
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -28,13 +28,14 @@ using Windows.ApplicationModel;
 using Windows.UI.Xaml.Navigation;
 #endif
 
-
 namespace AppAnalytics
 {
     internal static class Detector
     {
 
         #region members_and_props
+        static bool mIsInitiated = false;
+
         static readonly object _lockObject = new object();
 
         private static UUID.UDIDGen mIDGen = UUID.UDIDGen.Instance;
@@ -64,11 +65,9 @@ namespace AppAnalytics
         internal static int UIThreadID
         {
             get
-            {
-                return mUIThreadID;
-            }
+            {  return mUIThreadID; }
         }
-
+        
         #region resolution_getters
 #if SILVERLIGHT
         internal static byte[] getResolutionX()
@@ -206,7 +205,7 @@ namespace AppAnalytics
             var uri = currentPage.BaseUri;
             var pageType = (Window.Current.Content as Frame).Content.GetType();
             mPreviousType = pageType.Name;
-#endif
+#endif 
 
             string nUri = uri.ToString();
             lock (_lockObject)
@@ -227,13 +226,7 @@ namespace AppAnalytics
                     mPreviousUri = nUri;
                 }
             }
-        }
-
-
-        static private void testException(object o)
-        {
-            throw new NullReferenceException("test exception");
-        }
+        } 
 
 #if SILVERLIGHT
         static internal void exceptionsLogger(object sender, ApplicationUnhandledExceptionEventArgs e)
@@ -325,6 +318,15 @@ namespace AppAnalytics
 
         static internal void init(string aApiKey)
         {
+            if (mIsInitiated)
+            {
+                return;
+            }
+            else
+            {
+                mIsInitiated = true;
+            }
+
             var current = Application.Current;
 #if SILVERLIGHT
             mUIThreadID = System.Threading.Thread.CurrentThread.ManagedThreadId;
@@ -345,9 +347,9 @@ namespace AppAnalytics
             CoreApplication.Suspending += onAppSuspend;
              
 #if DEBUG //Temporary
-            EventsManager.Instance.DebugLogEnabled = true;
-            EventsManager.Instance.DispatchInterval = 10;
-            EventsManager.Instance.pushEvent("check", new Dictionary<string, string> { { "p1", "v1" } });
+//             EventsManager.Instance.DebugLogEnabled = true;
+//             EventsManager.Instance.DispatchInterval = 10;
+//             EventsManager.Instance.pushEvent("check", new Dictionary<string, string> { { "p1", "v1" } });
 #endif 
 
             var tsk = new Task(mIDGen.init);
@@ -431,10 +433,13 @@ namespace AppAnalytics
             }
 #endif
         }
-        static double toSendMark = 0;
-        static double toStoreMark = 0;
-        const double kSendConst = 20;
-        const double kStoreConst = 15;
+        static double   toSendMark = 0;
+        static double   toStoreMark = 0;
+        const double    kSendConst = 20;
+        const double    kStoreConst = 15;
+
+        const double    kInsertMark = 150;
+        static Stopwatch mInsertinonTimer = new Stopwatch();
 
 #if SILVERLIGHT
         static private void updateLoop()
@@ -442,6 +447,7 @@ namespace AppAnalytics
         static async private void updateLoop()
 #endif
         {
+            mInsertinonTimer.Start();
             while (mKeepWorking)
             {
                 var date = DateTime.Now;
@@ -462,6 +468,11 @@ namespace AppAnalytics
                 {
                     ManifestController.Instance.sendSamples();
                     toSendMark = 0;
+                }
+                if (mInsertinonTimer.ElapsedMilliseconds > kInsertMark)
+                {
+                    mInsertinonTimer.Restart();
+                    EventsManager.Instance.insertEvents();
                 }
 
                 handleTaps(sec); 
@@ -491,6 +502,9 @@ namespace AppAnalytics
 #endif
                     }
                 }
+#if !SILVERLIGHT
+                await Task.Delay(50);
+#endif
             }
         }
 

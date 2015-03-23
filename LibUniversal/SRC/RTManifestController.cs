@@ -121,7 +121,7 @@ namespace AppAnalytics
         {
             var tmp = new Task(store);
             tmp.Start();
-            tmp.Wait(); // storing samples that not sending.
+            tmp.Wait(); // storing samples that are not sent yet.
         }
 
         public async void store()
@@ -232,11 +232,9 @@ namespace AppAnalytics
                     if (mSamples.ContainsKey(kval.Key) && (mSamples[kval.Key].Count >= kval.Value.Count))
                     {
                         mSamples[kval.Key] = mSamples[kval.Key].Except(kval.Value).Cast<byte[]>().ToList();
-                        // g = kval.Key;
                     }
                 }
-                //mSamples[g] = tmp2;
-                //mSamples.
+
                 var copyS = new SerializableDictionary<string, List<byte[]>>(mSamples);
                 foreach (var kv in mSamples)
                 {

@@ -21,9 +21,9 @@ namespace AppAnalytics
 {
     internal class RTRecognizer
     {
-        TouchPointCollection mTPC = new TouchPointCollection();
+        TouchPointCollection    mTPC = new TouchPointCollection();
 
-        uint mLastFrame = 0;
+        uint                    mLastFrame = 0; //id of last frame 
         Dictionary<uint, Dictionary<uint, TouchPoint>> mTouches = new Dictionary<uint, Dictionary<uint, TouchPoint>>();
 
         /* NOTE
@@ -107,7 +107,7 @@ namespace AppAnalytics
 
         public void init()
         {
-            var currentPage = Window.Current.Content as Frame;
+            var frame = Window.Current.Content as Frame;
             CoreWindow window = CoreApplication.MainView.CoreWindow;
 
             mRecognizer.GestureSettings = GestureSettings.Tap | GestureSettings.Hold
@@ -156,12 +156,12 @@ namespace AppAnalytics
 //             }
 //             else
             {
-                currentPage.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(onPPressed), true);
-                currentPage.AddHandler(UIElement.PointerMovedEvent, new PointerEventHandler(onPMoved), true);
-                currentPage.AddHandler(UIElement.PointerReleasedEvent, new PointerEventHandler(onPUP), true);
-                currentPage.AddHandler(UIElement.PointerCanceledEvent, new PointerEventHandler(onPUP), true);
-                currentPage.AddHandler(UIElement.PointerExitedEvent, new PointerEventHandler(onPUP), true);
-                currentPage.AddHandler(UIElement.PointerCaptureLostEvent, new PointerEventHandler(onPUP), true);
+                frame.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(onPPressed), true);
+                frame.AddHandler(UIElement.PointerMovedEvent, new PointerEventHandler(onPMoved), true);
+                frame.AddHandler(UIElement.PointerReleasedEvent, new PointerEventHandler(onPUP), true);
+                frame.AddHandler(UIElement.PointerCanceledEvent, new PointerEventHandler(onPUP), true);
+                frame.AddHandler(UIElement.PointerExitedEvent, new PointerEventHandler(onPUP), true);
+                frame.AddHandler(UIElement.PointerCaptureLostEvent, new PointerEventHandler(onPUP), true);
             }
         }
 

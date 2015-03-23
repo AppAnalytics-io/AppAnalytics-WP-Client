@@ -1,4 +1,6 @@
-﻿using System;
+﻿//#define TESTING
+
+using System;
 using System.Windows;
 using System.Xml;
 using System.Collections.Generic;
@@ -12,6 +14,27 @@ namespace AppAnalytics
 {
     public static class API
     {
+#if TESTING
+        public static void PushTestSample(int id)
+        {
+            var enID = (GestureID) (id% ((int) GestureID.Navigation));
+            GestureData gd = GestureData.create(enID, 
+                                new Windows.Foundation.Point(42, 42), "testingE", "testingPage");
+
+            ManifestController.Instance.buildDataPackage(gd);
+        }
+
+        static int mCounter = 0;
+        public static void TestEventPushingTime()
+        {
+            mCounter++;
+            var now = DateTime.Now;
+            logEvent("testing : " + mCounter + " length:" + EventsManager.Instance.CurrentSessionEventsCount);
+            var dif = now - DateTime.Now;
+
+            Debug.WriteLine("time spend" + dif.TotalMilliseconds);
+        }
+#endif
         /// <summary>
         /// Init API with your application key (Length == 32)
         /// </summary>

@@ -22,6 +22,8 @@ namespace AppAnalytics
     internal class EventsManager  
 	{
 	    #region Members
+
+        List<AAEvent> mBuffer = new List<AAEvent>(); 
         Dictionary<string, List<AAEvent>> mEvents = new Dictionary<string,List<AAEvent>>();
 
         UInt32  mIndex = 0;
@@ -77,6 +79,7 @@ namespace AppAnalytics
         }
 
         static private readonly object _lockObject = new object();
+        static private readonly object _lockBuffer = new object();
         #endregion
 
         private static EventsManager mInstance;
@@ -99,7 +102,7 @@ namespace AppAnalytics
             var tmp = Detector.getSessionIDStringWithDashes();
             mEvents.Add(tmp, new List<AAEvent>());
 
-            mDispatchInterval = 5;
+            //mDispatchInterval = 5;
             mDispatchTimer = new Timer(tryToSendCallback, null,
 #if SILVERLIGHT
                          0,//(uint)(mDispatchInterval * 1000),
@@ -119,13 +122,37 @@ namespace AppAnalytics
             get { return mInstance ?? (mInstance = new EventsManager()); }
         }
 
+        public int CurrentSessionEventsCount
+        {
+            get
+            {
+                lock (_lockObject) 
+                {
+                    if (mEvents.ContainsKey(Detector.getSessionIDStringWithDashes() ))
+                    {
+                        return mEvents[Detector.getSessionIDStringWithDashes()].Count;
+                    }
+
+                    return 0;
+                }
+            }
+        }
+
+        
+
         public void pushEvent(string aDescription, Dictionary<string, string> aParams)
         {
+            int cnt = 0;
             lock (_lockObject)
             {
-                if (mEvents.Count > 20000)
-                    return;
+                foreach (var kval in mEvents)
+                {
+                    cnt += kval.Value.Count;
+                }
             }
+
+            if (cnt > 50000) // max events total count
+                return;
 
             if (aDescription.Length > Defaults.kMaxLogEventStrLen)
             {
@@ -134,18 +161,40 @@ namespace AppAnalytics
             AAEvent newOne = AAEvent.create(mIndex, Detector.getCurrentDouble(), aDescription, aParams);
             Detector.logEventDbg(newOne);
 
-            var session = Detector.getSessionIDStringWithDashes();
-            lock (_lockObject)
+            lock (_lockBuffer)
             {
-                if (mEvents.ContainsKey(session))
+                mBuffer.Add(newOne);
+            }
+        }
+
+        public void insertEvents()
+        { 
+            List<AAEvent> copy = null;
+
+            lock (_lockBuffer)
+            {
+                copy = new List<AAEvent>(mBuffer.ToArray());
+                mBuffer.Clear();
+            }
+
+            if (copy.Count != 0)
+            {
+                var session = Detector.getSessionIDStringWithDashes();
+                lock (_lockObject)
                 {
-                    pushNewOrUpdateExisted(mEvents[session], newOne);
-                }
-                else
-                {
-                    mEvents.Add(Detector.getSessionIDStringWithDashes(), new List<AAEvent>());
-                    pushNewOrUpdateExisted(mEvents[session], newOne);
-                }
+                    foreach (var item in copy)
+                    {
+                        if (mEvents.ContainsKey(session))
+                        {
+                            pushNewOrUpdateExisted(mEvents[session], item);
+                        }
+                        else
+                        {
+                            mEvents.Add(Detector.getSessionIDStringWithDashes(), new List<AAEvent>());
+                            pushNewOrUpdateExisted(mEvents[session], item);
+                        }
+                    }
+                } 
             }
         }
 

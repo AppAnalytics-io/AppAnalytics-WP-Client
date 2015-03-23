@@ -1,0 +1,192 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+    <head><link rel="stylesheet" type="text/css" href="description/Combined.css,0:HeaderFooterSprite,0:Header.NonMtps,1:LinkList;/Areas/Centers/Themes/StandardDevCenter/Content:0,/Areas/Epx/Themes/Base/Content:1&amp;amp;hashKey=C9973DA951AE6202C9B348379A1BE49D" xmlns="http://www.w3.org/1999/xhtml" />
+<link type="text/css" rel="stylesheet" xmlns="http://www.w3.org/1999/xhtml" />
+<link rel="stylesheet" type="text/css" href="description/58ab559f-302e-4621-9fe0-c3fa955773caCombined.css,0:HeaderFooterSprite,0:Footer.NonMtps,1:LinkList;/Areas/Centers/Themes/StandardDevCenter/Content:0,/Areas/Epx/Themes/Base/Content:1&amp;amp;hashKey=F576C687BC536B84D6E5B3246EE39B49" xmlns="http://www.w3.org/1999/xhtml" />
+<link type="text/css" rel="stylesheet" xmlns="http://www.w3.org/1999/xhtml" />
+
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>Launching Maps in a Universal App</title>
+        <link href="description/Galleries.css" type="text/css" rel="Stylesheet" /><link href="description/Layout.css" type="text/css" rel="Stylesheet" /><link href="description/Brand.css" type="text/css" rel="Stylesheet" />
+        <link href="description/iframedescription.css" rel="Stylesheet" type="text/css" />
+        <script src="description/offline.js" type="text/javascript"></script>
+        <style type="text/css">
+            #projectInfo {
+                overflow: auto;
+            }
+            #longDesc {
+                clear:both;
+                margin: 25px 0 10px 0;
+            }
+
+            #SampleIndexList{
+                margin-left: 15px;
+            }
+        </style>
+    </head>
+<body>
+    <div id="offlineDescription">
+        <h1>Launching Maps in a Universal App</h1>
+        <br/>
+        <div id="projectInfo">
+            <div class="section">
+                    <div class="itemBarLong tagsContainer">
+                        <label for="Technologies">Technologies</label>
+                        <div id="Technologies">
+                            C#, Bing Maps, Windows Runtime, Windows Store app, Windows Phone 8.1, universal windows app
+                        </div>
+                    </div>
+                    <div class="itemBarLong tagsContainer">
+                        <label for="Topics">Topics</label>
+                        <div id="Topics">
+                            C#, Bing Maps, Using Bing Maps in Windows Phone, Windows Store app, Windows Phone 8.1, Universal apps, Launchers and Choosers in Universal Apps C#, universal windows app
+                        </div>
+                    </div>
+                <div class="itemBarLong">
+                    <label for="Platforms">Platforms</label>
+                    <div id="Platforms">
+                        Phone, Windows RT
+                    </div>
+                </div>
+                <div class="itemBarLong">
+                    <label for="Requirements">Requirements</label>
+                    <div id="Requirements">
+                        
+                    </div>
+                </div>
+                <div class="itemBar">
+                    <label for="LastUpdated">Primary language</label>
+                    <div id="LastUpdated">en-US</div>
+                </div>
+                <div class="itemBar">
+                    <label for="LastUpdated">Updated</label>
+                    <div id="LastUpdated">6/17/2014</div>
+                </div>
+                <div class="itemBarLong">
+                    <label for="License">License</label>
+                    <div id="License">
+                        <a href="license.rtf">MS-LPL</a></div>
+                </div>
+                <div class="itemBar">
+                    <div class="viewonlinecont">
+                        <a data-link="online" href="http://code.msdn.microsoft.com/Launching-Maps-in-a-9daeaef4">View this sample online</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+                   
+<script type="text/javascript">
+    function initializePage() {
+        var otherTabClass = 'otherTab';
+        var hiddenPreClass = 'hidden';
+
+        var htmlDecode = function(encodedData) {
+            var decodedData = "";
+            if (encodedData) {
+                var div = document.createElement('div');
+                div.innerHTML = encodedData;
+                decodedData = div.firstChild.nodeValue.replace( /\\r\\n/ig , '\r\n');
+            }
+            return decodedData;
+        };
+                
+        Galleries.iterateElem(Galleries.findElem(null, 'div', 'scriptcode'), function (index, scriptBlock) {
+            var titleElem = Galleries.findElem(scriptBlock, 'div', 'title')[0];
+            var labelElems = Galleries.findElem(titleElem, 'span');
+            if (labelElems.length == 0) {
+                labelElems = titleElem;
+            }
+            var languageSpans = Galleries.findElem(scriptBlock, 'span', 'hidden');
+            var pres = Galleries.findElem(scriptBlock, 'pre');
+            if (languageSpans.length > 0 && pres.length > 1) {
+                Galleries.iterateElem(labelElems, function(index, elem) {
+                    var codePre = pres[index];
+                    var labelSpan = elem;
+                    var languageSpan = languageSpans[index];
+                            
+                    elem.code = codePre.innerHTML.replace( /(\r(\n)?)|((\r)?\n)/ig , '\\r\\n');
+                            
+                    codePre.className = codePre.className.replace(hiddenPreClass, '');
+                            
+                    languageSpan.parentNode.removeChild(languageSpan);
+                });
+
+                pres = Galleries.findElem(scriptBlock, 'pre');
+                Galleries.iterateElem(labelElems, function(index, elem) {
+                    var codePre = pres[index];
+                    var labelSpan = elem;
+                    if (index == 0) {
+                        scriptBlock.activeTab = 0;
+                    }
+                    else {
+                        labelSpan.className += otherTabClass;
+                        codePre.className += hiddenPreClass;
+                    }
+                    Galleries.attachEventHandler(labelSpan, 'click', function(e) {
+                        var activeTab = scriptBlock.activeTab;
+                        labelElems[activeTab].className += otherTabClass;
+                        pres[activeTab].className += hiddenPreClass;
+
+                        codePre.className = codePre.className.replace(hiddenPreClass, '');
+                        labelSpan.className = labelSpan.className.replace(otherTabClass, '');
+                        scriptBlock.activeTab = index;
+                    });
+                });
+
+                var preview = Galleries.findElem(scriptBlock, 'div', 'preview');
+                if (preview.length == 0) {
+                    preview.push(pres[pres.length - 1]);
+                }
+                Galleries.iterateElem(preview, function(index, elem) {
+                    elem.parentNode.removeChild(elem);
+                });
+
+                if (window.clipboardData && clipboardData.setData) {
+                    var copyLink = document.createElement('a');
+                    copyLink.href = 'javascript:void(0);';
+                    copyLink.className = 'copyCode';
+                    copyLink.innerHTML = 'Copy code';
+                    Galleries.attachEventHandler(copyLink, 'click', function (e) {
+                        clipboardData.setData("Text", htmlDecode(labelElems[scriptBlock.activeTab].code));
+                        return false;
+                    });
+                    scriptBlock.insertBefore(copyLink, scriptBlock.childNodes[0]);
+                }
+            }
+        });
+    }
+
+    Galleries.onWindowLoad(function(){
+        initializePage();
+    });
+
+</script>
+<div id="longDesc">
+    
+<h1 style="text-align:left">Introduction</h1>
+<p>At the Microsoft //Build/ Conference last April, the Windows Phone 8.1 SDK (WP8.1) was released as a preview. With the release of this SDK one of the new templates added to Visual Studios now allows you to create universal apps. Universals apps to build
+ an app for Windows and Windows Phone while at the same time being able to share code, user controls, styles, strings, and other assets between the two projects in Visual Studio. This saves time having to develop code for each platform. You can find more information
+ on creating universal apps <a href="http://msdn.microsoft.com/en-us/library/windows/apps/dn609832.aspx">
+here</a>.</p>
+<p>In the past we wrote a <a href="http://www.bing.com/blogs/site_blogs/b/maps/archive/2013/06/19/automating-the-windows-map-app.aspx">
+blog post</a> about being able to launch the built in Maps app in a Windows Store app using a process called Protocol Activation. The Maps app in Windows is registered for protocol activation and the URI schema is documented
+<a href="http://msdn.microsoft.com/en-us/library/windows/apps/jj635237.aspx">here</a>. This same schema is supported in WP8.1 apps as well. In this code sample we are going create a set of reusable tools inside of a universal app for launching the maps app
+ in Windows 8 and WP8.1.</p>
+<p>This code sample is for blog post which you can find <a href="http://blogs.msdn.com/b/bingdevcenter/archive/2014/06/04/how-to-launch-maps-in-a-universal-app.aspx">
+here</a>.</p>
+<p><span style="font-size:20px; font-weight:bold">Description</span></p>
+<p>The code sample contains a shared class that launches the built in Maps app from the Windows &amp; Windows Phone apps. The shared folder also contains a user control for testing out this class. The user control looks like this:&nbsp;</p>
+<p><img id="115023" src="description/UniversalControl.png" alt="" width="700" height="207" style="margin-right:auto; margin-left:auto; display:block"></p>
+<p>You can edit the fields in the forms or simply press one of the buttons to launch the map. When using the Windows app the map will load beside the app. Here is a screenshot of the app when calculating a route from Portland to Seattle.</p>
+<p><img id="115024" src="description/UniversalWin8.png" alt="" width="700" height="394" style="margin-right:auto; margin-left:auto; display:block"></p>
+<p>When using the Windows Phone app the map app will load up and take the full screen. If you press the back button you will be able to get back to your app. Here is a screenshot of the map app after doing a &ldquo;What &amp; Where&rdquo; search for &ldquo;Pizza
+ in New York&rdquo;.</p>
+<p><img id="115025" src="description/UniversalWinPhone.png" alt="" width="283" height="500" style="margin-right:auto; margin-left:auto; display:block"></p>
+
+</div>
+
+
+    </div>
+</body>
+</html>

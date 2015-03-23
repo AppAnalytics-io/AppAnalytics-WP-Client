@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AppAnalytics
 {
-    public enum GestureID
+    internal enum GestureID
     {
         SingleTapWith1Finger = 1,
         DoubleTapWith1Finger = 2,

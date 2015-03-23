@@ -174,7 +174,8 @@ namespace AppAnalytics
             }
             bool descriptionFlag = mDescription.Equals(obj.mDescription);
             bool paramsFlag = (mParameters.Count == obj.mParameters.Count
-                                && !mParameters.Except(obj.mParameters).Any());
+                                && mParameters.GetHashCode() != obj.mParameters.GetHashCode());
+                                //!mParameters.Except(obj.mParameters).Any());
 
             return descriptionFlag && paramsFlag;
         }

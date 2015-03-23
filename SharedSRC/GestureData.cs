@@ -9,7 +9,7 @@ using Windows.Foundation;
 
 namespace AppAnalytics
 {
-    public class GestureData
+    internal class GestureData
     {
         private static UInt64 mGlobalIndex = 0;
         public UInt64 mActionOrder = 0;

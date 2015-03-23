@@ -45,7 +45,7 @@ namespace Testing
                 new EventHandler<ManipulationDeltaEventArgs>(Drag_ManipulationDelta);
             TestRectangle.ManipulationCompleted +=
                 new EventHandler<ManipulationCompletedEventArgs>(Rectangle_ManipulationCompleted);
-
+            
             AppAnalytics.API.init("2miKqKyeGhoQgvIImX9UfAf17fuwnyvP");
         }
 

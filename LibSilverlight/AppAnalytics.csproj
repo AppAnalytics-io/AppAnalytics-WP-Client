@@ -105,7 +105,7 @@
       <Link>SRC\ManifestBuilder.cs</Link>
     </Compile>
     <Compile Include="..\SharedSRC\PublicAPI.cs">
-      <Link>SRC\Events\PublicAPI.cs</Link>
+      <Link>SRC\PublicAPI.cs</Link>
     </Compile>
     <Compile Include="..\SharedSRC\utils\Converter.cs">
       <Link>SRC\Utils\Converter.cs</Link>

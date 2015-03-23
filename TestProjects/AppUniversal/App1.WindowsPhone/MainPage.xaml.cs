@@ -22,14 +22,27 @@ namespace App1
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
+    /// 
     public sealed partial class MainPage : Page
     {
+        static bool mTested = false;
         public MainPage()
         {
             this.InitializeComponent();
             this.AddHandler(UIElement.PointerMovedEvent, new PointerEventHandler(pointerMoved), true);
             AppAnalytics.API.init("2miKqKyeGhoQgvIImX9UfAf17fuwnyvP");
-            this.NavigationCacheMode = NavigationCacheMode.Required;
+//             this.NavigationCacheMode = NavigationCacheMode.Required;
+
+            // < Testing
+ //           AppAnalytics.API.DebugLogEnabled = false;
+//             if (!mTested)
+//             {
+//              TAppAnalytics.BigDataSimulation.PushRandomEvents(40000);
+//              TAppAnalytics.Simulation.CheckInsertionTime();
+//                 TAppAnalytics.BigDataSimulationPeriodical.PushRandomSamplesWithPeriod(100, 1);
+//                 TAppAnalytics.BigDataSimulationPeriodical.PushRandowEventsWithPeriod(100, 1);
+//                 mTested = true;
+//             }
         }
 
         void pointerMoved(object sender, PointerRoutedEventArgs e)
