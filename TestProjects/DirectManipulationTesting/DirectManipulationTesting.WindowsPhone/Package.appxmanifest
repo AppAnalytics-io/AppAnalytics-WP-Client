@@ -1,15 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/2010/manifest" xmlns:m2="http://schemas.microsoft.com/appx/2013/manifest" xmlns:m3="http://schemas.microsoft.com/appx/2014/manifest" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest">
 
-  <Identity Name="9f13ca38-c57d-4147-92f5-6e7ead8b0507"
-            Publisher="CN=richbrun"
+  <Identity Name="8402c947-c81c-4165-aabd-e38ec26b5a3c"
+            Publisher="CN=Vlad"
             Version="1.0.0.0" />
 
-  <mp:PhoneIdentity PhoneProductId="9f13ca38-c57d-4147-92f5-6e7ead8b0507" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+  <mp:PhoneIdentity PhoneProductId="8402c947-c81c-4165-aabd-e38ec26b5a3c" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>UniversalMapLauncher.WindowsPhone</DisplayName>
-    <PublisherDisplayName>richbrun</PublisherDisplayName>
+    <DisplayName>DirectManipulationTesting.WindowsPhone</DisplayName>
+    <PublisherDisplayName>Vlad</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 
@@ -25,17 +25,16 @@
   <Applications>
     <Application Id="App"
         Executable="$targetnametoken$.exe"
-        EntryPoint="UniversalMapLauncher.WindowsPhone.App">
+        EntryPoint="DirectManipulationTesting.WindowsPhone.App">
         <m3:VisualElements
-            DisplayName="UniversalMapLauncher.WindowsPhone"
+            DisplayName="DirectManipulationTesting.WindowsPhone"
             Square150x150Logo="Assets\Logo.png"
             Square44x44Logo="Assets\SmallLogo.png"
-            Description="UniversalMapLauncher.WindowsPhone"
+            Description="DirectManipulationTesting.WindowsPhone"
             ForegroundText="light"
             BackgroundColor="transparent">
             <m3:DefaultTile Wide310x150Logo="Assets\WideLogo.png" Square71x71Logo="Assets\Square71x71Logo.png"/>
             <m3:SplashScreen Image="Assets\SplashScreen.png"/>
-            <m3:ApplicationView MinWidth="width320"/> <!--Used in XAML Designer. DO NOT REMOVE-->
         </m3:VisualElements>
     </Application>
   </Applications>

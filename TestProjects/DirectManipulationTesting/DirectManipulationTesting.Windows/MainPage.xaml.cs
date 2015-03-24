@@ -15,7 +15,7 @@ using Windows.UI.Xaml.Navigation;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
 
-namespace UniversalMapLauncher
+namespace DirectManipulationTesting
 {
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
@@ -25,6 +25,7 @@ namespace UniversalMapLauncher
         public MainPage()
         {
             this.InitializeComponent();
+            AppAnalytics.API.init("2miKqKyeGhoQgvIImX9UfAf17fuwnyvP");
         }
     }
 }

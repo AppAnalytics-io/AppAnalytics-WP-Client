@@ -19,13 +19,15 @@ using Microsoft.Phone.Controls;
 using Microsoft.Xna.Framework.Input.Touch;
 using System.Windows.Navigation;
 using Windows.ApplicationModel;
-using Microsoft.Phone.Shell; 
+using Microsoft.Phone.Shell;
+using System.Reflection; 
 #else
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.Globalization;
 using Windows.ApplicationModel;
 using Windows.UI.Xaml.Navigation;
+using System.Runtime.CompilerServices;
 #endif
 
 namespace AppAnalytics
@@ -345,12 +347,6 @@ namespace AppAnalytics
             EventsManager.Instance.init();
             CoreApplication.Exiting += onAppExit;
             CoreApplication.Suspending += onAppSuspend;
-             
-#if DEBUG //Temporary
-//             EventsManager.Instance.DebugLogEnabled = true;
-//             EventsManager.Instance.DispatchInterval = 10;
-//             EventsManager.Instance.pushEvent("check", new Dictionary<string, string> { { "p1", "v1" } });
-#endif 
 
             var tsk = new Task(mIDGen.init);
             tsk.Start();
@@ -359,9 +355,7 @@ namespace AppAnalytics
             mApiKey = Encoding.UTF8.GetBytes(aApiKey);
             if (mApiKey.Length != 32)
             {
-                Debug.WriteLine("API key length is not equal 32");
-                mApiKey = new byte[32];
-                mApiKey.Initialize();
+                throw new ArgumentOutOfRangeException("API key length is not equal 32"); 
             }
 
 
@@ -440,11 +434,11 @@ namespace AppAnalytics
 
         const double    kInsertMark = 150;
         static Stopwatch mInsertinonTimer = new Stopwatch();
-
-#if SILVERLIGHT
-        static private void updateLoop()
+   
+#if SILVERLIGHT      
+        static private void updateLoop() 
 #else
-        static async private void updateLoop()
+        static private async void updateLoop() 
 #endif
         {
             mInsertinonTimer.Start();
@@ -665,17 +659,17 @@ namespace AppAnalytics
         }
 
         static public void storeAll()
-        {
+        { 
             var tmp = new Task(ManifestController.Instance.store);
             tmp.Start();
             tmp.Wait();
 
             EventsManager.Instance.store();
-        }
+        } 
 
         #region debug_info_logging
         internal static void logSampleDbg(GestureData aGD)
-        {
+        { 
             if (EventsManager.Instance.DebugLogEnabled)
             {
                 Debug.WriteLine("Order ID [{0}]", BitConverter.ToUInt64(aGD.ActionOrder,0) );
@@ -690,7 +684,7 @@ namespace AppAnalytics
         }
 
         internal static void logEventDbg(AAEvent aEvent)
-        {
+        { 
             if (EventsManager.Instance.DebugLogEnabled)
             {
                 string eventToStr = aEvent.ToString();

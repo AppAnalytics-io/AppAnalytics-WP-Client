@@ -45,6 +45,15 @@ namespace AppAnalytics
             return newOne;
         }
 
+        static public GestureData createTestSample()
+        {
+            return GestureData.create(GestureID.FlickDownWith4Finger,
+                                                   new Windows.Foundation.Point(0, 0),
+                                                   "1234567890", "12345");
+        }
+
+        static public int testSampleSize() { return 42 + "1234567890".Length + "12345".Length; }
+
         public byte[] ActionOrder
         {
             get { return BitConverter.GetBytes(mActionOrder); }
@@ -56,7 +65,7 @@ namespace AppAnalytics
         private long mTime = 0;
         public DateTime mTimeObject = new DateTime(); //mb I should use it  instead of mTime.
 
-        public static long convertToUnixTimestamp(DateTime date)
+        public static long toBinary(DateTime date)
         {
             return date.ToBinary();
         }
@@ -64,7 +73,7 @@ namespace AppAnalytics
         public void setCurrentTime()
         {
             mTimeObject = DateTime.Now;
-            mTime = convertToUnixTimestamp(DateTime.Now);
+            mTime = toBinary(DateTime.Now);
         }
 
         public byte[] ActionTime
@@ -105,7 +114,7 @@ namespace AppAnalytics
         {
             get { return (UInt16)(ElementID.Length ); }
         }
-        // change it later. we can use Enum.GetName if with same result.
+        // change it later. we can use Enum.GetName with same result.
         // make output friendly
         public string typeToString()
         {

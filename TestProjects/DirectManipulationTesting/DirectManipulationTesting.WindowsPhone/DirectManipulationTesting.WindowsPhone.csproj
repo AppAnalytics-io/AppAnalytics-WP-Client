@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{0BE99691-FE11-4D63-AD9B-1F7ABBE4764C}</ProjectGuid>
+    <ProjectGuid>{A209232A-F9F3-4F47-B7A8-CC7B4210F3C0}</ProjectGuid>
     <OutputType>AppContainerExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>UniversalMapLauncher</RootNamespace>
-    <AssemblyName>UniversalMapLauncher.WindowsPhone</AssemblyName>
+    <RootNamespace>DirectManipulationTesting</RootNamespace>
+    <AssemblyName>DirectManipulationTesting.WindowsPhone</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformVersion>8.1</TargetPlatformVersion>
     <MinimumVisualStudioVersion>12</MinimumVisualStudioVersion>
@@ -81,10 +81,6 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
-    <ProjectReference Include="..\..\..\..\..\LibUniversal\AppAnalyticsRT.csproj">
-      <Project>{7797539f-e6d3-4630-9be0-c12dc5e38c38}</Project>
-      <Name>AppAnalyticsRT</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MainPage.xaml.cs">
@@ -117,7 +113,7 @@
   <PropertyGroup Condition=" '$(TargetPlatformIdentifier)' == '' ">
     <TargetPlatformIdentifier>WindowsPhoneApp</TargetPlatformIdentifier>
   </PropertyGroup>
-  <Import Project="..\UniversalMapLauncher.Shared\UniversalMapLauncher.Shared.projitems" Label="Shared" />
+  <Import Project="..\DirectManipulationTesting.Shared\DirectManipulationTesting.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

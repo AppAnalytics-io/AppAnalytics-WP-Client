@@ -189,9 +189,9 @@ namespace AppAnalytics
                 try
                 {
                     this._pointerPressed(ps[0]);
+                    mRecognizer.ProcessDownEvent(ps[0]);
                 }
-                catch { }
-                mRecognizer.ProcessDownEvent(ps[0]);
+                catch (Exception ex) { }
             }
         }
 
@@ -200,12 +200,12 @@ namespace AppAnalytics
             var ps = e.GetIntermediatePoints(null);
             if (ps != null && ps.Count > 0)
             {
-                this._pointerMoved(ps[0]);
                 try
                 {
+                    this._pointerMoved(ps[0]);
                     mRecognizer.ProcessMoveEvents(ps);
                 }
-                catch{}
+                catch (Exception ex) { }
             }
         }
 
@@ -220,7 +220,7 @@ namespace AppAnalytics
                     mRecognizer.ProcessUpEvent(ps[0]);
                     mRecognizer.CompleteGesture();
                 }
-                catch{}
+                catch (Exception ex) { }
             }
             if (ps != null && ps.Count == 1)
             {
@@ -448,6 +448,7 @@ namespace AppAnalytics
 
         private void _pointerMoved(object sender, PointerEventArgs e)
         {
+            Debug.WriteLine("<<Pointer moved>>"); 
             var CurrentPoint = e.CurrentPoint;
 
             TouchPoint tp = new TouchPoint();

@@ -111,7 +111,7 @@ namespace AppAnalytics
                     Request.Headers[Header] = Value;
                 }
             }
-            catch { }
+            catch (Exception e){ }
         }
 #endif
         static List<Dictionary<string, List<object>>> sts = new List<Dictionary<string, List<object>>>();
@@ -204,7 +204,7 @@ namespace AppAnalytics
             KeyValuePair<HttpWebRequest, byte[]> state = stateObj.RequestDataPair;
             var request = state.Key;
             var dataToSend = state.Value;
-            // End the operation
+            // End the operation -> exception
             Stream postStream = request.EndGetRequestStream(asynchronousResult);
 
             // Write to the request stream.
@@ -213,8 +213,7 @@ namespace AppAnalytics
             postStream.Close();
 #else
             postStream.Dispose();
-#endif
-
+#endif 
             // Start the asynchronous operation to get the response
             request.BeginGetResponse(new AsyncCallback(GetResponseCallback), stateObj);
         }
@@ -237,31 +236,31 @@ namespace AppAnalytics
 
                 string responseString = streamRead.ReadToEnd();
                 Debug.WriteLine("[sending.. response:]" + responseString);
+
+                if (response != null && response.StatusCode == HttpStatusCode.OK)
+                {
+                    Sender.success(stateObj.FileType, stateObj.ListToDelete);
+                }
+                else
+                {
+                    Sender.fail();
+                }
             }
             catch (Exception e)
             {
-                if (response != null)
-                {
-                    streamResponse = response.GetResponseStream();
-                    streamRead = new StreamReader(streamResponse);
-
-                    string responseString = streamRead.ReadToEnd() + e.ToString(); 
-                } 
+//                 if (response != null)
+//                 {
+//                     streamResponse = response.GetResponseStream();
+//                     streamRead = new StreamReader(streamResponse);
+// 
+//                     string responseString = streamRead.ReadToEnd() + e.ToString(); 
+//                 } 
             }
             finally
             {
                 if (null != streamResponse) streamResponse.Dispose();
                 if (null != streamRead) streamRead.Dispose();
                 if (null != response) response.Dispose();
-            }
-
-            if (response != null && response.StatusCode == HttpStatusCode.OK)
-            {
-                Sender.success(stateObj.FileType, stateObj.ListToDelete); 
-            }
-            else
-            {
-                Sender.fail(); 
             }
         }
     }

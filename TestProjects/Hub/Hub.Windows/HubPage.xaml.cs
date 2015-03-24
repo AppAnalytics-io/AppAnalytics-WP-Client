@@ -48,7 +48,8 @@ namespace Hub
         public HubPage()
         {
             this.InitializeComponent();
-            AppAnalytics.Detector.init("IcawZz1SbQA1TA8upkLqgPDg5hka6VMQ");
+            AppAnalytics.API.init("2miKqKyeGhoQgvIImX9UfAf17fuwnyvP");
+            AppAnalytics.API.DebugLogEnabled = true;
             this.navigationHelper = new NavigationHelper(this);
             this.navigationHelper.LoadState += this.NavigationHelper_LoadState;
         }

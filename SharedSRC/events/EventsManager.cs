@@ -355,7 +355,11 @@ namespace AppAnalytics
                         js.WriteObject(stream, tmp); 
                 }
             }
-            catch {  }
+            catch (Exception e) 
+            {
+                if (EventsManager.Instance.DebugLogEnabled)
+                    Debug.WriteLine("Exception while serializing: " + e);
+            }
         }
 
         private async Task<bool> deserialize()
@@ -382,7 +386,7 @@ namespace AppAnalytics
                     }
                 }
             }
-            catch { }   // occurs when aa_events does not exist, it is ok.
+            catch (Exception ex) { }   // occurs when aa_events does not exist, it is ok.
                         // it is way to check if file exist with winrt btw :) 
             return true;
         }
