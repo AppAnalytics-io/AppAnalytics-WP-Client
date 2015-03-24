@@ -39,11 +39,7 @@ Icon
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
-# Build results
-[Dd]ebug/
-[Dd]ebugPublic/
-[Rr]elease/
-[Rr]eleases/
+# Build results 
 x64/
 x86/
 build/
@@ -62,9 +58,7 @@ bld/
 *.VisualState.xml
 TestResult.xml
 
-# Build Results of an ATL Project
-[Dd]ebugPS/
-[Rr]eleasePS/
+# Build Results of an ATL Project 
 dlldata.c
 
 *_i.c
@@ -273,10 +267,6 @@ DerivedData
 *.sln.docstates
 
 # Build results
-[Dd]ebug/
-[Dd]ebugPublic/
-[Rr]elease/
-[Rr]eleases/
 x64/
 x86/
 build/
@@ -295,9 +285,7 @@ bld/
 *.VisualState.xml
 TestResult.xml
 
-# Build Results of an ATL Project
-[Dd]ebugPS/
-[Rr]eleasePS/
+# Build Results of an ATL Project 
 dlldata.c
 
 *_i.c
