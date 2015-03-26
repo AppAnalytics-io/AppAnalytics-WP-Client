@@ -25,8 +25,18 @@ namespace AppAnalytics
 
         List<AAEvent> mBuffer = new List<AAEvent>(); 
         Dictionary<string, List<AAEvent>> mEvents = new Dictionary<string,List<AAEvent>>();
+         
+        UInt32 mIndex = 0;
 
-        UInt32  mIndex = 0;
+        public UInt32 Index
+        {
+            get 
+            { 
+                lock(_lockBuffer)
+                    return mIndex; 
+            }
+
+        }
         float   mDispatchInterval = Defaults.kDefDispatchInterval;
         bool    mDebugLogEnabled = Defaults.kDbgLogEnabled;
 
@@ -44,7 +54,7 @@ namespace AppAnalytics
 
         Timer mSerializationTimer = null;
         Timer mDispatchTimer = null;
-
+        
         public bool DebugLogEnabled
         {
             get { return mDebugLogEnabled; }
@@ -59,7 +69,7 @@ namespace AppAnalytics
         {
             get { return mDispatchInterval; }
             set
-            {
+            { 
                 var tmp =   (value > Defaults.kMaxDispatchInterval) ? Defaults.kMaxDispatchInterval : value;
                 tmp =       (value < Defaults.kMinDispatchInterval) ? Defaults.kMinDispatchInterval : value;
 
@@ -101,8 +111,7 @@ namespace AppAnalytics
 
             var tmp = Detector.getSessionIDStringWithDashes();
             mEvents.Add(tmp, new List<AAEvent>());
-
-            //mDispatchInterval = 5;
+            
             mDispatchTimer = new Timer(tryToSendCallback, null,
 #if SILVERLIGHT
                          0,//(uint)(mDispatchInterval * 1000),
@@ -136,11 +145,9 @@ namespace AppAnalytics
                     return 0;
                 }
             }
-        }
+        } 
 
-        
-
-        public void pushEvent(string aDescription, Dictionary<string, string> aParams)
+        public AAEvent pushEvent(string aDescription, Dictionary<string, string> aParams)
         {
             int cnt = 0;
             lock (_lockObject)
@@ -152,19 +159,20 @@ namespace AppAnalytics
             }
 
             if (cnt > 50000) // max events total count
-                return;
+                return null;
 
             if (aDescription.Length > Defaults.kMaxLogEventStrLen)
             {
                 aDescription = aDescription.Substring(0, (int)Defaults.kMaxLogEventStrLen);
             }
-            AAEvent newOne = AAEvent.create(mIndex, Detector.getCurrentDouble(), aDescription, aParams);
+            AAEvent newOne = AAEvent.create(mIndex, Detector.getCurrentTimeAsDouble(), aDescription, aParams);
             Detector.logEventDbg(newOne);
 
             lock (_lockBuffer)
             {
                 mBuffer.Add(newOne);
             }
+            return newOne;
         }
 
         public void insertEvents()
@@ -203,19 +211,20 @@ namespace AppAnalytics
             if (aContainer.Contains(aNewOne))
             {
                 aNewOne = aContainer.Find(x => x.Equals(aNewOne) );
-                aNewOne.addIndex(mIndex);
-                aNewOne.addTimestamp(Detector.getCurrentDouble());
+                aNewOne.addIndex(Index);
+                aNewOne.addTimestamp(Detector.getCurrentTimeAsDouble());
             }
             else
             {
                 mEvents[Detector.getSessionIDStringWithDashes()].Add(aNewOne); 
             }
-            mIndex++;
+            lock (_lockBuffer)
+                mIndex++;
         }
 
-        public void pushEvent(string aDescription)
+        public AAEvent pushEvent(string aDescription)
         {
-            pushEvent(aDescription, null);
+            return pushEvent(aDescription, null);
         }
         #endregion
 
@@ -355,7 +364,11 @@ namespace AppAnalytics
                         js.WriteObject(stream, tmp); 
                 }
             }
-            catch {  }
+            catch (Exception e) 
+            {
+                if (EventsManager.Instance.DebugLogEnabled)
+                    Debug.WriteLine("Exception while serializing: " + e);
+            }
         }
 
         private async Task<bool> deserialize()
@@ -382,7 +395,7 @@ namespace AppAnalytics
                     }
                 }
             }
-            catch { }   // occurs when aa_events does not exist, it is ok.
+            catch (Exception) { }   // occurs when aa_events does not exist, it is ok.
                         // it is way to check if file exist with winrt btw :) 
             return true;
         }

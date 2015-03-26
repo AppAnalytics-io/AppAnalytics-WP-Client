@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 
 namespace AppAnalytics
 {
+    // TODO: remove sts hack.
     internal static class MultipartUploader
     {
         public class FileParameter
@@ -56,12 +57,12 @@ namespace AppAnalytics
 
         public class StateObject
         {
-            public KeyValuePair<HttpWebRequest, byte[]> RequestDataPair = new KeyValuePair<HttpWebRequest,byte[]>(null, null);
+            public byte[] Data = null;
             public AAFileType FileType = AAFileType.FTManifests;
             public Dictionary<string, List<object>> ListToDelete = null;
-            public StateObject(KeyValuePair<HttpWebRequest, byte[]> pair, AAFileType aType, Dictionary<string, List<object>> aListToDelete)
+            public StateObject(byte[] pair, AAFileType aType, Dictionary<string, List<object>> aListToDelete)
             {
-                RequestDataPair = pair;
+                Data = pair;
                 FileType = aType;
                 ListToDelete = aListToDelete;
             }
@@ -69,13 +70,10 @@ namespace AppAnalytics
 
         private static readonly Encoding encoding = Encoding.UTF8;
 
-        public static bool MultipartFormDataPut(string postUrl, string userAgent, Dictionary<string, object> postParameters, Dictionary<string, List<object>> aListToDelete)
+        public static bool MultipartFormDataPut(IPUTRequest aRequest, Dictionary<string, object> postParameters,
+                    Dictionary<string, List<object>> aListToDelete, string boundary)
         {
-            var d = Guid.NewGuid();
-
-            string formDataBoundary = String.Format("----------{0:N}", Guid.NewGuid());
-            string contentType = "multipart/form-data; boundary=" + formDataBoundary;
-
+            string formDataBoundary = boundary;
             byte[] formData = GetMultipartFormData(postParameters, formDataBoundary);
 
             var aType = AAFileType.FTManifests;
@@ -83,81 +81,63 @@ namespace AppAnalytics
             if (fp != null)
             { aType = fp.FileType; }
 
-            return PutForm(postUrl, userAgent, contentType, formData, aType, aListToDelete);
+            return PutForm(aRequest, formData, aType, aListToDelete);
         }
 
-        public static bool MultipartFormDataPut(string postUrl, string userAgent, FileParameter postParameters, Dictionary<string, List<object>> ListToDelete)
+        public static bool MultipartFormDataPut(IPUTRequest aRequest, FileParameter postParameters,
+            Dictionary<string, List<object>> ListToDelete, string boundary)
         {
             var dict = new Dictionary<string, object>();
             dict.Add("-", postParameters);
-            return MultipartFormDataPut(postUrl, userAgent, dict, ListToDelete);
-        }
-
-#if UNIVERSAL
-        // winrt version of HttpWebRequest doesn't have UserAgent as header by default.
-        static private void SetHeader(HttpWebRequest Request, string Header, string Value)
+            return MultipartFormDataPut(aRequest, dict, ListToDelete, boundary);
+        } 
+        //static List<Dictionary<string, List<object>>> sts = new List<Dictionary<string, List<object>>>();
+       
+        private static bool PutForm(IPUTRequest aRequest, byte[] formData, 
+                    AAFileType aType, Dictionary<string, List<object>> ListToDelete)
         {
-            // Retrieve the property through reflection.
-            PropertyInfo PropertyInfo = Request.GetType().GetRuntimeProperty(Header.Replace("-", string.Empty));
-            // Check if the property is available.
-            try
-            {
-//                 if (PropertyInfo != null)
-//                 {
-//                     PropertyInfo.SetValue(Request, Value, null);
-//                 }
-//                 else
-                {
-                    Request.Headers[Header] = Value;
-                }
-            }
-            catch { }
-        }
-#endif
-        static List<Dictionary<string, List<object>>> sts = new List<Dictionary<string, List<object>>>();
-        private static bool PutForm(string postUrl, string userAgent, string contentType,
-                                    byte[] formData, AAFileType aType, Dictionary<string, List<object>> ListToDelete)
-        {
-            HttpWebRequest request = WebRequest.Create(postUrl) as HttpWebRequest;
-
-            if (request == null)
-            {
-                throw new NullReferenceException("not a http request");
-            }
-
-            request.Method = "PUT";
-            request.ContentType = contentType;
-#if SILVERLIGHT
-            request.UserAgent = userAgent;
-            request.ContentLength = formData.Length;
-#else
-            SetHeader(request, "UserAgent", userAgent);
-//             SetHeader(request, "ContentLength", formData.Length.ToString());
-#endif
-            request.CookieContainer = new CookieContainer();
-
-            var st = request.ToString();
-
-            var state = new KeyValuePair<HttpWebRequest, byte[]>(request, formData);
+            var state = formData;
             var stateObj = new StateObject(state, aType, ListToDelete);
-            sts.Add(ListToDelete);
+            //sts.Add(ListToDelete);
 
-            #region simulation
-            // #if DEBUG 
+            aRequest.SendRequest(aRequest.GetRequestStreamCallback, stateObj, Sender.success);
+//             HttpWebRequest request = WebRequest.Create(postUrl) as HttpWebRequest;
+// 
+//             if (request == null)
 //             {
-//                 Sender.success(aType, ListToDelete);
-//                 //Debug.WriteLine("Sender :: Sending simulated. (only for dbg mode)");
-//                 return true;
-            //             }
-            #endregion
-
-            var result = request.BeginGetRequestStream(GetRequestStreamCallback, stateObj);
+//                 throw new NullReferenceException("not a http request");
+//             }
+// 
+//             request.Method = "PUT";
+//             request.ContentType = contentType;
+// #if SILVERLIGHT
+//             request.UserAgent = userAgent;
+//             request.ContentLength = formData.Length;
+// #else
+//             SetHeader(request, "UserAgent", userAgent);
+// //             SetHeader(request, "ContentLength", formData.Length.ToString());
+// #endif
+// 
+//             var st = request.ToString();
+// 
+//             var state = new KeyValuePair<HttpWebRequest, byte[]>(request, formData);
+//             var stateObj = new StateObject(state, aType, ListToDelete);
+//             sts.Add(ListToDelete);
+// 
+//             var result = request.BeginGetRequestStream(GetRequestStreamCallback, stateObj);
 
             return true;
         }
 
+        public static string createHeader(string boundary, FileParameter fileToUpload)
+        {
+            return string.Format("--{0}\r\nContent-Disposition: form-data; name={1}\r\nContent-Type: {2}\r\n\r\n",// \r\n",
+                                boundary,
+                                fileToUpload.typeToString(),
+                                fileToUpload.ContentType);
+        }
 
-        private static byte[] GetMultipartFormData(Dictionary<string, object> postParameters, string boundary)
+        public static byte[] GetMultipartFormData(Dictionary<string, object> postParameters, string boundary)
         {
             Stream formDataStream = new System.IO.MemoryStream();
             bool needsCLRF = false;
@@ -172,11 +152,7 @@ namespace AppAnalytics
                 {
                     FileParameter fileToUpload = (FileParameter)param.Value;
 
-                    string header =
-                          string.Format("--{0}\r\nContent-Disposition: form-data; name={1}\r\nContent-Type: {2}\r\n\r\n",// \r\n",
-                          boundary,
-                          fileToUpload.typeToString(),
-                          fileToUpload.ContentType);
+                    string header = createHeader(boundary, fileToUpload);
 
                     formDataStream.Write(encoding.GetBytes(header), 0, encoding.GetByteCount(header));
 
@@ -194,75 +170,6 @@ namespace AppAnalytics
             formDataStream.Dispose();
 
             return formData;
-        }
-
-        private static void GetRequestStreamCallback(IAsyncResult asynchronousResult)
-        {
-            var stateObj = asynchronousResult.AsyncState as StateObject;
-            Debug.Assert(stateObj != null);
-
-            KeyValuePair<HttpWebRequest, byte[]> state = stateObj.RequestDataPair;
-            var request = state.Key;
-            var dataToSend = state.Value;
-            // End the operation
-            Stream postStream = request.EndGetRequestStream(asynchronousResult);
-
-            // Write to the request stream.
-            postStream.Write(dataToSend, 0, dataToSend.Length);
-#if SILVERLIGHT
-            postStream.Close();
-#else
-            postStream.Dispose();
-#endif
-
-            // Start the asynchronous operation to get the response
-            request.BeginGetResponse(new AsyncCallback(GetResponseCallback), stateObj);
-        }
-
-        private static void GetResponseCallback(IAsyncResult asynchronousResult)
-        {
-            var stateObj = asynchronousResult.AsyncState as StateObject;
-            Debug.Assert(stateObj != null);
-
-            HttpWebRequest request = stateObj.RequestDataPair.Key;
-            HttpWebResponse response = null;
-            Stream streamResponse = null;
-            StreamReader streamRead = null;
-
-            try
-            {
-                response = (HttpWebResponse)request.EndGetResponse(asynchronousResult);
-                streamResponse = response.GetResponseStream();
-                streamRead = new StreamReader(streamResponse);
-
-                string responseString = streamRead.ReadToEnd();
-                Debug.WriteLine("[sending.. response:]" + responseString);
-            }
-            catch (Exception e)
-            {
-                if (response != null)
-                {
-                    streamResponse = response.GetResponseStream();
-                    streamRead = new StreamReader(streamResponse);
-
-                    string responseString = streamRead.ReadToEnd() + e.ToString(); 
-                } 
-            }
-            finally
-            {
-                if (null != streamResponse) streamResponse.Dispose();
-                if (null != streamRead) streamRead.Dispose();
-                if (null != response) response.Dispose();
-            }
-
-            if (response != null && response.StatusCode == HttpStatusCode.OK)
-            {
-                Sender.success(stateObj.FileType, stateObj.ListToDelete); 
-            }
-            else
-            {
-                Sender.fail(); 
-            }
         }
     }
 }

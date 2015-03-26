@@ -20,14 +20,34 @@ namespace AppAnalytics
         [DataMember(Name = "indices", IsRequired = true)]
         private List<UInt32> mIndices = new List<UInt32>();
 
+        public List<UInt32> Indices
+        {
+            get { return mIndices; }
+        }
+
         [DataMember(Name = "time", IsRequired = true)]
         private List<Double> mTimeStamps = new List<Double>();
+
+        public List<Double> TimeStamps
+        {
+            get { return mTimeStamps; }
+        }
 
         [DataMember(Name = "description", IsRequired = true)]
         private String mDescription = "";
 
+        public String Description
+        {
+            get { return mDescription; }
+        }
+
         [DataMember(Name = "params", IsRequired = false)]
         private Dictionary<string, string> mParameters = new Dictionary<string, string>();
+
+        public Dictionary<string, string> Parameters
+        {
+            get { return mParameters; }
+        }
         #endregion
 
         static internal AAEvent create(UInt32 aIndex, Double aTimeStamp, String aDescription, Dictionary<string, string> aParameters)

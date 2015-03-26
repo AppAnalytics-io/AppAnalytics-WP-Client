@@ -19,13 +19,16 @@ using Microsoft.Phone.Controls;
 using Microsoft.Xna.Framework.Input.Touch;
 using System.Windows.Navigation;
 using Windows.ApplicationModel;
-using Microsoft.Phone.Shell; 
+using Microsoft.Phone.Shell;
+using System.Reflection; 
 #else
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.Globalization;
 using Windows.ApplicationModel;
 using Windows.UI.Xaml.Navigation;
+using System.Runtime.CompilerServices;
+using System.Reflection;
 #endif
 
 namespace AppAnalytics
@@ -34,9 +37,11 @@ namespace AppAnalytics
     {
 
         #region members_and_props
-        static bool mIsInitiated = false;
+        static bool mIsInitialized = false;
 
         static readonly object _lockObject = new object();
+
+        private static IManifestController mManifestSamplesController = null;
 
         private static UUID.UDIDGen mIDGen = UUID.UDIDGen.Instance;
         private static int mUIThreadID = -1;
@@ -53,7 +58,12 @@ namespace AppAnalytics
         private static string mPreviousUri = "";
         private static string mPreviousType = "";
 
-        private static byte[] mApiKey = null;
+        private static byte[] mApiKey = new byte[32];
+
+        public static bool IsInitialized
+        {
+            get { return mIsInitialized; }
+        }
 
         internal  static byte[] ApiKey
         {
@@ -67,57 +77,73 @@ namespace AppAnalytics
             get
             {  return mUIThreadID; }
         }
-        
+
+        public static IManifestController getManifestController()
+        {
+            return mManifestSamplesController;
+        }
+
         #region resolution_getters
-#if SILVERLIGHT
         internal static byte[] getResolutionX()
+        { 
+            return BitConverter.GetBytes(mResolutionX);
+        }
+
+        internal static byte[] getResolutionY()
+        {
+            return BitConverter.GetBytes(mResolutionY);
+        }
+#if SILVERLIGHT
+        internal static void setResolutionX()
         {
             var content = Application.Current.Host.Content;
             double scale = (double)content.ScaleFactor / 100;
 
             //double h = (int)Math.Ceiling(content.ActualHeight * scale);
-            double w = (int)Math.Ceiling(content.ActualWidth * scale);
-
-            return BitConverter.GetBytes( w );
+            mResolutionX = (int)Math.Ceiling(content.ActualWidth * scale); 
         }
 
-        internal static byte[] getResolutionY()
+        internal static void setResolutionY()
         {
             var content = Application.Current.Host.Content;
             double scale = (double)content.ScaleFactor / 100;
 
-            double h = (int)Math.Ceiling(content.ActualHeight * scale);
-            //double w = (int)Math.Ceiling(content.ActualWidth * scale);
-
-            return BitConverter.GetBytes( h );
+            mResolutionY = (int)Math.Ceiling(content.ActualHeight * scale); 
         }
 #else
-        internal static byte[] getResolutionX()
-        {
-            return BitConverter.GetBytes(Math.Floor(ScreenSize.Width));
+        internal static void setResolutionX()
+        { 
+            mResolutionX =  Math.Floor(ScreenSize.Width); 
         }
-        internal static byte[] getResolutionY()
+
+        internal static void setResolutionY()
         {
-            return BitConverter.GetBytes(Math.Floor(ScreenSize.Height));
-        }
+            mResolutionY = Math.Floor(ScreenSize.Height); 
+        } 
 
         internal static double getResolutionXDouble()
         {
-            return Math.Floor(ScreenSize.Width);
+            return Math.Floor(mResolutionX);
         }
         internal static double getResolutionYDouble()
         {
-            return Math.Floor(ScreenSize.Height);
+            return Math.Floor(mResolutionY);
         }
         // actually it returns a Window size which is the same as screen size in WP apps or full screen apps
         static private Size ScreenSize
         {
             get
             {
-                var bounds = Window.Current.Bounds;
-                double w = bounds.Width;
-                double h = bounds.Height;
                 Size resolution = new Size();
+                double w = 0;
+                double h = 0; 
+
+                Rect bounds = new Rect();
+                //Window.Current is null under unit test project. beware
+                bounds = Window.Current.Bounds;
+
+                w = bounds.Width;
+                h = bounds.Height;
 
                 switch (DisplayInformation.GetForCurrentView().ResolutionScale)
                 {
@@ -151,22 +177,9 @@ namespace AppAnalytics
                         h = Math.Ceiling(h * 1.8);
 
                         break;
-                }
+                } 
 
-                if (ApplicationView.GetForCurrentView().IsFullScreen
-                    && ApplicationView.GetForCurrentView().Orientation == ApplicationViewOrientation.Landscape)
-                {
-                    resolution = new Size(w, h);
-                }
-                else if (ApplicationView.GetForCurrentView().IsFullScreen
-                    && ApplicationView.GetForCurrentView().Orientation == ApplicationViewOrientation.Landscape)
-                {
-                    resolution = new Size(h, w);
-                }
-                else
-                {
-                    resolution = new Size(w + 320.0 + 22.0, h);
-                }
+                resolution = new Size(h, w); 
                 return resolution;
             }
         }
@@ -300,72 +313,78 @@ namespace AppAnalytics
             }
 
             {
-                var t = System.Enum.GetName(typeof(NavigationMode), e.NavigationMode); 
+                //var t = System.Enum.GetName(typeof(NavigationMode), e.NavigationMode); 
                 info.Add(Defaults.NavigationTxt.kStrType, e.SourcePageType.Name);
 
                 EventsManager.Instance.pushEvent(Defaults.NavigationTxt.kStrEventName, info);
             }
         }
 #endif
-
-#if DEBUG
-        static async void pushTestEvents()
+        static internal void setupControllers(IManifestController aMC)
         {
-            await Task.Delay(3000);
-            EventsManager.Instance.pushEvent("some equal events");
+            if (null == aMC)
+            {
+                throw new ArgumentNullException();
+            }
+
+            mManifestSamplesController = aMC; 
         }
-#endif
 
-        static internal void init(string aApiKey)
+        // I do realize that testing = false is too damn bad but for now 
+        // let it be this way. will be changed soon
+        static internal void init(string aApiKey, bool testing = false)
         {
-            if (mIsInitiated)
+            mApiKey = Encoding.UTF8.GetBytes(aApiKey);
+            if (mApiKey.Length != 32)
+            {
+                throw new ArgumentOutOfRangeException("API key length is not equal 32");
+            }
+
+            if (mIsInitialized)
             {
                 return;
             }
             else
             {
-                mIsInitiated = true;
+                mIsInitialized = true;
             }
 
             var current = Application.Current;
-#if SILVERLIGHT
-            mUIThreadID = System.Threading.Thread.CurrentThread.ManagedThreadId;
-            Recognizer.Instance.Init();
-            current.UnhandledException += exceptionsLogger;
-
-            var navigationTask = new Task(initNavigationEvent);
-            navigationTask.Start();
-            PhoneApplicationService.Current.Deactivated += onAppSuspend;
-#else
-            RTRecognizer.Instance.init();
-            current.UnhandledException += exceptionsLogger; ;
-            var view = Window.Current.Content as Frame;
-            view.Navigated += navigating;
-#endif
-            EventsManager.Instance.init();
-            CoreApplication.Exiting += onAppExit;
-            CoreApplication.Suspending += onAppSuspend;
-             
-#if DEBUG //Temporary
-//             EventsManager.Instance.DebugLogEnabled = true;
-//             EventsManager.Instance.DispatchInterval = 10;
-//             EventsManager.Instance.pushEvent("check", new Dictionary<string, string> { { "p1", "v1" } });
-#endif 
-
-            var tsk = new Task(mIDGen.init);
-            tsk.Start();
-            tsk.Wait();
-
-            mApiKey = Encoding.UTF8.GetBytes(aApiKey);
-            if (mApiKey.Length != 32)
+            if (!testing) // in unit tests Window.Current is null. 
+                //this way we will skip this part
             {
-                Debug.WriteLine("API key length is not equal 32");
-                mApiKey = new byte[32];
-                mApiKey.Initialize();
+                setResolutionX();
+                setResolutionY();
+#if SILVERLIGHT
+                mUIThreadID = System.Threading.Thread.CurrentThread.ManagedThreadId;
+                Recognizer.Instance.Init();
+                current.UnhandledException += exceptionsLogger;
+
+                var navigationTask = new Task(initNavigationEvent);
+                navigationTask.Start();
+                PhoneApplicationService.Current.Deactivated += onAppSuspend;
+#else
+                RTRecognizer.Instance.init();
+                current.UnhandledException += exceptionsLogger; ;
+                var view = Window.Current.Content as Frame;
+                view.Navigated += navigating;
+#endif
+                EventsManager.Instance.init();
+                CoreApplication.Exiting += onAppExit;
+                CoreApplication.Suspending += onAppSuspend;
+
+                var tsk = new Task(mIDGen.init);
+                tsk.Start();
+                tsk.Wait();
             }
 
+            sendManifest();
+            if (mManifestSamplesController.SamplesCount > 0)
+            {
+                mManifestSamplesController.sendSamples();
+            }
 
-            if (null == mWorker)
+            if (null == mWorker && !testing)
             {
                 var date = DateTime.Now;
 
@@ -373,11 +392,6 @@ namespace AppAnalytics
                 TimeSpan diff = date.ToUniversalTime() - origin;
                 mSessionStartTime = Math.Floor(diff.TotalSeconds);
 
-                sendManifest();
-                if (ManifestController.Instance.SamplesCount > 0)
-                {
-                    ManifestController.Instance.sendSamples();
-                }
 #if SILVERLIGHT
                 mWorker = new Thread(updateLoop);
                 mWorker.IsBackground = true;
@@ -390,8 +404,9 @@ namespace AppAnalytics
 
         static void sendManifest()
         {
-            ManifestController.Instance.buildSessionManifest();
-            ManifestController.Instance.sendManifest();
+            CallSequenceMonitor.logCall();
+            mManifestSamplesController.buildSessionManifest();
+            mManifestSamplesController.sendManifest();
         }
 
         static internal void terminate()
@@ -403,7 +418,7 @@ namespace AppAnalytics
         {
             lock (_lockObject)
             {
-                 ManifestController.Instance.buildDataPackage(aData);
+                mManifestSamplesController.buildDataPackage(aData);
             }
         }
 
@@ -426,25 +441,26 @@ namespace AppAnalytics
 
             if ((tstDif > FrameProcessor.Instance.TimeForTap) && (FrameProcessor.Instance.TapsInRow > 0))
             {
-                Debug.WriteLine(FrameProcessor.Instance.TapsInRow + " < taps with > " + FrameProcessor.Instance.LastTapFingers);
-
+                //Debug.WriteLine(FrameProcessor.Instance.TapsInRow + " < taps with > " + FrameProcessor.Instance.LastTapFingers); 
                 GestureProcessor.createTapGesture(FrameProcessor.Instance.TapsInRow, FrameProcessor.Instance.LastTapFingers);
                 FrameProcessor.Instance.TapsInRow = 0;
             }
 #endif
         }
-        static double   toSendMark = 0;
-        static double   toStoreMark = 0;
-        const double    kSendConst = 20;
-        const double    kStoreConst = 15;
+        static double          toSendMark = 0;
+        static double          toStoreMark = 0;
+        public const double    kSendConst = 60;
+        public const double    kStoreConst = 15;
 
-        const double    kInsertMark = 150;
+        public const double    kInsertMarkMsc = 150;
         static Stopwatch mInsertinonTimer = new Stopwatch();
+        private static double mResolutionY = 0;
+        private static double mResolutionX = 0;
 
 #if SILVERLIGHT
-        static private void updateLoop()
+        static private void updateLoop() 
 #else
-        static async private void updateLoop()
+        static private async void updateLoop() 
 #endif
         {
             mInsertinonTimer.Start();
@@ -461,15 +477,15 @@ namespace AppAnalytics
 
                 if (toStoreMark > kStoreConst)
                 {
-                    ManifestController.Instance.store();
+                    mManifestSamplesController.store();
                     toStoreMark = 0;
                 }
                 if (toSendMark > kSendConst)
                 {
-                    ManifestController.Instance.sendSamples();
+                    mManifestSamplesController.sendSamples();
                     toSendMark = 0;
                 }
-                if (mInsertinonTimer.ElapsedMilliseconds > kInsertMark)
+                if (mInsertinonTimer.ElapsedMilliseconds > kInsertMarkMsc)
                 {
                     mInsertinonTimer.Restart();
                     EventsManager.Instance.insertEvents();
@@ -485,7 +501,7 @@ namespace AppAnalytics
                             Windows.UI.Core.CoreDispatcherPriority.Normal,
                             () => getCurent());
                 }
-                catch
+                catch (Exception)
                 {
                     Debug.WriteLine("Detector: unable to get current view for now.");
                 }
@@ -566,7 +582,7 @@ namespace AppAnalytics
                 PackageVersion vs = Windows.ApplicationModel.Package.Current.Id.Version;
                 return vs.Build + "." + vs.Major + "." + vs.Minor + "." + vs.Revision;
             }
-            catch { Debug.WriteLine("prob. null ref expn"); }
+            catch (Exception) { Debug.WriteLine("prob. null ref expn"); }
             return "";
 #endif
         }
@@ -602,7 +618,7 @@ namespace AppAnalytics
             return BitConverter.GetBytes(val);
         }
 
-        internal static double getCurrentDouble()
+        internal static double getCurrentTimeAsDouble()
         {
             var date = DateTime.Now;
 
@@ -642,13 +658,9 @@ namespace AppAnalytics
                 CultureInfo cult = Thread.CurrentThread.CurrentCulture;
                 RegionInfo rf = new RegionInfo(cult.ToString());
                 lt3 = Converter.convertToThreeLetterCode( rf.TwoLetterISORegionName );
-#else
-                try
-                {
-                    GeographicRegion userRegion = new GeographicRegion();
-                    lt3 = userRegion.CodeThreeLetter;
-                }
-                catch { }
+#else 
+                GeographicRegion userRegion = new GeographicRegion();
+                lt3 = userRegion.CodeThreeLetter; 
 #endif
                 return new byte[3] { (byte)lt3[0], (byte)lt3[1], (byte)lt3[2] };
             }
@@ -665,13 +677,14 @@ namespace AppAnalytics
         }
 
         static public void storeAll()
-        {
-            var tmp = new Task(ManifestController.Instance.store);
+        { 
+            CallSequenceMonitor.logCall();
+            var tmp = new Task(mManifestSamplesController.store);
             tmp.Start();
             tmp.Wait();
 
             EventsManager.Instance.store();
-        }
+        } 
 
         #region debug_info_logging
         internal static void logSampleDbg(GestureData aGD)

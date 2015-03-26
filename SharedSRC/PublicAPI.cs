@@ -41,6 +41,7 @@ namespace AppAnalytics
         /// <param name="aApiKey"></param>
         public static void init(string aApiKey)
         {
+            Detector.setupControllers(ManifestController.Instance);
             Detector.init(aApiKey);
         }
         /// <summary>

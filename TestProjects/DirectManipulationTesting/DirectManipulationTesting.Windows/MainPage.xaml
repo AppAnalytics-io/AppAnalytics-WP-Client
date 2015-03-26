@@ -1,0 +1,22 @@
+﻿<Page
+    x:Class="DirectManipulationTesting.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:DirectManipulationTesting"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,10,0,0" >
+            <StackPanel VerticalAlignment="Top" >
+                <Rectangle Fill="#FF283742" HorizontalAlignment="Left" Height="184" Margin="10,0,0,0" Stroke="Black" VerticalAlignment="Top" Width="436"/>
+                <Rectangle Fill="#FF876D6D" HorizontalAlignment="Left" Height="130" Margin="10,192,0,0" Stroke="Black" VerticalAlignment="Top" Width="217"/>
+                <Rectangle Fill="#FF565D41" HorizontalAlignment="Left" Height="133" Margin="237,189,0,0" Stroke="Black" VerticalAlignment="Top" Width="209"/>
+                <Rectangle Fill="#FF322929" HorizontalAlignment="Left" Height="205" Margin="10,327,0,0" Stroke="Black" VerticalAlignment="Top" Width="436"/>
+                <Rectangle Fill="#FF2F5151" HorizontalAlignment="Left" Height="98" Margin="10,537,0,0" Stroke="Black" VerticalAlignment="Top" Width="217"/>
+                <Rectangle Fill="#FF1E7870" HorizontalAlignment="Left" Height="108" Margin="237,537,0,0" Stroke="Black" VerticalAlignment="Top" Width="209"/>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>

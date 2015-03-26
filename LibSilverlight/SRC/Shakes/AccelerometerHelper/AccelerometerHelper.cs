@@ -396,7 +396,7 @@ namespace Microsoft.Phone.Applications.Common
                     NoAccelerometer = true;
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 _active = false;
                 NoAccelerometer = true;

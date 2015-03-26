@@ -34,10 +34,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <TargetPlatform Include="WindowsPhoneApp, Version=8.1" />
-    <TargetPlatform Include="Windows, Version=8.1" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="..\SharedSRC\Defaults.cs">
       <Link>SRC\utils\Defaults.cs</Link>
     </Compile>
@@ -56,11 +52,17 @@
     <Compile Include="..\SharedSRC\GestureData.cs">
       <Link>SRC\GestureData.cs</Link>
     </Compile>
+    <Compile Include="..\SharedSRC\IManifestController.cs">
+      <Link>SRC\IManifestController.cs</Link>
+    </Compile>
     <Compile Include="..\SharedSRC\ManifestBuilder.cs">
       <Link>SRC\ManifestBuilder.cs</Link>
     </Compile>
     <Compile Include="..\SharedSRC\PublicAPI.cs">
       <Link>SRC\PublicAPI.cs</Link>
+    </Compile>
+    <Compile Include="..\SharedSRC\unitTests\CallSequenceMonitor.cs">
+      <Link>SRC\CallSequenceMonitor.cs</Link>
     </Compile>
     <Compile Include="..\SharedSRC\utils\Converter.cs">
       <Link>SRC\utils\Converter.cs</Link>
@@ -68,8 +70,17 @@
     <Compile Include="..\SharedSRC\utils\CustomDict.cs">
       <Link>SRC\utils\CustomDict.cs</Link>
     </Compile>
+    <Compile Include="..\SharedSRC\utils\FileSystemHelper.cs">
+      <Link>SRC\utils\FileSystemHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\SharedSRC\utils\UDIDGen.cs">
+      <Link>SRC\UUID\UDIDGen.cs</Link>
+    </Compile>
     <Compile Include="..\SharedSRC\web\MultipartUploader.cs">
       <Link>SRC\web\MultipartUploader.cs</Link>
+    </Compile>
+    <Compile Include="..\SharedSRC\web\PUTRequest.cs">
+      <Link>SRC\web\PUTRequest.cs</Link>
     </Compile>
     <Compile Include="..\SharedSRC\web\Sender.cs">
       <Link>SRC\web\Sender.cs</Link>
@@ -86,7 +97,10 @@
     <Compile Include="SRC\ShakesPorted\ShakeType.cs" />
     <Compile Include="SRC\ShakesPorted\Simulation.cs" />
     <Compile Include="SRC\Utils\Utils.cs" />
-    <Compile Include="SRC\UUID\RTUDIDGen.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <TargetPlatform Include="Windows, Version=8.1" />
+    <TargetPlatform Include="WindowsPhoneApp, Version=8.1" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />

@@ -18,6 +18,10 @@ namespace AppAnalytics
 
     static internal class Defaults
     {
+        // hack
+        public delegate void ResultCallback(bool aSuccess, AAFileType aType,
+                                       Dictionary<string, List<object>> aListToDel);
+
         public const UInt32 kMaxLogEventStrLen   = 512;
         public const UInt32 kMaxDispatchInterval = 3600;
         public const UInt32 kMinDispatchInterval = 10;

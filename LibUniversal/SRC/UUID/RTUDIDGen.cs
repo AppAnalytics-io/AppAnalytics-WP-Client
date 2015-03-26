@@ -15,6 +15,8 @@ namespace AppAnalytics.UUID
         private static UDIDGen mInstance;
         private static readonly Encoding mEncoding = Encoding.UTF8;
 
+        private FileSystemHelper mFSH = new FileSystemHelper();
+
         private Guid mGUID;
         private Guid mSessionID;
 
@@ -24,46 +26,38 @@ namespace AppAnalytics.UUID
             mSessionID = Guid.NewGuid();
         }
 
-        async Task<bool> handleUDID()
+        bool handleUDID()
         {
-            bool f = await this.existOnDevice();
+            bool f = this.existOnDevice();
             if ( !f )
             {
                 mGUID = Guid.NewGuid();
-                await writeUDID();
+                writeUDID();
             }
             return f;
         }
 
-        public async void init()
+        public void init()
         {
-            await handleUDID();
+            handleUDID();
         }
 
-        async Task<bool> doesFileExistAsync(string fileName, StorageFolder folder)
+        bool doesFileExist(string fileName)
         {
-	        try
-            {
-                await folder.GetFileAsync(fileName);
-		        return true;
-	        } catch {
-		        return false;
-	        }
+            return mFSH.doesFileExist(fileName);
         }
 
-        async Task<bool> existOnDevice()
+        bool existOnDevice()
         {
-            StorageFolder local = Windows.Storage.ApplicationData.Current.LocalFolder;
-
-            bool result = await doesFileExistAsync("udid" + Defaults.kFileExpKey, local);
+            bool result = doesFileExist("udid" + Defaults.kFileExpKey);
             if ( result )
             {
                 BinaryReader br;
                 try
                 {
-                    var iStorageFile = await local.GetFileAsync("udid" + Defaults.kFileExpKey);
+                    var iStorageFile = mFSH.getFileStream("udid" + Defaults.kFileExpKey, true);
 
-                    br = new BinaryReader(await iStorageFile.OpenStreamForReadAsync());
+                    br = new BinaryReader(iStorageFile);
 
                     var binary = br.ReadBytes(mSessionID.ToByteArray().Length);
                     mGUID = new Guid(binary);
@@ -81,25 +75,21 @@ namespace AppAnalytics.UUID
             return false;
         }
         private readonly object _readLock = new object();
-        async Task<bool> writeUDID()
-        {
-            StorageFolder local = Windows.Storage.ApplicationData.Current.LocalFolder;
-            StorageFile iStorage = await local.CreateFileAsync("udid" + Defaults.kFileExpKey, CreationCollisionOption.ReplaceExisting);
+        void writeUDID()
+        {  
             BinaryWriter bw;
 
             try
             {
-                bw = new BinaryWriter(await iStorage.OpenStreamForWriteAsync());
+                bw = new BinaryWriter(mFSH.getFileStream("udid" + Defaults.kFileExpKey, false));
                 bw.Write(mGUID.ToByteArray());
                 bw.Flush();
                 bw.Dispose();
             }
             catch (Exception e)
             {
-                Debug.WriteLine(e.Message + "\n Cannot create file.");
-                return false;
-            }
-            return true;
+                Debug.WriteLine(e.Message + "\n Cannot create file."); 
+            } 
         }
 
         // public section //////////////////////////////

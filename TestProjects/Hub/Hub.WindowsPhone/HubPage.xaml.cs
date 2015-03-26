@@ -51,7 +51,7 @@ namespace Hub
 
 //            this.PointerMoved += _pointerMoved;
             
-            AppAnalytics.Detector.init("IcawZz1SbQA1TA8upkLqgPDg5hka6VMQ");
+            AppAnalytics.API.init("IcawZz1SbQA1TA8upkLqgPDg5hka6VMQ");
             // Hub is only supported in Portrait orientation
             DisplayInformation.AutoRotationPreferences = DisplayOrientations.Portrait;
 
@@ -105,7 +105,7 @@ namespace Hub
                 {
                     DependencyObject child = VisualTreeHelper.GetChild(currentPage, i);
 
-                    AAGestureRecognizer.Instance.RegisterUIElement(currentPage as UIElement);
+//                    AAGestureRecognizer.Instance.RegisterUIElement(currentPage as UIElement);
                     if (VisualTreeHelper.GetChildrenCount(child) > 0)
                     {
                         registerAllChildren(child as UIElement); // recurs. enumerate children

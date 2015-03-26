@@ -38,35 +38,32 @@ namespace AppAnalytics
 
         public static bool tryToSend(AppAnalytics.MultipartUploader.FileParameter aFiles, Dictionary<string, List<object>> aToDel)
         {
-            if (NetworkInterface.GetIsNetworkAvailable() == true && aFiles.Count > 0)
+            CallSequenceMonitor.logCall();
+            if (NetworkInterface.GetIsNetworkAvailable() == true && aFiles.Count > 0 
+                && aFiles.File != null && aToDel.Count > 0)
             {
-                bool success = MultipartUploader.MultipartFormDataPut(kGTBaseURL +
-                                                                        typeToURL(aFiles.FileType)
-                                                                        + Detector.getUDIDString(),
-                                                                        "WindowsPhone",
-                                                                        aFiles,
-                                                                        aToDel);
+                string formDataBoundary = String.Format("----------{0:N}", Guid.NewGuid());
+                string url = kGTBaseURL + typeToURL(aFiles.FileType) + Detector.getUDIDString();
+                
+                string contentType = "multipart/form-data; boundary=" + formDataBoundary;
+                PUTRequest request = new PUTRequest(url, contentType);
+                request.SetHeader("User-Agent", "Windows Phone");
+               
+                MultipartUploader.MultipartFormDataPut(request, aFiles, aToDel, formDataBoundary);
 
                 return true;
             }
-
+            
             return false;
         }
 
-        static private void addRangeToDelList(string name, List<object> aToDel, Dictionary<string, List<object>> aDict)
-        {
-            if (aDict.ContainsKey(name))
-            {
-                aDict[name].AddRange(aToDel);
-            }
-            else
-            {
-                aDict[name] = aToDel;
-            }
-        }
-
-        public static void success(AAFileType aType, Dictionary<string, List<object> > aToDel)
+        public static void success(bool aSuccess, AAFileType aType, Dictionary<string, List<object> > aToDel)
         { 
+            if (!aSuccess)
+            {
+                return;
+            }
+
             Debug.Assert (aToDel != null && aToDel.Count != 0, "assertion failed, Sender.success method") ;
             if (aToDel == null || aToDel.Count == 0) return;
             // to be tested
@@ -94,11 +91,7 @@ namespace AppAnalytics
             {
                 ManifestController.Instance.sendSamples();
             }
-        }
-
-        public static void fail()
-        { 
-        }
+        } 
 
         #region sending
 

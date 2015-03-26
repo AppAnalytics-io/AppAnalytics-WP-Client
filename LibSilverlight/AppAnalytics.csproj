@@ -66,7 +66,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>Bin\ARM\Debug</OutputPath>
-    <DefineConstants>TRACE;DEBUG;WINDOWS_PHONE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;SILVERLIGHT</DefineConstants>
     <NoStdLib>true</NoStdLib>
     <NoConfig>true</NoConfig>
     <ErrorReport>prompt</ErrorReport>
@@ -101,11 +101,17 @@
     <Compile Include="..\SharedSRC\GestureData.cs">
       <Link>SRC\GestureData.cs</Link>
     </Compile>
+    <Compile Include="..\SharedSRC\IManifestController.cs">
+      <Link>SRC\IManifestController.cs</Link>
+    </Compile>
     <Compile Include="..\SharedSRC\ManifestBuilder.cs">
       <Link>SRC\ManifestBuilder.cs</Link>
     </Compile>
     <Compile Include="..\SharedSRC\PublicAPI.cs">
       <Link>SRC\PublicAPI.cs</Link>
+    </Compile>
+    <Compile Include="..\SharedSRC\unitTests\CallSequenceMonitor.cs">
+      <Link>SRC\CallSequenceMonitor.cs</Link>
     </Compile>
     <Compile Include="..\SharedSRC\utils\Converter.cs">
       <Link>SRC\Utils\Converter.cs</Link>
@@ -113,8 +119,17 @@
     <Compile Include="..\SharedSRC\utils\CustomDict.cs">
       <Link>SRC\Utils\CustomDict.cs</Link>
     </Compile>
+    <Compile Include="..\SharedSRC\utils\FileSystemHelper.cs">
+      <Link>SRC\Utils\FileSystemHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\SharedSRC\utils\UDIDGen.cs">
+      <Link>SRC\UUID\UDIDGen.cs</Link>
+    </Compile>
     <Compile Include="..\SharedSRC\web\MultipartUploader.cs">
       <Link>SRC\Web\MultipartUploader.cs</Link>
+    </Compile>
+    <Compile Include="..\SharedSRC\web\PUTRequest.cs">
+      <Link>SRC\Web\PUTRequest.cs</Link>
     </Compile>
     <Compile Include="..\SharedSRC\web\Sender.cs">
       <Link>SRC\Web\Sender.cs</Link>
@@ -129,7 +144,6 @@
     <Compile Include="SRC\Shakes\ShakeGesturesHelper.cs" />
     <Compile Include="SRC\Shakes\ShakeType.cs" />
     <Compile Include="SRC\Shakes\Simulation.cs" />
-    <Compile Include="SRC\UUID\UDIDGen.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\$(TargetFrameworkIdentifier)\$(TargetFrameworkVersion)\Microsoft.$(TargetFrameworkIdentifier).$(TargetFrameworkVersion).Overrides.targets" />
