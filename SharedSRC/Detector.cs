@@ -456,8 +456,8 @@ namespace AppAnalytics
         static Stopwatch mInsertinonTimer = new Stopwatch();
         private static double mResolutionY = 0;
         private static double mResolutionX = 0;
-
-#if SILVERLIGHT
+   
+#if SILVERLIGHT      
         static private void updateLoop() 
 #else
         static private async void updateLoop() 
@@ -688,7 +688,7 @@ namespace AppAnalytics
 
         #region debug_info_logging
         internal static void logSampleDbg(GestureData aGD)
-        {
+        { 
             if (EventsManager.Instance.DebugLogEnabled)
             {
                 Debug.WriteLine("Order ID [{0}]", BitConverter.ToUInt64(aGD.ActionOrder,0) );
@@ -703,7 +703,7 @@ namespace AppAnalytics
         }
 
         internal static void logEventDbg(AAEvent aEvent)
-        {
+        { 
             if (EventsManager.Instance.DebugLogEnabled)
             {
                 string eventToStr = aEvent.ToString();

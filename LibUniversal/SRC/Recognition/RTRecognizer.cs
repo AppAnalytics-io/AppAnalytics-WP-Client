@@ -448,6 +448,7 @@ namespace AppAnalytics
 
         private void _pointerMoved(object sender, PointerEventArgs e)
         { 
+            Debug.WriteLine("<<Pointer moved>>"); 
             var CurrentPoint = e.CurrentPoint;
 
             TouchPoint tp = new TouchPoint();

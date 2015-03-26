@@ -42,7 +42,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UTestWP", "TestProjects\UTestWP\UTestWP.csproj", "{9E619D93-9427-4C41-BC15-D4606CBC7442}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UTSilverlight", "TestProjects\UTSilverlight\UTSilverlight.csproj", "{906B5565-B6E5-4F3B-8735-A8E4E8F5C120}"
-EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		TestProjects\Hub\Hub.Shared\Hub.Shared.projitems*{6ca4ba2c-d031-4893-b550-2859a5914bc6}*SharedItemsImports = 13
